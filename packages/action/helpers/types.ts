@@ -8,6 +8,12 @@ export interface ActionResult {
   changes?: Change[];
 }
 
+export interface GroupedChanges {
+  breaking: Change[];
+  dangerous: Change[];
+  safe: Change[];
+}
+
 export interface Annotation {
   path: string;
   start_line: number;
