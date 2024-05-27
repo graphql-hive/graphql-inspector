@@ -77,7 +77,7 @@
     "@graphql-inspector/core": "workspace:*",
     "dataloader": "2.2.2",
     "js-yaml": "4.1.0",
-    "probot": "12.3.3",
+    "probot": "13.2.2",
     "tslib": "2.6.2"
   },
   "devDependencies": {
