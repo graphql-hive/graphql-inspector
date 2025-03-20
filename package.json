@@ -84,7 +84,7 @@
     "graphql": "16.9.0",
     "graphql-config": "5.1.0",
     "jsesc": "3.0.2",
-    "lint-staged": "15.2.8",
+    "lint-staged": "15.5.0",
     "lodash": "4.17.21",
     "nock": "13.5.4",
     "prettier": "3.3.3",
