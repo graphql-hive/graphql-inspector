@@ -6,6 +6,7 @@ module.exports = {
     'example/schemas/schema.js',
     'example/rules/custom-rule.js',
     'integration_tests/2027/unused-hotels.js',
+    '__tests__',
   ],
   extends: ['@theguild', '@theguild/eslint-config/json', '@theguild/eslint-config/yml'],
   overrides: [
