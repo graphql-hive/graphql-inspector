@@ -40,12 +40,14 @@ describe('Inspector Action', () => {
     });
 
     vi.spyOn(github, 'getOctokit').mockReturnValue({
-      checks: {
-        create: vi.fn().mockResolvedValue({
-          data: {
-            id: '2',
-          },
-        }),
+      rest: {
+        checks: {
+          create: vi.fn().mockResolvedValue({
+            data: {
+              id: '2',
+            },
+          }),
+        },
       },
     });
     vi.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
