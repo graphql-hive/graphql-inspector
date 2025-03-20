@@ -41,8 +41,8 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@sentry/node": "8.49.0",
-    "@sentry/tracing": "7.114.0",
+    "@sentry/node": "8.55.0",
+    "@sentry/tracing": "7.120.3",
     "@whatwg-node/fetch": "0.10.3",
     "husky": "9.0.11",
     "immer": "10.1.1",
