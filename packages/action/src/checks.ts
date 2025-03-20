@@ -5,7 +5,10 @@ import { OctokitInstance } from './types.js';
 import { batch } from './utils.js';
 
 type UpdateCheckRunOptions = Required<
-  Pick<NonNullable<Parameters<OctokitInstance['rest']['checks']['update']>[0]>, 'conclusion' | 'output'>
+  Pick<
+    NonNullable<Parameters<OctokitInstance['rest']['checks']['update']>[0]>,
+    'conclusion' | 'output'
+  >
 >;
 
 export async function updateCheckRun(
