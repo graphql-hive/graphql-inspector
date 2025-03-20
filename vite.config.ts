@@ -21,7 +21,9 @@ export default defineConfig({
     },
     setupFiles: ['./packages/testing/src/setup-file.ts'],
   },
-  plugins: [tsconfigPaths({
-    projects: [join(__dirname, 'tsconfig.test.json')]
-  })],
+  plugins: [
+    tsconfigPaths({
+      projects: [join(__dirname, 'tsconfig.test.json')],
+    }),
+  ],
 });
