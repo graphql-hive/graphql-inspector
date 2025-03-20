@@ -72,7 +72,7 @@
   },
   "dependencies": {
     "@actions/core": "1.10.1",
-    "@actions/github": "4.0.0",
+    "@actions/github": "6.0.0",
     "@graphql-inspector/commands": "workspace:*",
     "@graphql-inspector/core": "workspace:*",
     "dataloader": "2.2.2",
