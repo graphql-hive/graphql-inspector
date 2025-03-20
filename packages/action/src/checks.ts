@@ -5,7 +5,7 @@ import { OctokitInstance } from './types.js';
 import { batch } from './utils.js';
 
 type UpdateCheckRunOptions = Required<
-  Pick<NonNullable<Parameters<OctokitInstance['checks']['update']>[0]>, 'conclusion' | 'output'>
+  Pick<NonNullable<Parameters<OctokitInstance['rest']['checks']['update']>[0]>, 'conclusion' | 'output'>
 >;
 
 export async function updateCheckRun(
@@ -20,7 +20,7 @@ export async function updateCheckRun(
 
   core.info(`annotations to be sent: ${annotations.length}`);
 
-  await octokit.checks.update({
+  await octokit.rest.checks.update({
     check_run_id: checkId,
     completed_at: new Date().toISOString(),
     status: 'completed',
@@ -35,7 +35,7 @@ export async function updateCheckRun(
   try {
     await Promise.all(
       batches.map(async chunk => {
-        await octokit.checks.update({
+        await octokit.rest.checks.update({
           check_run_id: checkId,
           ...github.context.repo,
           output: {

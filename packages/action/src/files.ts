@@ -44,7 +44,7 @@ export function fileLoader({
     try {
       if (result?.repository?.object?.oid && result?.repository?.object?.isTruncated) {
         const oid = result?.repository?.object?.oid;
-        const getBlobResponse = await octokit.git.getBlob({
+        const getBlobResponse = await octokit.rest.git.getBlob({
           owner,
           repo,
           file_sha: oid,

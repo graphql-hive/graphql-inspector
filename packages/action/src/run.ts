@@ -52,7 +52,7 @@ export async function run() {
 
   core.info(`Creating a check named "${checkName}"`);
 
-  const check = await octokit.checks.create({
+  const check = await octokit.rest.checks.create({
     owner,
     repo,
     name: checkName,
