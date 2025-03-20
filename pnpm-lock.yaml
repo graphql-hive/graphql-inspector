@@ -18,8 +18,8 @@ importers:
         specifier: 7.114.0
         version: 7.114.0
       '@whatwg-node/fetch':
-        specifier: 0.10.3
-        version: 0.10.3
+        specifier: 0.10.5
+        version: 0.10.5
       husky:
         specifier: 9.0.11
         version: 9.0.11
