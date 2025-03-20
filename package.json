@@ -50,6 +50,7 @@
     "js-yaml": "4.1.0",
     "probot": "12.4.0",
     "shelljs": "0.8.5",
+    "vite-tsconfig-paths": "5.1.4",
     "yargs": "17.7.2"
   },
   "devDependencies": {
@@ -93,7 +94,7 @@
     "smee-client": "2.0.2",
     "strip-ansi": "7.1.0",
     "typescript": "5.5.4",
-    "vitest": "0.34.6",
+    "vitest": "3.0.9",
     "wrangler": "4.2.0"
   },
   "sideEffects": false,
