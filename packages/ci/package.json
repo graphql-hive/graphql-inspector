@@ -77,7 +77,7 @@
     "@graphql-inspector/config": "workspace:*",
     "@graphql-inspector/loaders": "workspace:*",
     "@graphql-inspector/logger": "workspace:*",
-    "tslib": "2.6.2",
+    "tslib": "2.8.1",
     "yargs": "17.7.2"
   },
   "publishConfig": {
