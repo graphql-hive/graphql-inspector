@@ -1,5 +1,15 @@
 # @graphql-inspector/core
 
+## 6.3.0
+
+### Minor Changes
+
+- [#2838](https://github.com/graphql-hive/graphql-inspector/pull/2838)
+  [`416a9ce`](https://github.com/graphql-hive/graphql-inspector/commit/416a9ce9b44ba3859388dd625026067aba1f0a49)
+  Thanks [@egoodwinx](https://github.com/egoodwinx)! - Updated removing field message to contain
+  more information on why its a breaking change such as if the field is a union or indirectly
+  referenced.
+
 ## 6.2.1
 
 ### Patch Changes
