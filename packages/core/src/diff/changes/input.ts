@@ -56,14 +56,14 @@ export function buildInputFieldAddedMessage(args: InputFieldAddedChange['meta'])
 export function inputFieldAddedFromMeta(args: InputFieldAddedChange) {
   return {
     type: ChangeType.InputFieldAdded,
-    criticality: args.meta.isAddedInputFieldTypeNullable
+    criticality: args.meta.isAddedInputFieldBreaking
       ? {
-          level: CriticalityLevel.Dangerous,
-        }
-      : {
           level: CriticalityLevel.Breaking,
           reason:
             'Adding a required input field to an existing input object type is a breaking change because it will cause existing uses of this input object type to error.',
+        }
+      : {
+        level: CriticalityLevel.Dangerous,
         },
     message: buildInputFieldAddedMessage(args.meta),
     meta: args.meta,
@@ -75,6 +75,8 @@ export function inputFieldAdded(
   input: GraphQLInputObjectType,
   field: GraphQLInputField,
 ): Change<typeof ChangeType.InputFieldAdded> {
+  const isBreaking = isNonNullType(field.type) && typeof field.defaultValue === 'undefined';
+
   return inputFieldAddedFromMeta({
     type: ChangeType.InputFieldAdded,
     meta: {
@@ -82,6 +84,8 @@ export function inputFieldAdded(
       addedInputFieldName: field.name,
       isAddedInputFieldTypeNullable: !isNonNullType(field.type),
       addedInputFieldType: field.type.toString(),
+      hasDefaultValue: field.defaultValue != null,
+      isAddedInputFieldBreaking: isBreaking,
     },
   });
 }

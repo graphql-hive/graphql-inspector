@@ -453,6 +453,8 @@ export type InputFieldAddedChange = {
     addedInputFieldName: string;
     isAddedInputFieldTypeNullable: boolean;
     addedInputFieldType: string;
+    hasDefaultValue: boolean;
+    isAddedInputFieldBreaking: boolean;
   };
 };
 
