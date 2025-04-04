@@ -17,15 +17,18 @@ describe('input', () => {
           b: String!
           c: String!
           d: String
+          e: String! = "Eee"
         }
       `);
 
+      const changes = await diff(a, b);
       const change = {
-        c: findFirstChangeByPath(await diff(a, b), 'Foo.c'),
-        d: findFirstChangeByPath(await diff(a, b), 'Foo.d'),
+        c: findFirstChangeByPath(changes, 'Foo.c'),
+        d: findFirstChangeByPath(changes, 'Foo.d'),
+        e: findFirstChangeByPath(changes, 'Foo.e'),
       };
 
-      // Non-nullable
+      // Non-nullable without default
       expect(change.c.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.c.type).toEqual('INPUT_FIELD_ADDED');
       expect(change.c.message).toEqual(
@@ -36,6 +39,12 @@ describe('input', () => {
       expect(change.d.type).toEqual('INPUT_FIELD_ADDED');
       expect(change.d.message).toEqual(
         "Input field 'd' of type 'String' was added to input object type 'Foo'",
+      );
+      // Non-nullable with default
+      expect(change.e.criticality.level).toEqual(CriticalityLevel.Dangerous);
+      expect(change.e.type).toEqual('INPUT_FIELD_ADDED');
+      expect(change.e.message).toEqual(
+        "Input field 'e' of type 'String!' was added to input object type 'Foo'",
       );
     });
     test('removed', async () => {
