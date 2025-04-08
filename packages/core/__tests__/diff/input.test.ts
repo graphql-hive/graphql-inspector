@@ -44,7 +44,7 @@ describe('input', () => {
       expect(change.e.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.e.type).toEqual('INPUT_FIELD_ADDED');
       expect(change.e.message).toEqual(
-        "Input field 'e' of type 'String!' was added to input object type 'Foo'",
+        "Input field 'e' of type 'String!' with a default value was added to input object type 'Foo'",
       );
     });
     test('removed', async () => {

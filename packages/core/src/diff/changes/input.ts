@@ -50,7 +50,8 @@ export function inputFieldRemoved(
 }
 
 export function buildInputFieldAddedMessage(args: InputFieldAddedChange['meta']) {
-  return `Input field '${args.addedInputFieldName}' of type '${args.addedInputFieldType}' was added to input object type '${args.inputName}'`;
+  const defaultValueSuffix = args.hasDefaultValue ? ' with a default value' : '';
+  return `Input field '${args.addedInputFieldName}' of type '${args.addedInputFieldType}'${defaultValueSuffix} was added to input object type '${args.inputName}'`;
 }
 
 export function inputFieldAddedFromMeta(args: InputFieldAddedChange) {
