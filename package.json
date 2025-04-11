@@ -78,7 +78,7 @@
     "@types/body-parser": "1.19.5",
     "@types/cors": "2.8.17",
     "@types/express": "5.0.1",
-    "@types/node": "20.14.15",
+    "@types/node": "22.14.1",
     "@types/yargs": "17.0.33",
     "@vercel/ncc": "0.38.3",
     "bob-the-bundler": "7.0.1",
