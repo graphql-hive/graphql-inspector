@@ -65,3 +65,11 @@ function changesInDirectiveArgument(
     addChange(directiveArgumentTypeChanged(directive, oldArg, newArg));
   }
 }
+
+// function changesInDirectiveUsage(
+//   oldDirective: GraphQLDirective,
+//   newDirective: GraphQLDirective,
+//   addChange: AddChange
+// ) {
+//
+// }

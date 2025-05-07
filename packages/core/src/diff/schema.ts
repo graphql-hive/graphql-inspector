@@ -1,33 +1,11 @@
-import {
-  GraphQLNamedType,
-  GraphQLObjectType,
-  GraphQLSchema,
-  isEnumType,
-  isInputObjectType,
-  isInterfaceType,
-  isObjectType,
-  isScalarType,
-  isUnionType,
-  Kind,
-} from 'graphql';
+import { GraphQLNamedType, GraphQLObjectType, GraphQLSchema, isEnumType, isInputObjectType, isInterfaceType, isObjectType, isScalarType, isUnionType, Kind } from 'graphql';
 import { compareLists, isNotEqual, isVoid } from '../utils/compare.js';
 import { isPrimitive } from '../utils/graphql.js';
 import { Change } from './changes/change.js';
 import { directiveUsageAdded, directiveUsageRemoved } from './changes/directive-usage.js';
 import { directiveAdded, directiveRemoved } from './changes/directive.js';
-import {
-  schemaMutationTypeChanged,
-  schemaQueryTypeChanged,
-  schemaSubscriptionTypeChanged,
-} from './changes/schema.js';
-import {
-  typeAdded,
-  typeDescriptionAdded,
-  typeDescriptionChanged,
-  typeDescriptionRemoved,
-  typeKindChanged,
-  typeRemoved,
-} from './changes/type.js';
+import { schemaMutationTypeChanged, schemaQueryTypeChanged, schemaSubscriptionTypeChanged } from './changes/schema.js';
+import { typeAdded, typeDescriptionAdded, typeDescriptionChanged, typeDescriptionRemoved, typeKindChanged, typeRemoved } from './changes/type.js';
 import { changesInDirective } from './directive.js';
 import { changesInEnum } from './enum.js';
 import { changesInInputObject } from './input.js';
@@ -75,6 +53,7 @@ export function diffSchema(oldSchema: GraphQLSchema, newSchema: GraphQLSchema): 
     },
   });
 
+  // TODO: Heshan -> Introduce a mutual option to this function to detect changes in directive usage
   compareLists(oldSchema.astNode?.directives || [], newSchema.astNode?.directives || [], {
     onAdded(directive) {
       addChange(directiveUsageAdded(Kind.SCHEMA_DEFINITION, directive, newSchema));
@@ -82,6 +61,9 @@ export function diffSchema(oldSchema: GraphQLSchema, newSchema: GraphQLSchema): 
     onRemoved(directive) {
       addChange(directiveUsageRemoved(Kind.SCHEMA_DEFINITION, directive, oldSchema));
     },
+    // onMutual(directive) {
+    //   changesInDirectiveUsage(directive.oldVersion, directive.newVersion, addChange)
+    // },
   });
 
   return changes;

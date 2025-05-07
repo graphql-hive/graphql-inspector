@@ -40,6 +40,7 @@ export function changesInArgument(
     addChange(fieldArgumentTypeChanged(type, field, oldArg, newArg));
   }
 
+  // TODO: Heshan -> Introduce a mutual option to this function to detect changes in directive usage
   if (oldArg.astNode?.directives && newArg.astNode?.directives) {
     compareLists(oldArg.astNode.directives || [], newArg.astNode.directives || [], {
       onAdded(directive) {

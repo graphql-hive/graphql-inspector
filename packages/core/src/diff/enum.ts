@@ -1,15 +1,13 @@
 import { GraphQLEnumType, Kind } from 'graphql';
 import { compareLists, isNotEqual, isVoid } from '../utils/compare.js';
-import { directiveUsageAdded, directiveUsageRemoved } from './changes/directive-usage.js';
 import {
-  enumValueAdded,
-  enumValueDeprecationReasonAdded,
-  enumValueDeprecationReasonChanged,
-  enumValueDeprecationReasonRemoved,
-  enumValueDescriptionChanged,
-  enumValueRemoved,
-} from './changes/enum.js';
+  directiveUsageAdded,
+  directiveUsageChanged,
+  directiveUsageRemoved,
+} from './changes/directive-usage.js';
+import { enumValueAdded, enumValueDeprecationReasonAdded, enumValueDeprecationReasonChanged, enumValueDeprecationReasonRemoved, enumValueDescriptionChanged, enumValueRemoved } from './changes/enum.js';
 import { AddChange } from './schema.js';
+
 
 export function changesInEnum(
   oldEnum: GraphQLEnumType,
@@ -41,6 +39,7 @@ export function changesInEnum(
         }
       }
 
+      // TODO: Heshan -> Introduce a mutual option to this function to detect changes in directive usage
       compareLists(oldValue.astNode?.directives || [], newValue.astNode?.directives || [], {
         onAdded(directive) {
           addChange(
@@ -57,6 +56,12 @@ export function changesInEnum(
               value: oldValue,
             }),
           );
+        },
+        onMutual(value) {
+          directiveUsageChanged(Kind.ENUM_VALUE_DEFINITION, value.oldVersion, value.newVersion, {
+            type: newEnum,
+            value: newValue
+          }, addChange)
         },
       });
     },

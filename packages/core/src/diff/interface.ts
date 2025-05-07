@@ -21,6 +21,7 @@ export function changesInInterface(
       changesInField(oldInterface, field.oldVersion, field.newVersion, addChange);
     },
   });
+  // TODO: Heshan -> Introduce a mutual option to this function to detect changes in directive usage
   compareLists(oldInterface.astNode?.directives || [], newInterface.astNode?.directives || [], {
     onAdded(directive) {
       addChange(directiveUsageAdded(Kind.INTERFACE_TYPE_DEFINITION, directive, newInterface));

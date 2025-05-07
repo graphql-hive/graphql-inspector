@@ -72,6 +72,7 @@ function changesInInputField(
     addChange(inputFieldTypeChanged(input, oldField, newField));
   }
 
+  // TODO: Heshan -> Introduce a mutual option to this function to detect changes in directive usage
   if (oldField.astNode?.directives && newField.astNode?.directives) {
     compareLists(oldField.astNode.directives || [], newField.astNode.directives || [], {
       onAdded(directive) {

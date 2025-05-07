@@ -13,6 +13,8 @@ import {
   GraphQLUnionType,
   Kind,
 } from 'graphql';
+import { compareLists, isNotEqual } from '../../utils/compare.js';
+import { AddChange } from '../schema.js';
 import {
   Change,
   ChangeType,
@@ -40,6 +42,11 @@ import {
   DirectiveUsageUnionMemberAddedChange,
   DirectiveUsageUnionMemberRemovedChange,
 } from './change.js';
+import {
+  directiveUsageArgumentAdded,
+  directiveUsageArgumentChanged,
+  directiveUsageArgumentRemoved,
+} from './directive-usage-arugment.js';
 
 function addedSpecialDirective(
   directiveName: string,
@@ -67,7 +74,7 @@ function removedSpecialDirective(
   return forceReturn;
 }
 
-type KindToPayload = {
+export type KindToPayload = {
   [Kind.ENUM_TYPE_DEFINITION]: {
     input: GraphQLEnumType;
     change: DirectiveUsageEnumAddedChange | DirectiveUsageEnumRemovedChange;
@@ -809,7 +816,32 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
   return {} as any;
 }
 
-function isOfKind<K extends keyof KindToPayload>(
+export function directiveUsageChanged<K extends keyof KindToPayload>(
+  kind: K,
+  oldDirective: ConstDirectiveNode,
+  newDirective: ConstDirectiveNode,
+  payload: KindToPayload[K]['input'],
+  addChange: AddChange,
+) {
+  const oldArguments = oldDirective.arguments || [];
+  const newArguments = newDirective.arguments || [];
+
+  compareLists(oldArguments, newArguments, {
+    onAdded(argument) {
+      addChange(directiveUsageArgumentAdded(kind, payload, newDirective, argument));
+    },
+    onRemoved(argument) {
+      addChange(directiveUsageArgumentRemoved(kind, payload, newDirective, argument));
+    },
+    onMutual({ newVersion, oldVersion }) {
+      if (isNotEqual(newVersion, oldVersion)) {
+        addChange(directiveUsageArgumentChanged(kind, payload, newDirective, oldVersion, newVersion));
+      }
+    },
+  });
+}
+
+export function isOfKind<K extends keyof KindToPayload>(
   kind: keyof KindToPayload,
   expectedKind: K,
   _value: any,

@@ -8,6 +8,7 @@ export function changesInScalar(
   newScalar: GraphQLScalarType,
   addChange: AddChange,
 ) {
+  // TODO: Heshan -> Introduce a mutual option to this function to detect changes in directive usage
   compareLists(oldScalar.astNode?.directives || [], newScalar.astNode?.directives || [], {
     onAdded(directive) {
       addChange(directiveUsageAdded(Kind.SCALAR_TYPE_DEFINITION, directive, newScalar));

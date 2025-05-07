@@ -21,6 +21,7 @@ export function changesInUnion(
     },
   });
 
+  // TODO: Heshan -> Introduce a mutual option to this function to detect changes in directive usage
   compareLists(oldUnion.astNode?.directives || [], newUnion.astNode?.directives || [], {
     onAdded(directive) {
       addChange(directiveUsageAdded(Kind.UNION_TYPE_DEFINITION, directive, newUnion));

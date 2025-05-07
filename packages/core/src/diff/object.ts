@@ -38,6 +38,7 @@ export function changesInObject(
     },
   });
 
+  // TODO: Heshan -> Introduce a mutual option to this function to detect changes in directive usage
   compareLists(oldType.astNode?.directives || [], newType.astNode?.directives || [], {
     onAdded(directive) {
       addChange(directiveUsageAdded(Kind.OBJECT, directive, newType));

@@ -68,6 +68,7 @@ export function changesInField(
     },
   });
 
+  // TODO: Heshan -> Introduce a mutual option to this function to detect changes in directive usage
   compareLists(oldField.astNode?.directives || [], newField.astNode?.directives || [], {
     onAdded(directive) {
       addChange(
