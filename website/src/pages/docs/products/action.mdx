@@ -151,6 +151,30 @@ Must be used with the `rules` input. Required to apply the custom logic for the
     onUsage: check-usage.js
 ```
 
+### `success-title`
+
+Title to add to the check run in case of a successful run (`Everything looks good` by
+default).
+
+```yaml
+- uses: graphql-hive/graphql-inspector@master
+  with:
+    schema: 'master:schema.graphql'
+    success-title: 'Your schema contains no breaking change!!'
+```
+
+### `failure-title`
+
+Title to add to the check run in case of a failed run (`Something is wrong with your schema` by
+default).
+
+```yaml
+- uses: graphql-hive/graphql-inspector@master
+  with:
+    schema: 'master:schema.graphql'
+    success-title: 'A breaking change was found in the schema. If this is expected you can ignore it by adding `approved-breaking-change` to the PR labels'
+```
+
 ## Outputs
 
 Read
