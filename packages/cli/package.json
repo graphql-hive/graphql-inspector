@@ -91,7 +91,7 @@
     "@graphql-inspector/url-loader": "workspace:*",
     "@graphql-inspector/validate-command": "workspace:*",
     "tslib": "2.6.2",
-    "yargs": "17.7.2"
+    "yargs": "18.0.0"
   },
   "publishConfig": {
     "directory": "dist",
