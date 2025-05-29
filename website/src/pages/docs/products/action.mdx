@@ -172,7 +172,7 @@ default).
 - uses: graphql-hive/graphql-inspector@master
   with:
     schema: 'master:schema.graphql'
-    success-title: 'A breaking change was found in the schema. If this is expected you can ignore it by adding `approved-breaking-change` to the PR labels'
+    failure-title: 'A breaking change was found in the schema. If this is expected you can ignore it by adding `approved-breaking-change` to the PR labels'
 ```
 
 ## Outputs
