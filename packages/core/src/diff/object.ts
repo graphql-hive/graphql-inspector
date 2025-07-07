@@ -7,43 +7,44 @@ import { changesInField } from './field.js';
 import { AddChange } from './schema.js';
 
 export function changesInObject(
-  oldType: GraphQLObjectType,
+  oldType: GraphQLObjectType | null,
   newType: GraphQLObjectType,
   addChange: AddChange,
 ) {
-  const oldInterfaces = oldType.getInterfaces();
+  const oldInterfaces = oldType?.getInterfaces() ?? [];
   const newInterfaces = newType.getInterfaces();
 
-  const oldFields = oldType.getFields();
+  const oldFields = oldType?.getFields() ?? {};
   const newFields = newType.getFields();
 
   compareLists(oldInterfaces, newInterfaces, {
     onAdded(i) {
-      addChange(objectTypeInterfaceAdded(i, newType));
+      addChange(objectTypeInterfaceAdded(i, newType, oldType === null));
     },
     onRemoved(i) {
-      addChange(objectTypeInterfaceRemoved(i, oldType));
+      addChange(objectTypeInterfaceRemoved(i, oldType!));
     },
   });
 
   compareLists(Object.values(oldFields), Object.values(newFields), {
     onAdded(f) {
       addChange(fieldAdded(newType, f));
+      changesInField(newType, null, f, addChange);
     },
     onRemoved(f) {
-      addChange(fieldRemoved(oldType, f));
+      addChange(fieldRemoved(oldType!, f));
     },
     onMutual(f) {
-      changesInField(oldType, f.oldVersion, f.newVersion, addChange);
+      changesInField(newType, f.oldVersion, f.newVersion, addChange);
     },
   });
 
-  compareLists(oldType.astNode?.directives || [], newType.astNode?.directives || [], {
+  compareLists(oldType?.astNode?.directives || [], newType.astNode?.directives || [], {
     onAdded(directive) {
-      addChange(directiveUsageAdded(Kind.OBJECT, directive, newType));
+      addChange(directiveUsageAdded(Kind.OBJECT, directive, newType, oldType === null));
     },
     onRemoved(directive) {
-      addChange(directiveUsageRemoved(Kind.OBJECT, directive, oldType));
+      addChange(directiveUsageRemoved(Kind.OBJECT, directive, oldType!));
     },
   });
 }

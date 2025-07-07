@@ -1,6 +1,7 @@
 import { buildClientSchema, buildSchema, introspectionFromSchema } from 'graphql';
 import { Change, CriticalityLevel, diff } from '../../src/index.js';
 import { findBestMatch } from '../../src/utils/string.js';
+import { findChangesByPath, findFirstChangeByPath } from '../../utils/testing.js';
 
 test('same schema', async () => {
   const schemaA = buildSchema(/* GraphQL */ `
@@ -820,9 +821,9 @@ test('adding root type should not be breaking', async () => {
   `);
 
   const changes = await diff(schemaA, schemaB);
-  const subscription = changes[0];
+  expect(changes).toHaveLength(2);
 
-  expect(changes).toHaveLength(1);
+  const subscription = findFirstChangeByPath(changes, 'Subscription');
   expect(subscription).toBeDefined();
   expect(subscription!.criticality.level).toEqual(CriticalityLevel.NonBreaking);
 });

@@ -28,6 +28,29 @@ describe('directive-usage', () => {
       expect(change.message).toEqual("Directive 'external' was added to field 'Query.a'");
     });
 
+    test('added directive on added field', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        type Query {
+          _: String
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @external on FIELD_DEFINITION
+
+        type Query {
+          _: String
+          a: String @external
+        }
+      `);
+
+      const changes = await diff(a, b);
+      const change = findFirstChangeByPath(changes, 'Query.a.external');
+
+      expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED');
+      expect(change.message).toEqual("Directive 'external' was added to field 'Query.a'");
+    });
+
     test('removed directive', async () => {
       const a = buildSchema(/* GraphQL */ `
         directive @external on FIELD_DEFINITION

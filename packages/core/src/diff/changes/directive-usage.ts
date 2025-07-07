@@ -138,7 +138,9 @@ export function directiveUsageArgumentDefinitionAddedFromMeta(
 ) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to argument '${args.meta.argumentName}'`,
     },
     type: ChangeType.DirectiveUsageArgumentDefinitionAdded,
@@ -188,7 +190,9 @@ function buildDirectiveUsageInputObjectAddedMessage(
 export function directiveUsageInputObjectAddedFromMeta(args: DirectiveUsageInputObjectAddedChange) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to input object '${args.meta.inputObjectName}'`,
     },
     type: ChangeType.DirectiveUsageInputObjectAdded,
@@ -228,7 +232,9 @@ function buildDirectiveUsageInterfaceAddedMessage(
 export function directiveUsageInterfaceAddedFromMeta(args: DirectiveUsageInterfaceAddedChange) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to interface '${args.meta.interfaceName}'`,
     },
     type: ChangeType.DirectiveUsageInterfaceAdded,
@@ -268,7 +274,9 @@ export function directiveUsageInputFieldDefinitionAddedFromMeta(
 ) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to input field '${args.meta.inputFieldName}'`,
     },
     type: ChangeType.DirectiveUsageInputFieldDefinitionAdded,
@@ -314,7 +322,9 @@ function buildDirectiveUsageObjectAddedMessage(
 export function directiveUsageObjectAddedFromMeta(args: DirectiveUsageObjectAddedChange) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to object '${args.meta.objectName}'`,
     },
     type: ChangeType.DirectiveUsageObjectAdded,
@@ -350,7 +360,9 @@ function buildDirectiveUsageEnumAddedMessage(args: DirectiveUsageEnumAddedChange
 export function directiveUsageEnumAddedFromMeta(args: DirectiveUsageEnumAddedChange) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to enum '${args.meta.enumName}'`,
     },
     type: ChangeType.DirectiveUsageEnumAdded,
@@ -390,7 +402,9 @@ export function directiveUsageFieldDefinitionAddedFromMeta(
 ) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to field '${args.meta.fieldName}'`,
     },
     type: ChangeType.DirectiveUsageFieldDefinitionAdded,
@@ -430,7 +444,9 @@ function buildDirectiveUsageEnumValueAddedMessage(
 export function directiveUsageEnumValueAddedFromMeta(args: DirectiveUsageEnumValueAddedChange) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to enum value '${args.meta.enumName}.${args.meta.enumValueName}'`,
     },
     type: ChangeType.DirectiveUsageEnumValueAdded,
@@ -468,7 +484,9 @@ function buildDirectiveUsageSchemaAddedMessage(
 export function directiveUsageSchemaAddedFromMeta(args: DirectiveUsageSchemaAddedChange) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to schema '${args.meta.schemaTypeName}'`,
     },
     type: ChangeType.DirectiveUsageSchemaAdded,
@@ -506,7 +524,9 @@ function buildDirectiveUsageScalarAddedMessage(
 export function directiveUsageScalarAddedFromMeta(args: DirectiveUsageScalarAddedChange) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to scalar '${args.meta.scalarName}'`,
     },
     type: ChangeType.DirectiveUsageScalarAdded,
@@ -544,7 +564,9 @@ function buildDirectiveUsageUnionMemberAddedMessage(
 export function directiveUsageUnionMemberAddedFromMeta(args: DirectiveUsageUnionMemberAddedChange) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to union member '${args.meta.unionName}.${args.meta.addedUnionMemberTypeName}'`,
     },
     type: ChangeType.DirectiveUsageUnionMemberAdded,
@@ -579,6 +601,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
   kind: K,
   directive: ConstDirectiveNode,
   payload: KindToPayload[K]['input'],
+  addedToNewType: boolean,
 ): Change {
   if (isOfKind(kind, Kind.ARGUMENT, payload)) {
     return directiveUsageArgumentDefinitionAddedFromMeta({
@@ -588,6 +611,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         argumentName: payload.argument.name,
         fieldName: payload.field.name,
         typeName: payload.type.name,
+        addedToNewType,
       },
     });
   }
@@ -598,6 +622,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         addedDirectiveName: directive.name.value,
         inputFieldName: payload.field.name,
         inputObjectName: payload.type.name,
+        addedToNewType,
       },
     });
   }
@@ -610,6 +635,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         addedInputFieldType: payload.name,
         inputObjectName: payload.name,
         isAddedInputFieldTypeNullable: kind === Kind.INPUT_VALUE_DEFINITION,
+        addedToNewType,
       },
     });
   }
@@ -619,6 +645,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
       meta: {
         addedDirectiveName: directive.name.value,
         interfaceName: payload.name,
+        addedToNewType,
       },
     });
   }
@@ -628,6 +655,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
       meta: {
         objectName: payload.name,
         addedDirectiveName: directive.name.value,
+        addedToNewType,
       },
     });
   }
@@ -637,6 +665,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
       meta: {
         enumName: payload.name,
         addedDirectiveName: directive.name.value,
+        addedToNewType,
       },
     });
   }
@@ -647,6 +676,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         addedDirectiveName: directive.name.value,
         fieldName: payload.field.name,
         typeName: payload.parentType.name,
+        addedToNewType,
       },
     });
   }
@@ -657,6 +687,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         addedDirectiveName: directive.name.value,
         addedUnionMemberTypeName: payload.name,
         unionName: payload.name,
+        addedToNewType,
       },
     });
   }
@@ -667,6 +698,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         enumName: payload.type.name,
         enumValueName: payload.value.name,
         addedDirectiveName: directive.name.value,
+        addedToNewType,
       },
     });
   }
@@ -676,6 +708,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
       meta: {
         addedDirectiveName: directive.name.value,
         schemaTypeName: payload.getQueryType()?.name || '',
+        addedToNewType,
       },
     });
   }
@@ -685,6 +718,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
       meta: {
         scalarName: payload.name,
         addedDirectiveName: directive.name.value,
+        addedToNewType,
       },
     });
   }

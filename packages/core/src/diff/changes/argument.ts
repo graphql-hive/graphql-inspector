@@ -33,7 +33,7 @@ export function fieldArgumentDescriptionChangedFromMeta(
 export function fieldArgumentDescriptionChanged(
   type: GraphQLObjectType | GraphQLInterfaceType,
   field: GraphQLField<any, any, any>,
-  oldArg: GraphQLArgument,
+  oldArg: GraphQLArgument | null,
   newArg: GraphQLArgument,
 ): Change<typeof ChangeType.FieldArgumentDescriptionChanged> {
   return fieldArgumentDescriptionChangedFromMeta({
@@ -41,8 +41,8 @@ export function fieldArgumentDescriptionChanged(
     meta: {
       typeName: type.name,
       fieldName: field.name,
-      argumentName: oldArg.name,
-      oldDescription: oldArg.description ?? null,
+      argumentName: newArg.name,
+      oldDescription: oldArg?.description ?? null,
       newDescription: newArg.description ?? null,
     },
   });
@@ -75,7 +75,7 @@ export function fieldArgumentDefaultChangedFromMeta(args: FieldArgumentDefaultCh
 export function fieldArgumentDefaultChanged(
   type: GraphQLObjectType | GraphQLInterfaceType,
   field: GraphQLField<any, any, any>,
-  oldArg: GraphQLArgument,
+  oldArg: GraphQLArgument | null,
   newArg: GraphQLArgument,
 ): Change<typeof ChangeType.FieldArgumentDefaultChanged> {
   const meta: FieldArgumentDefaultChangedChange['meta'] = {
@@ -84,7 +84,7 @@ export function fieldArgumentDefaultChanged(
     argumentName: newArg.name,
   };
 
-  if (oldArg.defaultValue !== undefined) {
+  if (oldArg?.defaultValue !== undefined) {
     meta.oldDefaultValue = safeString(oldArg.defaultValue);
   }
   if (newArg.defaultValue !== undefined) {
@@ -127,7 +127,7 @@ export function fieldArgumentTypeChangedFromMeta(args: FieldArgumentTypeChangedC
 export function fieldArgumentTypeChanged(
   type: GraphQLObjectType | GraphQLInterfaceType,
   field: GraphQLField<any, any, any>,
-  oldArg: GraphQLArgument,
+  oldArg: GraphQLArgument | null,
   newArg: GraphQLArgument,
 ): Change<typeof ChangeType.FieldArgumentTypeChanged> {
   return fieldArgumentTypeChangedFromMeta({
@@ -136,9 +136,9 @@ export function fieldArgumentTypeChanged(
       typeName: type.name,
       fieldName: field.name,
       argumentName: newArg.name,
-      oldArgumentType: oldArg.type.toString(),
+      oldArgumentType: oldArg?.type.toString() ?? '',
       newArgumentType: newArg.type.toString(),
-      isSafeArgumentTypeChange: safeChangeForInputValue(oldArg.type, newArg.type),
+      isSafeArgumentTypeChange: !oldArg || safeChangeForInputValue(oldArg.type, newArg.type),
     },
   });
 }

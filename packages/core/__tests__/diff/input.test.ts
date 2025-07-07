@@ -1,6 +1,6 @@
 import { buildSchema } from 'graphql';
 import { CriticalityLevel, diff, DiffRule } from '../../src/index.js';
-import { findFirstChangeByPath } from '../../utils/testing.js';
+import { findChangesByPath, findFirstChangeByPath } from '../../utils/testing.js';
 
 describe('input', () => {
   describe('fields', () => {
@@ -38,6 +38,61 @@ describe('input', () => {
         "Input field 'd' of type 'String' was added to input object type 'Foo'",
       );
     });
+
+    test('added with a default value', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        input Foo {
+          a: String!
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        input Foo {
+          a: String!
+          b: String! = "B"
+        }
+      `);
+
+      const change = findFirstChangeByPath(await diff(a, b), 'Foo.b');
+      expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
+      expect(change.type).toEqual('INPUT_FIELD_ADDED');
+      expect(change.meta).toMatchObject({
+        addedFieldDefault: '"B"',
+        addedInputFieldName: 'b',
+        addedInputFieldType: 'String!',
+        addedToNewType: false,
+        inputName: 'Foo',
+        isAddedInputFieldTypeNullable: false,
+      });
+      expect(change.message).toEqual(
+        `Input field 'b' of type 'String!' with default value '"B"' was added to input object type 'Foo'`,
+      );
+    });
+
+    test('added to an added input', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        type Query {
+          _: String
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        type Query {
+          _: String
+        }
+
+        input Foo {
+          a: String!
+        }
+      `);
+
+      const change = findFirstChangeByPath(await diff(a, b), 'Foo.a');
+
+      expect(change.type).toEqual('INPUT_FIELD_ADDED');
+      expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      expect(change.message).toEqual(
+        "Input field 'a' of type 'String!' was added to input object type 'Foo'",
+      );
+    });
+
     test('removed', async () => {
       const a = buildSchema(/* GraphQL */ `
         input Foo {

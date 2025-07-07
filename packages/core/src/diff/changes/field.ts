@@ -5,6 +5,7 @@ import {
   GraphQLObjectType,
   isInterfaceType,
   isNonNullType,
+  print,
 } from 'graphql';
 import { safeChangeForField } from '../../utils/graphql.js';
 import {
@@ -90,6 +91,7 @@ export function fieldAdded(
       typeName: type.name,
       addedFieldName: field.name,
       typeType: entity,
+      addedFieldReturnType: field.astNode?.type ? print(field.astNode?.type) : '',
     },
   });
 }
@@ -210,6 +212,7 @@ export function fieldDeprecationAdded(
     meta: {
       typeName: type.name,
       fieldName: field.name,
+      deprecationReason: field.deprecationReason ?? '',
     },
   });
 }
@@ -218,6 +221,7 @@ export function fieldDeprecationRemovedFromMeta(args: FieldDeprecationRemovedCha
   return {
     type: ChangeType.FieldDeprecationRemoved,
     criticality: {
+      // @todo: Add a reason for why is this dangerous... Why is it??
       level: CriticalityLevel.Dangerous,
     },
     message: `Field '${args.meta.typeName}.${args.meta.fieldName}' is no longer deprecated`,

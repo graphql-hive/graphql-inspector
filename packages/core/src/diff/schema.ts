@@ -53,6 +53,7 @@ export function diffSchema(oldSchema: GraphQLSchema, newSchema: GraphQLSchema): 
     {
       onAdded(type) {
         addChange(typeAdded(type));
+        changesInType(null, type, addChange);
       },
       onRemoved(type) {
         addChange(typeRemoved(type));
@@ -66,6 +67,7 @@ export function diffSchema(oldSchema: GraphQLSchema, newSchema: GraphQLSchema): 
   compareLists(oldSchema.getDirectives(), newSchema.getDirectives(), {
     onAdded(directive) {
       addChange(directiveAdded(directive));
+      changesInDirective(null, directive, addChange);
     },
     onRemoved(directive) {
       addChange(directiveRemoved(directive));
@@ -77,7 +79,7 @@ export function diffSchema(oldSchema: GraphQLSchema, newSchema: GraphQLSchema): 
 
   compareLists(oldSchema.astNode?.directives || [], newSchema.astNode?.directives || [], {
     onAdded(directive) {
-      addChange(directiveUsageAdded(Kind.SCHEMA_DEFINITION, directive, newSchema));
+      addChange(directiveUsageAdded(Kind.SCHEMA_DEFINITION, directive, newSchema, false));
     },
     onRemoved(directive) {
       addChange(directiveUsageRemoved(Kind.SCHEMA_DEFINITION, directive, oldSchema));
@@ -123,30 +125,34 @@ function changesInSchema(oldSchema: GraphQLSchema, newSchema: GraphQLSchema, add
   }
 }
 
-function changesInType(oldType: GraphQLNamedType, newType: GraphQLNamedType, addChange: AddChange) {
-  if (isEnumType(oldType) && isEnumType(newType)) {
+function changesInType(
+  oldType: GraphQLNamedType | null,
+  newType: GraphQLNamedType,
+  addChange: AddChange,
+) {
+  if ((oldType === null || isEnumType(oldType)) && isEnumType(newType)) {
     changesInEnum(oldType, newType, addChange);
-  } else if (isUnionType(oldType) && isUnionType(newType)) {
+  } else if ((oldType === null || isUnionType(oldType)) && isUnionType(newType)) {
     changesInUnion(oldType, newType, addChange);
-  } else if (isInputObjectType(oldType) && isInputObjectType(newType)) {
+  } else if ((oldType === null || isInputObjectType(oldType)) && isInputObjectType(newType)) {
     changesInInputObject(oldType, newType, addChange);
-  } else if (isObjectType(oldType) && isObjectType(newType)) {
+  } else if ((oldType === null || isObjectType(oldType)) && isObjectType(newType)) {
     changesInObject(oldType, newType, addChange);
-  } else if (isInterfaceType(oldType) && isInterfaceType(newType)) {
+  } else if ((oldType === null || isInterfaceType(oldType)) && isInterfaceType(newType)) {
     changesInInterface(oldType, newType, addChange);
-  } else if (isScalarType(oldType) && isScalarType(newType)) {
+  } else if ((oldType === null || isScalarType(oldType)) && isScalarType(newType)) {
     changesInScalar(oldType, newType, addChange);
   } else {
     addChange(typeKindChanged(oldType, newType));
   }
 
-  if (isNotEqual(oldType.description, newType.description)) {
-    if (isVoid(oldType.description)) {
+  if (isNotEqual(oldType?.description, newType.description)) {
+    if (isVoid(oldType?.description)) {
       addChange(typeDescriptionAdded(newType));
-    } else if (isVoid(newType.description)) {
+    } else if (oldType && isVoid(newType.description)) {
       addChange(typeDescriptionRemoved(oldType));
     } else {
-      addChange(typeDescriptionChanged(oldType, newType));
+      addChange(typeDescriptionChanged(oldType!, newType));
     }
   }
 }

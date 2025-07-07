@@ -3,6 +3,54 @@ import { CriticalityLevel, diff, DiffRule } from '../../src/index.js';
 import { findFirstChangeByPath } from '../../utils/testing.js';
 
 describe('enum', () => {
+  test('added', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      type Query {
+        fieldA: String
+      }
+    `);
+
+    const b = buildSchema(/* GraphQL */ `
+      type Query {
+        fieldA: String
+      }
+
+      enum enumA {
+        """
+        A is the first letter in the alphabet
+        """
+        A
+        B
+      }
+    `);
+
+    const changes = await diff(a, b);
+    expect(changes.length).toEqual(4);
+
+    {
+      const change = findFirstChangeByPath(changes, 'enumA');
+      expect(change.meta).toMatchObject({
+        addedTypeKind: 'EnumTypeDefinition',
+        addedTypeName: 'enumA',
+      });
+      expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      expect(change.criticality.reason).not.toBeDefined();
+      expect(change.message).toEqual(`Type 'enumA' was added`);
+    }
+
+    {
+      const change = findFirstChangeByPath(changes, 'enumA.A');
+      expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      expect(change.criticality.reason).not.toBeDefined();
+      expect(change.message).toEqual(`Enum value 'A' was added to enum 'enumA'`);
+      expect(change.meta).toMatchObject({
+        addedEnumValueName: 'A',
+        enumName: 'enumA',
+        addedToNewType: true,
+      });
+    }
+  });
+
   test('value added', async () => {
     const a = buildSchema(/* GraphQL */ `
       type Query {

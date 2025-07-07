@@ -20,30 +20,30 @@ import { AddChange } from './schema.js';
 
 export function changesInField(
   type: GraphQLObjectType | GraphQLInterfaceType,
-  oldField: GraphQLField<any, any>,
+  oldField: GraphQLField<any, any> | null,
   newField: GraphQLField<any, any>,
   addChange: AddChange,
 ) {
-  if (isNotEqual(oldField.description, newField.description)) {
-    if (isVoid(oldField.description)) {
+  if (isNotEqual(oldField?.description, newField.description)) {
+    if (isVoid(oldField?.description)) {
       addChange(fieldDescriptionAdded(type, newField));
     } else if (isVoid(newField.description)) {
-      addChange(fieldDescriptionRemoved(type, oldField));
+      addChange(fieldDescriptionRemoved(type, oldField!));
     } else {
-      addChange(fieldDescriptionChanged(type, oldField, newField));
+      addChange(fieldDescriptionChanged(type, oldField!, newField));
     }
   }
 
-  if (isNotEqual(isDeprecated(oldField), isDeprecated(newField))) {
+  if (!isVoid(oldField) && isNotEqual(isDeprecated(oldField), isDeprecated(newField))) {
     if (isDeprecated(newField)) {
       addChange(fieldDeprecationAdded(type, newField));
     } else {
       addChange(fieldDeprecationRemoved(type, oldField));
     }
-  }
-
-  if (isNotEqual(oldField.deprecationReason, newField.deprecationReason)) {
-    if (isVoid(oldField.deprecationReason)) {
+  } else if (isVoid(oldField) && isDeprecated(newField)) {
+    addChange(fieldDeprecationAdded(type, newField));
+  } else if (isNotEqual(oldField?.deprecationReason, newField.deprecationReason)) {
+    if (isVoid(oldField?.deprecationReason)) {
       addChange(fieldDeprecationReasonAdded(type, newField));
     } else if (isVoid(newField.deprecationReason)) {
       addChange(fieldDeprecationReasonRemoved(type, oldField));
@@ -52,36 +52,41 @@ export function changesInField(
     }
   }
 
-  if (isNotEqual(oldField.type.toString(), newField.type.toString())) {
-    addChange(fieldTypeChanged(type, oldField, newField));
+  if (!isVoid(oldField) && isNotEqual(oldField!.type.toString(), newField.type.toString())) {
+    addChange(fieldTypeChanged(type, oldField!, newField));
   }
 
-  compareLists(oldField.args, newField.args, {
+  compareLists(oldField?.args ?? [], newField.args, {
     onAdded(arg) {
       addChange(fieldArgumentAdded(type, newField, arg));
     },
     onRemoved(arg) {
-      addChange(fieldArgumentRemoved(type, oldField, arg));
+      addChange(fieldArgumentRemoved(type, newField, arg));
     },
     onMutual(arg) {
-      changesInArgument(type, oldField, arg.oldVersion, arg.newVersion, addChange);
+      changesInArgument(type, newField, arg.oldVersion, arg.newVersion, addChange);
     },
   });
 
-  compareLists(oldField.astNode?.directives || [], newField.astNode?.directives || [], {
+  compareLists(oldField?.astNode?.directives || [], newField.astNode?.directives || [], {
     onAdded(directive) {
       addChange(
-        directiveUsageAdded(Kind.FIELD_DEFINITION, directive, {
-          parentType: type,
-          field: newField,
-        }),
+        directiveUsageAdded(
+          Kind.FIELD_DEFINITION,
+          directive,
+          {
+            parentType: type,
+            field: newField,
+          },
+          oldField === null,
+        ),
       );
     },
     onRemoved(arg) {
       addChange(
         directiveUsageRemoved(Kind.FIELD_DEFINITION, arg, {
           parentType: type,
-          field: oldField,
+          field: oldField!,
         }),
       );
     },

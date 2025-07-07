@@ -5,28 +5,30 @@ import { unionMemberAdded, unionMemberRemoved } from './changes/union.js';
 import { AddChange } from './schema.js';
 
 export function changesInUnion(
-  oldUnion: GraphQLUnionType,
+  oldUnion: GraphQLUnionType | null,
   newUnion: GraphQLUnionType,
   addChange: AddChange,
 ) {
-  const oldTypes = oldUnion.getTypes();
+  const oldTypes = oldUnion?.getTypes() ?? [];
   const newTypes = newUnion.getTypes();
 
   compareLists(oldTypes, newTypes, {
     onAdded(t) {
-      addChange(unionMemberAdded(newUnion, t));
+      addChange(unionMemberAdded(newUnion, t, oldUnion === null));
     },
     onRemoved(t) {
-      addChange(unionMemberRemoved(oldUnion, t));
+      addChange(unionMemberRemoved(oldUnion!, t));
     },
   });
 
-  compareLists(oldUnion.astNode?.directives || [], newUnion.astNode?.directives || [], {
+  compareLists(oldUnion?.astNode?.directives || [], newUnion.astNode?.directives || [], {
     onAdded(directive) {
-      addChange(directiveUsageAdded(Kind.UNION_TYPE_DEFINITION, directive, newUnion));
+      addChange(
+        directiveUsageAdded(Kind.UNION_TYPE_DEFINITION, directive, newUnion, oldUnion === null),
+      );
     },
     onRemoved(directive) {
-      addChange(directiveUsageRemoved(Kind.UNION_TYPE_DEFINITION, directive, oldUnion));
+      addChange(directiveUsageRemoved(Kind.UNION_TYPE_DEFINITION, directive, oldUnion!));
     },
   });
 }

@@ -1,3 +1,5 @@
+import { Kind } from 'graphql';
+
 export enum CriticalityLevel {
   Breaking = 'BREAKING',
   NonBreaking = 'NON_BREAKING',
@@ -193,6 +195,7 @@ export type DirectiveArgumentAddedChange = {
     directiveName: string;
     addedDirectiveArgumentName: string;
     addedDirectiveArgumentTypeIsNonNull: boolean;
+    addedToNewDirective: boolean;
   };
 };
 
@@ -252,6 +255,7 @@ export type EnumValueAddedChange = {
   meta: {
     enumName: string;
     addedEnumValueName: string;
+    addedToNewType: boolean;
   };
 };
 
@@ -311,6 +315,7 @@ export type FieldAddedChange = {
     typeName: string;
     addedFieldName: string;
     typeType: string;
+    addedFieldReturnType: string;
   };
 };
 
@@ -346,6 +351,7 @@ export type FieldDeprecationAddedChange = {
   meta: {
     typeName: string;
     fieldName: string;
+    deprecationReason: string;
   };
 };
 
@@ -401,6 +407,7 @@ export type DirectiveUsageUnionMemberAddedChange = {
     unionName: string;
     addedUnionMemberTypeName: string;
     addedDirectiveName: string;
+    addedToNewType: boolean;
   };
 };
 
@@ -453,6 +460,8 @@ export type InputFieldAddedChange = {
     addedInputFieldName: string;
     isAddedInputFieldTypeNullable: boolean;
     addedInputFieldType: string;
+    addedFieldDefault?: string;
+    addedToNewType: boolean;
   };
 };
 
@@ -512,6 +521,7 @@ export type ObjectTypeInterfaceAddedChange = {
   meta: {
     objectTypeName: string;
     addedInterfaceName: string;
+    addedToNewType: boolean;
   };
 };
 
@@ -558,11 +568,26 @@ export type TypeRemovedChange = {
   };
 };
 
+type TypeAddedMeta<K extends Kind> = {
+  addedTypeName: string;
+  addedTypeKind: K;
+};
+
+type InputAddedMeta = TypeAddedMeta<Kind.INPUT_OBJECT_TYPE_DEFINITION> & {
+  addedTypeIsOneOf: boolean;
+};
+
 export type TypeAddedChange = {
   type: typeof ChangeType.TypeAdded;
-  meta: {
-    addedTypeName: string;
-  };
+  meta:
+    | InputAddedMeta
+    | TypeAddedMeta<
+        | Kind.ENUM_TYPE_DEFINITION
+        | Kind.OBJECT_TYPE_DEFINITION
+        | Kind.INTERFACE_TYPE_DEFINITION
+        | Kind.UNION_TYPE_DEFINITION
+        | Kind.SCALAR_TYPE_DEFINITION
+      >;
 };
 
 export type TypeKindChangedChange = {
@@ -614,6 +639,7 @@ export type UnionMemberAddedChange = {
   meta: {
     unionName: string;
     addedUnionMemberTypeName: string;
+    addedToNewType: boolean;
   };
 };
 
@@ -624,6 +650,7 @@ export type DirectiveUsageEnumAddedChange = {
   meta: {
     enumName: string;
     addedDirectiveName: string;
+    addedToNewType: boolean;
   };
 };
 
@@ -641,6 +668,7 @@ export type DirectiveUsageEnumValueAddedChange = {
     enumName: string;
     enumValueName: string;
     addedDirectiveName: string;
+    addedToNewType: boolean;
   };
 };
 
@@ -672,6 +700,7 @@ export type DirectiveUsageInputObjectAddedChange = {
     isAddedInputFieldTypeNullable: boolean;
     addedInputFieldType: string;
     addedDirectiveName: string;
+    addedToNewType: boolean;
   };
 };
 
@@ -681,6 +710,7 @@ export type DirectiveUsageInputFieldDefinitionAddedChange = {
     inputObjectName: string;
     inputFieldName: string;
     addedDirectiveName: string;
+    addedToNewType: boolean;
   };
 };
 
@@ -716,6 +746,7 @@ export type DirectiveUsageScalarAddedChange = {
   meta: {
     scalarName: string;
     addedDirectiveName: string;
+    addedToNewType: boolean;
   };
 };
 
@@ -732,6 +763,7 @@ export type DirectiveUsageObjectAddedChange = {
   meta: {
     objectName: string;
     addedDirectiveName: string;
+    addedToNewType: boolean;
   };
 };
 
@@ -748,6 +780,7 @@ export type DirectiveUsageInterfaceAddedChange = {
   meta: {
     interfaceName: string;
     addedDirectiveName: string;
+    addedToNewType: boolean;
   };
 };
 
@@ -756,6 +789,7 @@ export type DirectiveUsageSchemaAddedChange = {
   meta: {
     addedDirectiveName: string;
     schemaTypeName: string;
+    addedToNewType: boolean;
   };
 };
 
@@ -773,6 +807,7 @@ export type DirectiveUsageFieldDefinitionAddedChange = {
     typeName: string;
     fieldName: string;
     addedDirectiveName: string;
+    addedToNewType: boolean;
   };
 };
 
@@ -792,6 +827,7 @@ export type DirectiveUsageArgumentDefinitionChange = {
     fieldName: string;
     argumentName: string;
     addedDirectiveName: string;
+    addedToNewType: boolean;
   };
 };
 

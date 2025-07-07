@@ -1,4 +1,12 @@
-import { GraphQLNamedType } from 'graphql';
+import {
+  isEnumType,
+  isInputObjectType,
+  isInterfaceType,
+  isObjectType,
+  isUnionType,
+  Kind,
+  type GraphQLNamedType,
+} from 'graphql';
 import { getKind } from '../../utils/graphql.js';
 import {
   Change,
@@ -53,12 +61,44 @@ export function typeAddedFromMeta(args: TypeAddedChange) {
   } as const;
 }
 
+function addedTypeMeta(type: GraphQLNamedType): TypeAddedChange['meta'] {
+  if (isEnumType(type)) {
+    return {
+      addedTypeKind: Kind.ENUM_TYPE_DEFINITION,
+      addedTypeName: type.name,
+    };
+  }
+  if (isObjectType(type) || isInterfaceType(type)) {
+    return {
+      addedTypeKind: getKind(type) as any as
+        | Kind.INTERFACE_TYPE_DEFINITION
+        | Kind.OBJECT_TYPE_DEFINITION,
+      addedTypeName: type.name,
+    };
+  }
+  if (isUnionType(type)) {
+    return {
+      addedTypeKind: Kind.UNION_TYPE_DEFINITION,
+      addedTypeName: type.name,
+    };
+  }
+  if (isInputObjectType(type)) {
+    return {
+      addedTypeKind: Kind.INPUT_OBJECT_TYPE_DEFINITION,
+      addedTypeIsOneOf: type.isOneOf,
+      addedTypeName: type.name,
+    };
+  }
+  return {
+    addedTypeKind: getKind(type) as any as Kind.SCALAR_TYPE_DEFINITION,
+    addedTypeName: type.name,
+  };
+}
+
 export function typeAdded(type: GraphQLNamedType): Change<typeof ChangeType.TypeAdded> {
   return typeAddedFromMeta({
     type: ChangeType.TypeAdded,
-    meta: {
-      addedTypeName: type.name,
-    },
+    meta: addedTypeMeta(type),
   });
 }
 
@@ -80,15 +120,15 @@ export function typeKindChangedFromMeta(args: TypeKindChangedChange) {
 }
 
 export function typeKindChanged(
-  oldType: GraphQLNamedType,
+  oldType: GraphQLNamedType | null,
   newType: GraphQLNamedType,
 ): Change<typeof ChangeType.TypeKindChanged> {
   return typeKindChangedFromMeta({
     type: ChangeType.TypeKindChanged,
     meta: {
-      typeName: oldType.name,
+      typeName: newType.name,
       newTypeKind: String(getKind(newType)),
-      oldTypeKind: String(getKind(oldType)),
+      oldTypeKind: oldType ? String(getKind(oldType)) : '',
     },
   });
 }

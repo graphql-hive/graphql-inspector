@@ -45,7 +45,7 @@ export function isNotEqual<T>(a: T, b: T): boolean {
   return !isEqual(a, b);
 }
 
-export function isVoid<T>(a: T): boolean {
+export function isVoid<T>(a: T): a is T & (null | undefined) {
   return typeof a === 'undefined' || a === null;
 }
 
@@ -67,7 +67,7 @@ export function compareLists<T extends { name: string | NameNode }>(
   callbacks?: {
     onAdded?(t: T): void;
     onRemoved?(t: T): void;
-    onMutual?(t: { newVersion: T; oldVersion: T }): void;
+    onMutual?(t: { newVersion: T; oldVersion: T | null }): void;
   },
 ) {
   const oldMap = keyMap(oldList, ({ name }) => extractName(name));

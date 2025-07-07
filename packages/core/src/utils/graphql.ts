@@ -58,7 +58,7 @@ export function safeChangeForInputValue(
   newType: GraphQLInputType,
 ): boolean {
   if (!isWrappingType(oldType) && !isWrappingType(newType)) {
-    return oldType.toString() === newType.toString();
+    return oldType?.toString() === newType.toString();
   }
 
   if (isListType(oldType) && isListType(newType)) {

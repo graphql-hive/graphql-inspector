@@ -15,7 +15,7 @@ export function objectTypeInterfaceAddedFromMeta(args: ObjectTypeInterfaceAddedC
   return {
     type: ChangeType.ObjectTypeInterfaceAdded,
     criticality: {
-      level: CriticalityLevel.Dangerous,
+      level: args.meta.addedToNewType ? CriticalityLevel.NonBreaking : CriticalityLevel.Dangerous,
       reason:
         'Adding an interface to an object type may break existing clients that were not programming defensively against a new possible type.',
     },
@@ -27,13 +27,15 @@ export function objectTypeInterfaceAddedFromMeta(args: ObjectTypeInterfaceAddedC
 
 export function objectTypeInterfaceAdded(
   iface: GraphQLInterfaceType,
-  type: GraphQLObjectType,
+  type: GraphQLObjectType | GraphQLInterfaceType,
+  addedToNewType: boolean,
 ): Change<typeof ChangeType.ObjectTypeInterfaceAdded> {
   return objectTypeInterfaceAddedFromMeta({
     type: ChangeType.ObjectTypeInterfaceAdded,
     meta: {
       objectTypeName: type.name,
       addedInterfaceName: iface.name,
+      addedToNewType,
     },
   });
 }
@@ -58,7 +60,7 @@ export function objectTypeInterfaceRemovedFromMeta(args: ObjectTypeInterfaceRemo
 
 export function objectTypeInterfaceRemoved(
   iface: GraphQLInterfaceType,
-  type: GraphQLObjectType,
+  type: GraphQLObjectType | GraphQLInterfaceType,
 ): Change<typeof ChangeType.ObjectTypeInterfaceRemoved> {
   return objectTypeInterfaceRemovedFromMeta({
     type: ChangeType.ObjectTypeInterfaceRemoved,

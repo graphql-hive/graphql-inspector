@@ -4,16 +4,18 @@ import { directiveUsageAdded, directiveUsageRemoved } from './changes/directive-
 import { AddChange } from './schema.js';
 
 export function changesInScalar(
-  oldScalar: GraphQLScalarType,
+  oldScalar: GraphQLScalarType | null,
   newScalar: GraphQLScalarType,
   addChange: AddChange,
 ) {
-  compareLists(oldScalar.astNode?.directives || [], newScalar.astNode?.directives || [], {
+  compareLists(oldScalar?.astNode?.directives || [], newScalar.astNode?.directives || [], {
     onAdded(directive) {
-      addChange(directiveUsageAdded(Kind.SCALAR_TYPE_DEFINITION, directive, newScalar));
+      addChange(
+        directiveUsageAdded(Kind.SCALAR_TYPE_DEFINITION, directive, newScalar, oldScalar === null),
+      );
     },
     onRemoved(directive) {
-      addChange(directiveUsageRemoved(Kind.SCALAR_TYPE_DEFINITION, directive, oldScalar));
+      addChange(directiveUsageRemoved(Kind.SCALAR_TYPE_DEFINITION, directive, oldScalar!));
     },
   });
 }

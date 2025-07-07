@@ -1,4 +1,5 @@
 import { GraphQLInputField, GraphQLInputObjectType, isNonNullType } from 'graphql';
+import { isVoid } from '../../utils/compare.js';
 import { safeChangeForInputValue } from '../../utils/graphql.js';
 import { isDeprecated } from '../../utils/is-deprecated.js';
 import { safeString } from '../../utils/string.js';
@@ -50,21 +51,25 @@ export function inputFieldRemoved(
 }
 
 export function buildInputFieldAddedMessage(args: InputFieldAddedChange['meta']) {
-  return `Input field '${args.addedInputFieldName}' of type '${args.addedInputFieldType}' was added to input object type '${args.inputName}'`;
+  return `Input field '${args.addedInputFieldName}' of type '${args.addedInputFieldType}'${args.addedFieldDefault ? ` with default value '${args.addedFieldDefault}'` : ''} was added to input object type '${args.inputName}'`;
 }
 
 export function inputFieldAddedFromMeta(args: InputFieldAddedChange) {
   return {
     type: ChangeType.InputFieldAdded,
-    criticality: args.meta.isAddedInputFieldTypeNullable
+    criticality: args.meta.addedToNewType
       ? {
-          level: CriticalityLevel.Dangerous,
+          level: CriticalityLevel.NonBreaking,
         }
-      : {
-          level: CriticalityLevel.Breaking,
-          reason:
-            'Adding a required input field to an existing input object type is a breaking change because it will cause existing uses of this input object type to error.',
-        },
+      : args.meta.isAddedInputFieldTypeNullable || args.meta.addedFieldDefault !== undefined
+        ? {
+            level: CriticalityLevel.Dangerous,
+          }
+        : {
+            level: CriticalityLevel.Breaking,
+            reason:
+              'Adding a required input field to an existing input object type is a breaking change because it will cause existing uses of this input object type to error.',
+          },
     message: buildInputFieldAddedMessage(args.meta),
     meta: args.meta,
     path: [args.meta.inputName, args.meta.addedInputFieldName].join('.'),
@@ -74,6 +79,7 @@ export function inputFieldAddedFromMeta(args: InputFieldAddedChange) {
 export function inputFieldAdded(
   input: GraphQLInputObjectType,
   field: GraphQLInputField,
+  addedToNewType: boolean,
 ): Change<typeof ChangeType.InputFieldAdded> {
   return inputFieldAddedFromMeta({
     type: ChangeType.InputFieldAdded,
@@ -82,6 +88,10 @@ export function inputFieldAdded(
       addedInputFieldName: field.name,
       isAddedInputFieldTypeNullable: !isNonNullType(field.type),
       addedInputFieldType: field.type.toString(),
+      ...(field.defaultValue === undefined
+        ? {}
+        : { addedFieldDefault: safeString(field.defaultValue) }),
+      addedToNewType,
     },
   });
 }
@@ -189,13 +199,14 @@ function buildInputFieldDefaultValueChangedMessage(
 }
 
 export function inputFieldDefaultValueChangedFromMeta(args: InputFieldDefaultValueChangedChange) {
+  const criticality = {
+    level: CriticalityLevel.Dangerous,
+    reason:
+      'Changing the default value for an argument may change the runtime behavior of a field if it was never provided.',
+  };
   return {
     type: ChangeType.InputFieldDefaultValueChanged,
-    criticality: {
-      level: CriticalityLevel.Dangerous,
-      reason:
-        'Changing the default value for an argument may change the runtime behavior of a field if it was never provided.',
-    },
+    criticality,
     message: buildInputFieldDefaultValueChangedMessage(args.meta),
     meta: args.meta,
     path: [args.meta.inputName, args.meta.inputFieldName].join('.'),
@@ -209,7 +220,7 @@ export function inputFieldDefaultValueChanged(
 ): Change<typeof ChangeType.InputFieldDefaultValueChanged> {
   const meta: InputFieldDefaultValueChangedChange['meta'] = {
     inputName: input.name,
-    inputFieldName: oldField.name,
+    inputFieldName: newField.name,
   };
 
   if (oldField.defaultValue !== undefined) {
@@ -256,7 +267,7 @@ export function inputFieldTypeChanged(
     type: ChangeType.InputFieldTypeChanged,
     meta: {
       inputName: input.name,
-      inputFieldName: oldField.name,
+      inputFieldName: newField.name,
       oldInputFieldType: oldField.type.toString(),
       newInputFieldType: newField.type.toString(),
       isInputFieldTypeChangeSafe: safeChangeForInputValue(oldField.type, newField.type),

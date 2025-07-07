@@ -169,24 +169,24 @@ describe('interface', () => {
       const changes = await diff(a, b);
       const change = {
         a: findFirstChangeByPath(changes, 'Foo.a'),
-        b: findChangesByPath(changes, 'Foo.b')[1],
-        c: findChangesByPath(changes, 'Foo.c')[1],
+        b: findFirstChangeByPath(changes, 'Foo.b'),
+        c: findFirstChangeByPath(changes, 'Foo.c'),
       };
 
       // Changed
-      expect(change.a.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.a.type).toEqual('FIELD_DEPRECATION_REASON_CHANGED');
+      expect(change.a.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.a.message).toEqual(
         "Deprecation reason on field 'Foo.a' has changed from 'OLD' to 'NEW'",
       );
       // Removed
-      expect(change.b.criticality.level).toEqual(CriticalityLevel.NonBreaking);
-      expect(change.b.type).toEqual('FIELD_DEPRECATION_REASON_REMOVED');
-      expect(change.b.message).toEqual("Deprecation reason was removed from field 'Foo.b'");
+      expect(change.b.type).toEqual('FIELD_DEPRECATION_REMOVED');
+      expect(change.b.criticality.level).toEqual(CriticalityLevel.Dangerous);
+      expect(change.b.message).toEqual("Field 'Foo.b' is no longer deprecated");
       // Added
+      expect(change.c.type).toEqual('FIELD_DEPRECATION_ADDED');
       expect(change.c.criticality.level).toEqual(CriticalityLevel.NonBreaking);
-      expect(change.c.type).toEqual('FIELD_DEPRECATION_REASON_ADDED');
-      expect(change.c.message).toEqual("Field 'Foo.c' has deprecation reason 'CCC'");
+      expect(change.c.message).toEqual("Field 'Foo.c' is deprecated");
     });
 
     test('deprecation added / removed', async () => {
@@ -217,6 +217,34 @@ describe('interface', () => {
       expect(change.b.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.b.type).toEqual('FIELD_DEPRECATION_ADDED');
       expect(change.b.message).toEqual("Field 'Foo.b' is deprecated");
+    });
+  });
+
+  test('deprecation added w/reason', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      interface Foo {
+        a: String!
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      interface Foo {
+        a: String! @deprecated(reason: "A is the first letter.")
+      }
+    `);
+
+    const changes = await diff(a, b);
+
+    expect(findChangesByPath(changes, 'Foo.a')).toHaveLength(1);
+    const change = findFirstChangeByPath(changes, 'Foo.a');
+
+    // added
+    expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+    expect(change.type).toEqual('FIELD_DEPRECATION_ADDED');
+    expect(change.message).toEqual("Field 'Foo.a' is deprecated");
+    expect(change.meta).toMatchObject({
+      deprecationReason: 'A is the first letter.',
+      fieldName: 'a',
+      typeName: 'Foo',
     });
   });
 });
