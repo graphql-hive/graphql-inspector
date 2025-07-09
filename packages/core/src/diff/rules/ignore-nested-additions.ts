@@ -35,7 +35,7 @@ const additionChangeTypes = new Set([
 const parentPath = (path: string) => {
   const lastDividerIndex = path.lastIndexOf('.');
   return lastDividerIndex === -1 ? path : path.substring(0, lastDividerIndex);
-}
+};
 
 export const ignoreNestedAdditions: Rule = ({ changes }) => {
   // Track which paths contained changes that represent additions to the schema

@@ -109,8 +109,7 @@ describe('ignoreNestedAdditions rule', () => {
         a: String!
       }
 
-      union FooUnion @special(reason: "As a test") =
-        | Foo
+      union FooUnion @special(reason: "As a test") = Foo
     `);
 
     const changes = await diff(a, b, [ignoreNestedAdditions]);
