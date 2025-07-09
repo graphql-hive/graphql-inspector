@@ -432,6 +432,7 @@ export type FieldArgumentAddedChange = {
     addedArgumentType: string;
     hasDefaultValue: boolean;
     isAddedFieldArgumentBreaking: boolean;
+    addedToNewField: boolean;
   };
 };
 

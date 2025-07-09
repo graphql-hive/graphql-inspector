@@ -58,7 +58,7 @@ export function changesInField(
 
   compareLists(oldField?.args ?? [], newField.args, {
     onAdded(arg) {
-      addChange(fieldArgumentAdded(type, newField, arg));
+      addChange(fieldArgumentAdded(type, newField, arg, oldField === null));
     },
     onRemoved(arg) {
       addChange(fieldArgumentRemoved(type, newField, arg));

@@ -377,9 +377,11 @@ export function fieldArgumentAddedFromMeta(args: FieldArgumentAddedChange) {
   return {
     type: ChangeType.FieldArgumentAdded,
     criticality: {
-      level: args.meta.isAddedFieldArgumentBreaking
-        ? CriticalityLevel.Breaking
-        : CriticalityLevel.Dangerous,
+      level: args.meta.addedToNewField
+        ? CriticalityLevel.NonBreaking
+        : args.meta.isAddedFieldArgumentBreaking
+          ? CriticalityLevel.Breaking
+          : CriticalityLevel.Dangerous,
     },
     message: buildFieldArgumentAddedMessage(args.meta),
     meta: args.meta,
@@ -391,6 +393,7 @@ export function fieldArgumentAdded(
   type: GraphQLObjectType | GraphQLInterfaceType,
   field: GraphQLField<any, any, any>,
   arg: GraphQLArgument,
+  addedToNewField: boolean,
 ): Change<typeof ChangeType.FieldArgumentAdded> {
   const isBreaking = isNonNullType(arg.type) && typeof arg.defaultValue === 'undefined';
 
@@ -402,6 +405,7 @@ export function fieldArgumentAdded(
       addedArgumentName: arg.name,
       addedArgumentType: arg.type.toString(),
       hasDefaultValue: arg.defaultValue != null,
+      addedToNewField,
       isAddedFieldArgumentBreaking: isBreaking,
     },
   });
