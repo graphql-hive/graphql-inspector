@@ -75,7 +75,7 @@ describe('ignoreNestedAdditions rule', () => {
     });
   });
 
-  test('added argument on new field', async () => {
+  test('added argument / directive / deprecation / reason on new field', async () => {
     const a = buildSchema(/* GraphQL */ `
       scalar A
       type Foo {
@@ -95,5 +95,51 @@ describe('ignoreNestedAdditions rule', () => {
 
     const added = findFirstChangeByPath(changes, 'Foo.b');
     expect(added.type).toBe(ChangeType.FieldAdded);
+  });
+
+  test('added type / directive / directive argument on new union', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      scalar A
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      scalar A
+      directive @special(reason: String) on UNION
+
+      type Foo {
+        a: String!
+      }
+
+      union FooUnion @special(reason: "As a test") =
+        | Foo
+    `);
+
+    const changes = await diff(a, b, [ignoreNestedAdditions]);
+    expect(changes).toHaveLength(3);
+
+    {
+      const added = findFirstChangeByPath(changes, 'FooUnion');
+      expect(added.type).toBe(ChangeType.TypeAdded);
+    }
+
+    {
+      const added = findFirstChangeByPath(changes, 'Foo');
+      expect(added.type).toBe(ChangeType.TypeAdded);
+    }
+  });
+
+  test('added argument / location / description on new directive', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      scalar A
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      scalar A
+      directive @special(reason: String) on UNION | FIELD_DEFINITION
+    `);
+
+    const changes = await diff(a, b, [ignoreNestedAdditions]);
+    expect(changes).toHaveLength(1);
+
+    const added = findFirstChangeByPath(changes, '@special');
+    expect(added.type).toBe(ChangeType.DirectiveAdded);
   });
 });

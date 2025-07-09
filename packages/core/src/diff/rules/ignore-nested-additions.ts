@@ -32,14 +32,19 @@ const additionChangeTypes = new Set([
   ChangeType.UnionMemberAdded,
 ]);
 
+const parentPath = (path: string) => {
+  const lastDividerIndex = path.lastIndexOf('.');
+  return lastDividerIndex === -1 ? path : path.substring(0, lastDividerIndex);
+}
+
 export const ignoreNestedAdditions: Rule = ({ changes }) => {
   // Track which paths contained changes that represent additions to the schema
   const additionPaths: string[] = [];
 
   const filteredChanges = changes.filter(({ path, type }) => {
     if (path) {
-      const parentPath = path?.substring(0, path.lastIndexOf('.')) ?? '';
-      const matches = additionPaths.filter(matchedPath => matchedPath.includes(parentPath));
+      const parent = parentPath(path);
+      const matches = additionPaths.filter(matchedPath => matchedPath.includes(parent));
       const hasAddedParent = matches.length > 0;
 
       if (additionChangeTypes.has(type)) {
