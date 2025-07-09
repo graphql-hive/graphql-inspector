@@ -1,6 +1,6 @@
 import { buildSchema } from 'graphql';
 import { ignoreNestedAdditions } from '../../../src/diff/rules/index.js';
-import { diff } from '../../../src/index.js';
+import { ChangeType, CriticalityLevel, diff } from '../../../src/index.js';
 import { findFirstChangeByPath } from '../../../utils/testing.js';
 
 describe('ignoreNestedAdditions rule', () => {
@@ -61,9 +61,9 @@ describe('ignoreNestedAdditions rule', () => {
     const changes = await diff(a, b, [ignoreNestedAdditions]);
 
     expect(changes).toHaveLength(1);
-    expect(changes[0]).toMatchInlineSnapshot({
+    expect(changes[0]).toMatchObject({
       criticality: {
-        level: 'NON_BREAKING',
+        level: CriticalityLevel.NonBreaking,
       },
       message: "Type 'B' was added",
       meta: {
@@ -71,7 +71,29 @@ describe('ignoreNestedAdditions rule', () => {
         addedTypeName: 'B',
       },
       path: 'B',
-      type: 'TYPE_ADDED',
+      type: ChangeType.TypeAdded,
     });
+  });
+
+  test('added argument on new field', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      scalar A
+      type Foo {
+        a: String!
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      scalar A
+      type Foo {
+        a: String!
+        b(b: String): String! @deprecated(reason: "As a test")
+      }
+    `);
+
+    const changes = await diff(a, b, [ignoreNestedAdditions]);
+    expect(changes).toHaveLength(1);
+
+    const added = findFirstChangeByPath(changes, 'Foo.b');
+    expect(added.type).toBe(ChangeType.FieldAdded);
   });
 });
