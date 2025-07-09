@@ -130,19 +130,20 @@ function changesInType(
   newType: GraphQLNamedType,
   addChange: AddChange,
 ) {
-  if ((oldType === null || isEnumType(oldType)) && isEnumType(newType)) {
+  if ((isVoid(oldType) || isEnumType(oldType)) && isEnumType(newType)) {
     changesInEnum(oldType, newType, addChange);
-  } else if ((oldType === null || isUnionType(oldType)) && isUnionType(newType)) {
+  } else if ((isVoid(oldType) || isUnionType(oldType)) && isUnionType(newType)) {
     changesInUnion(oldType, newType, addChange);
-  } else if ((oldType === null || isInputObjectType(oldType)) && isInputObjectType(newType)) {
+  } else if ((isVoid(oldType) || isInputObjectType(oldType)) && isInputObjectType(newType)) {
     changesInInputObject(oldType, newType, addChange);
-  } else if ((oldType === null || isObjectType(oldType)) && isObjectType(newType)) {
+  } else if ((isVoid(oldType) || isObjectType(oldType)) && isObjectType(newType)) {
     changesInObject(oldType, newType, addChange);
-  } else if ((oldType === null || isInterfaceType(oldType)) && isInterfaceType(newType)) {
+  } else if ((isVoid(oldType) || isInterfaceType(oldType)) && isInterfaceType(newType)) {
     changesInInterface(oldType, newType, addChange);
-  } else if ((oldType === null || isScalarType(oldType)) && isScalarType(newType)) {
+  } else if ((isVoid(oldType) || isScalarType(oldType)) && isScalarType(newType)) {
     changesInScalar(oldType, newType, addChange);
-  } else {
+  } else if (!isVoid(oldType)) {
+    // no need to call if oldType is void since the type will be captured by the TypeAdded change.
     addChange(typeKindChanged(oldType, newType));
   }
 

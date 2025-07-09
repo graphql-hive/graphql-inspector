@@ -120,7 +120,7 @@ export function typeKindChangedFromMeta(args: TypeKindChangedChange) {
 }
 
 export function typeKindChanged(
-  oldType: GraphQLNamedType | null,
+  oldType: GraphQLNamedType,
   newType: GraphQLNamedType,
 ): Change<typeof ChangeType.TypeKindChanged> {
   return typeKindChangedFromMeta({
@@ -128,7 +128,7 @@ export function typeKindChanged(
     meta: {
       typeName: newType.name,
       newTypeKind: String(getKind(newType)),
-      oldTypeKind: oldType ? String(getKind(oldType)) : '',
+      oldTypeKind: String(getKind(oldType)),
     },
   });
 }
