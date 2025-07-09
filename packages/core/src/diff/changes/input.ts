@@ -1,5 +1,4 @@
 import { GraphQLInputField, GraphQLInputObjectType, isNonNullType } from 'graphql';
-import { isVoid } from '../../utils/compare.js';
 import { safeChangeForInputValue } from '../../utils/graphql.js';
 import { isDeprecated } from '../../utils/is-deprecated.js';
 import { safeString } from '../../utils/string.js';

@@ -37,20 +37,19 @@ export function changesInDirective(
   compareLists(oldDirective?.args ?? [], newDirective.args, {
     onAdded(arg) {
       addChange(directiveArgumentAdded(newDirective, arg, oldDirective === null));
-      changesInDirectiveArgument(newDirective, null, arg, addChange);
     },
     onRemoved(arg) {
       addChange(directiveArgumentRemoved(newDirective, arg));
     },
     onMutual(arg) {
-      changesInDirectiveArgument(newDirective, arg.oldVersion, arg.newVersion, addChange);
+      changesInDirectiveArgument(newDirective, arg.oldVersion!, arg.newVersion, addChange);
     },
   });
 }
 
 function changesInDirectiveArgument(
   directive: GraphQLDirective,
-  oldArg: GraphQLArgument | null,
+  oldArg: GraphQLArgument,
   newArg: GraphQLArgument,
   addChange: AddChange,
 ) {
@@ -62,7 +61,7 @@ function changesInDirectiveArgument(
     addChange(directiveArgumentDefaultValueChanged(directive, oldArg, newArg));
   }
 
-  if (isNotEqual(oldArg?.type.toString(), newArg.type.toString())) {
+  if (isNotEqual(oldArg.type.toString(), newArg.type.toString())) {
     addChange(directiveArgumentTypeChanged(directive, oldArg, newArg));
   }
 }

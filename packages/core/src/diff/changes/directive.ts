@@ -208,7 +208,10 @@ export function directiveArgumentAdded(
     meta: {
       directiveName: directive.name,
       addedDirectiveArgumentName: arg.name,
+      addedDirectiveArgumentType: arg.type.toString(),
+      addedDirectiveDefaultValue: safeString(arg.defaultValue),
       addedDirectiveArgumentTypeIsNonNull: isNonNullType(arg.type),
+      addedDirectiveArgumentDescription: arg.description ?? null,
       addedToNewDirective,
     },
   });
@@ -360,7 +363,7 @@ export function directiveArgumentTypeChangedFromMeta(args: DirectiveArgumentType
 
 export function directiveArgumentTypeChanged(
   directive: GraphQLDirective,
-  oldArg: GraphQLArgument | null,
+  oldArg: GraphQLArgument,
   newArg: GraphQLArgument,
 ): Change<typeof ChangeType.DirectiveArgumentTypeChanged> {
   return directiveArgumentTypeChangedFromMeta({
@@ -370,7 +373,7 @@ export function directiveArgumentTypeChanged(
       directiveArgumentName: newArg.name,
       oldDirectiveArgumentType: oldArg?.type.toString() ?? '',
       newDirectiveArgumentType: newArg.type.toString(),
-      isSafeDirectiveArgumentTypeChange: safeChangeForInputValue(oldArg?.type ?? null, newArg.type),
+      isSafeDirectiveArgumentTypeChange: safeChangeForInputValue(oldArg.type, newArg.type),
     },
   });
 }
