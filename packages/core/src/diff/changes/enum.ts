@@ -79,6 +79,7 @@ export function enumValueAdded(
       enumName: type.name,
       addedEnumValueName: value.name,
       addedToNewType,
+      addedDirectiveDescription: value.description ?? null,
     },
   });
 }

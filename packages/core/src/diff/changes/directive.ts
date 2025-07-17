@@ -70,6 +70,9 @@ export function directiveAdded(
     type: ChangeType.DirectiveAdded,
     meta: {
       addedDirectiveName: directive.name,
+      addedDirectiveDescription: directive.description ?? null,
+      addedDirectiveLocations: directive.locations.map(l => safeString(l)),
+      addedDirectiveRepeatable: directive.isRepeatable,
     },
   });
 }

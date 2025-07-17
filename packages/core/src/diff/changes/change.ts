@@ -161,6 +161,9 @@ export type DirectiveAddedChange = {
   type: typeof ChangeType.DirectiveAdded;
   meta: {
     addedDirectiveName: string;
+    addedDirectiveRepeatable: boolean;
+    addedDirectiveLocations: string[];
+    addedDirectiveDescription: string | null;
   };
 };
 
@@ -259,6 +262,7 @@ export type EnumValueAddedChange = {
     enumName: string;
     addedEnumValueName: string;
     addedToNewType: boolean;
+    addedDirectiveDescription: string | null;
   };
 };
 
