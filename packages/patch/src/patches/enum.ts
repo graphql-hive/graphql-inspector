@@ -13,38 +13,42 @@ import type { PatchConfig } from '../types';
 import { getDeprecatedDirectiveNode, parentPath, upsertArgument } from '../utils.js';
 
 export function enumValueRemoved(
-  removal: Change<typeof ChangeType.EnumValueRemoved>,
+  change: Change<typeof ChangeType.EnumValueRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = removal.path!;
-  const enumNode = nodeByPath.get(parentPath(changedPath)) as
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const enumNode = nodeByPath.get(parentPath(change.path)) as
     | (ASTNode & { values?: EnumValueDefinitionNode[] })
     | undefined;
   if (!enumNode) {
-    handleError(removal, new CoordinateNotFoundError(), config);
+    handleError(change, new CoordinateNotFoundError(), config);
   } else if (enumNode.kind !== Kind.ENUM_TYPE_DEFINITION) {
-    handleError(removal, new KindMismatchError(Kind.ENUM_TYPE_DEFINITION, enumNode.kind), config);
+    handleError(change, new KindMismatchError(Kind.ENUM_TYPE_DEFINITION, enumNode.kind), config);
   } else if (enumNode.values === undefined || enumNode.values.length === 0) {
     handleError(
-      removal,
-      new EnumValueNotFoundError(removal.meta.enumName, removal.meta.removedEnumValueName),
+      change,
+      new EnumValueNotFoundError(change.meta.enumName, change.meta.removedEnumValueName),
       config,
     );
   } else {
     const beforeLength = enumNode.values.length;
     enumNode.values = enumNode.values.filter(
-      f => f.name.value !== removal.meta.removedEnumValueName,
+      f => f.name.value !== change.meta.removedEnumValueName,
     );
     if (beforeLength === enumNode.values.length) {
       handleError(
-        removal,
-        new EnumValueNotFoundError(removal.meta.enumName, removal.meta.removedEnumValueName),
+        change,
+        new EnumValueNotFoundError(change.meta.enumName, change.meta.removedEnumValueName),
         config,
       );
     } else {
       // delete the reference to the removed field.
-      nodeByPath.delete(changedPath);
+      nodeByPath.delete(change.path);
     }
   }
 }
@@ -87,8 +91,12 @@ export function enumValueDeprecationReasonAdded(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const enumValueNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const enumValueNode = nodeByPath.get(change.path);
   if (enumValueNode) {
     if (enumValueNode.kind === Kind.ENUM_VALUE_DEFINITION) {
       const deprecation = getDeprecatedDirectiveNode(enumValueNode);
@@ -98,7 +106,7 @@ export function enumValueDeprecationReasonAdded(
           'reason',
           stringNode(change.meta.addedValueDeprecationReason),
         );
-        nodeByPath.set(`${changedPath}.reason`, argNode);
+        nodeByPath.set(`${change.path}.reason`, argNode);
       } else {
         handleError(change, new CoordinateNotFoundError(), config);
       }
@@ -119,8 +127,12 @@ export function enumValueDeprecationReasonChanged(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const deprecatedNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const deprecatedNode = nodeByPath.get(change.path);
   if (deprecatedNode) {
     if (deprecatedNode.kind === Kind.DIRECTIVE) {
       const reasonArgNode = deprecatedNode.arguments?.find(n => n.name.value === 'reason');
@@ -162,8 +174,12 @@ export function enumValueDescriptionChanged(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const enumValueNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const enumValueNode = nodeByPath.get(change.path);
   if (enumValueNode) {
     if (enumValueNode.kind === Kind.ENUM_VALUE_DEFINITION) {
       // eslint-disable-next-line eqeqeq

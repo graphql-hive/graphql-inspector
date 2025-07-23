@@ -15,8 +15,12 @@ export function typeAdded(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const existing = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const existing = nodeByPath.get(change.path);
   if (existing) {
     handleError(change, new CoordinateAlreadyExistsError(existing.kind), config);
   } else {
@@ -25,34 +29,38 @@ export function typeAdded(
       kind: change.meta.addedTypeKind as TypeDefinitionNode['kind'],
     };
     // @todo is this enough?
-    nodeByPath.set(changedPath, node);
+    nodeByPath.set(change.path, node);
   }
 }
 
 export function typeRemoved(
-  removal: Change<typeof ChangeType.TypeRemoved>,
+  change: Change<typeof ChangeType.TypeRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = removal.path!;
-  const removedNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const removedNode = nodeByPath.get(change.path);
   if (removedNode) {
     if (isTypeDefinitionNode(removedNode)) {
       // delete the reference to the removed field.
       for (const key of nodeByPath.keys()) {
-        if (key.startsWith(changedPath)) {
+        if (key.startsWith(change.path)) {
           nodeByPath.delete(key);
         }
       }
     } else {
       handleError(
-        removal,
+        change,
         new KindMismatchError(Kind.OBJECT_TYPE_DEFINITION, removedNode.kind),
         config,
       );
     }
   } else {
-    handleError(removal, new CoordinateNotFoundError(), config);
+    handleError(change, new CoordinateNotFoundError(), config);
   }
 }
 
@@ -61,8 +69,12 @@ export function typeDescriptionAdded(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const typeNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const typeNode = nodeByPath.get(change.path);
   if (typeNode) {
     if (isTypeDefinitionNode(typeNode)) {
       (typeNode.description as StringValueNode | undefined) = change.meta.addedTypeDescription
@@ -85,8 +97,12 @@ export function typeDescriptionChanged(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const typeNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const typeNode = nodeByPath.get(change.path);
   if (typeNode) {
     if (isTypeDefinitionNode(typeNode)) {
       if (typeNode.description?.value !== change.meta.oldTypeDescription) {
@@ -116,8 +132,12 @@ export function typeDescriptionRemoved(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const typeNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const typeNode = nodeByPath.get(change.path);
   if (typeNode) {
     if (isTypeDefinitionNode(typeNode)) {
       if (typeNode.description?.value !== change.meta.oldTypeDescription) {

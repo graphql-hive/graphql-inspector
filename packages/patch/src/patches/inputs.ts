@@ -15,12 +15,16 @@ export function inputFieldAdded(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const inputFieldPath = change.path!;
-  const existingNode = nodeByPath.get(inputFieldPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const existingNode = nodeByPath.get(change.path);
   if (existingNode) {
     handleError(change, new CoordinateAlreadyExistsError(existingNode.kind), config);
   } else {
-    const typeNode = nodeByPath.get(parentPath(inputFieldPath)) as ASTNode & {
+    const typeNode = nodeByPath.get(parentPath(change.path)) as ASTNode & {
       fields?: InputValueDefinitionNode[];
     };
     if (!typeNode) {
@@ -38,7 +42,7 @@ export function inputFieldAdded(
       typeNode.fields = [...(typeNode.fields ?? []), node];
 
       // add new field to the node set
-      nodeByPath.set(inputFieldPath, node);
+      nodeByPath.set(change.path, node);
     } else {
       handleError(
         change,
@@ -54,10 +58,14 @@ export function inputFieldRemoved(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const inputFieldPath = change.path!;
-  const existingNode = nodeByPath.get(inputFieldPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const existingNode = nodeByPath.get(change.path);
   if (existingNode) {
-    const typeNode = nodeByPath.get(parentPath(inputFieldPath)) as ASTNode & {
+    const typeNode = nodeByPath.get(parentPath(change.path)) as ASTNode & {
       fields?: InputValueDefinitionNode[];
     };
     if (!typeNode) {
@@ -66,7 +74,7 @@ export function inputFieldRemoved(
       typeNode.fields = typeNode.fields?.filter(f => f.name.value !== change.meta.removedFieldName);
 
       // add new field to the node set
-      nodeByPath.delete(inputFieldPath);
+      nodeByPath.delete(change.path);
     } else {
       handleError(
         change,
@@ -84,8 +92,11 @@ export function inputFieldDescriptionAdded(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const inputFieldPath = change.path!;
-  const existingNode = nodeByPath.get(inputFieldPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+  const existingNode = nodeByPath.get(change.path);
   if (existingNode) {
     if (existingNode.kind === Kind.INPUT_VALUE_DEFINITION) {
       (existingNode.description as StringValueNode | undefined) = stringNode(
@@ -108,8 +119,12 @@ export function inputFieldDescriptionRemoved(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const inputFieldPath = change.path!;
-  const existingNode = nodeByPath.get(inputFieldPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const existingNode = nodeByPath.get(change.path);
   if (existingNode) {
     if (existingNode.kind === Kind.INPUT_VALUE_DEFINITION) {
       if (existingNode.description === undefined) {

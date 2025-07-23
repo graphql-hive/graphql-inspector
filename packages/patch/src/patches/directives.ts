@@ -30,8 +30,12 @@ export function directiveAdded(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const changedNode = nodeByPath.get(changedPath);
+  if (change.path === undefined) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const changedNode = nodeByPath.get(change.path);
   if (changedNode) {
     handleError(change, new CoordinateAlreadyExistsError(changedNode.kind), config);
   } else {
@@ -44,7 +48,7 @@ export function directiveAdded(
         ? stringNode(change.meta.addedDirectiveDescription)
         : undefined,
     };
-    nodeByPath.set(changedPath, node);
+    nodeByPath.set(change.path, node);
   }
 }
 
@@ -53,8 +57,12 @@ export function directiveArgumentAdded(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const directiveNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const directiveNode = nodeByPath.get(change.path);
   if (!directiveNode) {
     handleError(change, new CoordinateNotFoundError(), config);
   } else if (directiveNode.kind === Kind.DIRECTIVE_DEFINITION) {
@@ -80,7 +88,7 @@ export function directiveArgumentAdded(
         ...(directiveNode.arguments ?? []),
         node,
       ];
-      nodeByPath.set(`${changedPath}.${change.meta.addedDirectiveArgumentName}`, node);
+      nodeByPath.set(`${change.path}.${change.meta.addedDirectiveArgumentName}`, node);
     }
   } else {
     handleError(
@@ -96,8 +104,12 @@ export function directiveLocationAdded(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const changedNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const changedNode = nodeByPath.get(change.path);
   if (changedNode) {
     if (changedNode.kind === Kind.DIRECTIVE_DEFINITION) {
       if (changedNode.locations.some(l => l.value === change.meta.addedDirectiveLocation)) {
@@ -132,8 +144,12 @@ export function directiveDescriptionChanged(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const directiveNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const directiveNode = nodeByPath.get(change.path);
   if (!directiveNode) {
     handleError(change, new CoordinateNotFoundError(), config);
   } else if (directiveNode.kind === Kind.DIRECTIVE_DEFINITION) {
@@ -167,8 +183,12 @@ export function directiveArgumentDefaultValueChanged(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const argumentNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const argumentNode = nodeByPath.get(change.path);
   if (!argumentNode) {
     handleError(change, new CoordinateNotFoundError(), config);
   } else if (argumentNode.kind === Kind.INPUT_VALUE_DEFINITION) {
@@ -204,8 +224,12 @@ export function directiveArgumentDescriptionChanged(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const argumentNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const argumentNode = nodeByPath.get(change.path);
   if (!argumentNode) {
     handleError(change, new CoordinateNotFoundError(), config);
   } else if (argumentNode.kind === Kind.INPUT_VALUE_DEFINITION) {
@@ -239,8 +263,12 @@ export function directiveArgumentTypeChanged(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const argumentNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const argumentNode = nodeByPath.get(change.path);
   if (!argumentNode) {
     handleError(change, new CoordinateNotFoundError(), config);
   } else if (argumentNode.kind === Kind.INPUT_VALUE_DEFINITION) {

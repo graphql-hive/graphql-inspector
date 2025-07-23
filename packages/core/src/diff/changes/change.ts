@@ -40,11 +40,7 @@ export const ChangeType = {
   // Enum
   EnumValueRemoved: 'ENUM_VALUE_REMOVED',
   EnumValueAdded: 'ENUM_VALUE_ADDED',
-  // @todo This is missing from the code...
-  // EnumValueDescriptionAdded: 'ENUM_VALUE_DESCRIPTION_ADDED',
   EnumValueDescriptionChanged: 'ENUM_VALUE_DESCRIPTION_CHANGED',
-  // @todo this is not being emitted..... why?
-  // EnumValueDescriptionRemoved: 'ENUM_VALUE_DESCRIPTION_REMOVED',
   EnumValueDeprecationReasonChanged: 'ENUM_VALUE_DEPRECATION_REASON_CHANGED',
   EnumValueDeprecationReasonAdded: 'ENUM_VALUE_DEPRECATION_REASON_ADDED',
   EnumValueDeprecationReasonRemoved: 'ENUM_VALUE_DEPRECATION_REASON_REMOVED',

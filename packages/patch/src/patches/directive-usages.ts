@@ -43,8 +43,13 @@ function directiveUsageDefinitionAdded(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const directiveNode = nodeByPath.get(change.path!);
-  const parentNode = nodeByPath.get(parentPath(change.path!)) as
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const directiveNode = nodeByPath.get(change.path);
+  const parentNode = nodeByPath.get(parentPath(change.path)) as
     | { directives?: DirectiveNode[] }
     | undefined;
   if (directiveNode) {
@@ -55,7 +60,7 @@ function directiveUsageDefinitionAdded(
       name: nameNode(change.meta.addedDirectiveName),
     };
     parentNode.directives = [...(parentNode.directives ?? []), newDirective];
-    nodeByPath.set(change.path!, newDirective);
+    nodeByPath.set(change.path, newDirective);
   } else {
     handleError(change, new CoordinateNotFoundError(), config);
   }
@@ -66,15 +71,20 @@ function directiveUsageDefinitionRemoved(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const directiveNode = nodeByPath.get(change.path!);
-  const parentNode = nodeByPath.get(parentPath(change.path!)) as
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const directiveNode = nodeByPath.get(change.path);
+  const parentNode = nodeByPath.get(parentPath(change.path)) as
     | { directives?: DirectiveNode[] }
     | undefined;
   if (directiveNode && parentNode) {
     parentNode.directives = parentNode.directives?.filter(
       d => d.name.value !== change.meta.removedDirectiveName,
     );
-    nodeByPath.delete(change.path!);
+    nodeByPath.delete(change.path);
   } else {
     handleError(change, new DeletedCoordinateNotFoundError(), config);
   }

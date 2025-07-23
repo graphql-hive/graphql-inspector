@@ -14,8 +14,12 @@ export function objectTypeInterfaceAdded(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const typeNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const typeNode = nodeByPath.get(change.path);
   if (typeNode) {
     if (
       typeNode.kind === Kind.OBJECT_TYPE_DEFINITION ||
@@ -53,8 +57,12 @@ export function objectTypeInterfaceRemoved(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const typeNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const typeNode = nodeByPath.get(change.path);
   if (typeNode) {
     if (
       typeNode.kind === Kind.OBJECT_TYPE_DEFINITION ||

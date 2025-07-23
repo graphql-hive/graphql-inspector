@@ -189,12 +189,6 @@ export function patch(
       debugPrintChange(change, nodeByPath);
     }
 
-    const changedPath = change.path;
-    if (changedPath === undefined) {
-      // a change without a path is useless... (@todo Only schema changes do this?)
-      continue;
-    }
-
     switch (change.type) {
       case ChangeType.SchemaMutationTypeChanged: {
         schemaMutationTypeChanged(change, schemaDefs, config);

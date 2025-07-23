@@ -52,24 +52,28 @@ export function fieldTypeChanged(
 }
 
 export function fieldRemoved(
-  removal: Change<typeof ChangeType.FieldRemoved>,
+  change: Change<typeof ChangeType.FieldRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = removal.path!;
-  const typeNode = nodeByPath.get(parentPath(changedPath)) as
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const typeNode = nodeByPath.get(parentPath(change.path)) as
     | (ASTNode & { fields?: FieldDefinitionNode[] })
     | undefined;
   if (!typeNode || !typeNode.fields?.length) {
-    handleError(removal, new CoordinateNotFoundError(), config);
+    handleError(change, new CoordinateNotFoundError(), config);
   } else {
     const beforeLength = typeNode.fields.length;
-    typeNode.fields = typeNode.fields.filter(f => f.name.value !== removal.meta.removedFieldName);
+    typeNode.fields = typeNode.fields.filter(f => f.name.value !== change.meta.removedFieldName);
     if (beforeLength === typeNode.fields.length) {
-      handleError(removal, new CoordinateNotFoundError(), config);
+      handleError(change, new CoordinateNotFoundError(), config);
     } else {
       // delete the reference to the removed field.
-      nodeByPath.delete(changedPath);
+      nodeByPath.delete(change.path);
     }
   }
 }
@@ -79,12 +83,16 @@ export function fieldAdded(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const changedNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const changedNode = nodeByPath.get(change.path);
   if (changedNode) {
     handleError(change, new CoordinateAlreadyExistsError(changedNode.kind), config);
   } else {
-    const typeNode = nodeByPath.get(parentPath(changedPath)) as ASTNode & {
+    const typeNode = nodeByPath.get(parentPath(change.path)) as ASTNode & {
       fields?: FieldDefinitionNode[];
     };
     if (!typeNode) {
@@ -107,7 +115,7 @@ export function fieldAdded(
       typeNode.fields = [...(typeNode.fields ?? []), node];
 
       // add new field to the node set
-      nodeByPath.set(changedPath, node);
+      nodeByPath.set(change.path, node);
     }
   }
 }
@@ -117,12 +125,16 @@ export function fieldArgumentAdded(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const existing = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const existing = nodeByPath.get(change.path);
   if (existing) {
     handleError(change, new CoordinateAlreadyExistsError(existing.kind), config);
   } else {
-    const fieldNode = nodeByPath.get(parentPath(changedPath)) as ASTNode & {
+    const fieldNode = nodeByPath.get(parentPath(change.path)) as ASTNode & {
       arguments?: InputValueDefinitionNode[];
     };
     if (!fieldNode) {
@@ -140,7 +152,7 @@ export function fieldArgumentAdded(
       fieldNode.arguments = [...(fieldNode.arguments ?? []), node];
 
       // add new field to the node set
-      nodeByPath.set(changedPath, node);
+      nodeByPath.set(change.path, node);
     } else {
       handleError(change, new KindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind), config);
     }
@@ -152,8 +164,12 @@ export function fieldDeprecationReasonChanged(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const deprecationNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const deprecationNode = nodeByPath.get(change.path);
   if (deprecationNode) {
     if (deprecationNode.kind === Kind.DIRECTIVE) {
       const reasonArgument = deprecationNode.arguments?.find(a => a.name.value === 'reason');
@@ -194,8 +210,12 @@ export function fieldDeprecationReasonAdded(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const deprecationNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const deprecationNode = nodeByPath.get(change.path);
   if (deprecationNode) {
     if (deprecationNode.kind === Kind.DIRECTIVE) {
       const reasonArgument = deprecationNode.arguments?.find(a => a.name.value === 'reason');
@@ -215,7 +235,7 @@ export function fieldDeprecationReasonAdded(
           ...(deprecationNode.arguments ?? []),
           node,
         ];
-        nodeByPath.set(`${changedPath}.reason`, node);
+        nodeByPath.set(`${change.path}.reason`, node);
       }
     } else {
       handleError(change, new KindMismatchError(Kind.DIRECTIVE, deprecationNode.kind), config);
@@ -230,8 +250,12 @@ export function fieldDeprecationAdded(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const fieldNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const fieldNode = nodeByPath.get(change.path);
   if (fieldNode) {
     if (fieldNode.kind === Kind.FIELD_DEFINITION) {
       const hasExistingDeprecationDirective = getDeprecatedDirectiveNode(fieldNode);
@@ -258,7 +282,7 @@ export function fieldDeprecationAdded(
           ...(fieldNode.directives ?? []),
           directiveNode,
         ];
-        nodeByPath.set(`${changedPath}.${GraphQLDeprecatedDirective.name}`, directiveNode);
+        nodeByPath.set(`${change.path}.${GraphQLDeprecatedDirective.name}`, directiveNode);
       }
     } else {
       handleError(change, new KindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind), config);
@@ -273,8 +297,12 @@ export function fieldDeprecationRemoved(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const fieldNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const fieldNode = nodeByPath.get(change.path);
   if (fieldNode) {
     if (fieldNode.kind === Kind.FIELD_DEFINITION) {
       const hasExistingDeprecationDirective = getDeprecatedDirectiveNode(fieldNode);
@@ -282,7 +310,7 @@ export function fieldDeprecationRemoved(
         (fieldNode.directives as DirectiveNode[] | undefined) = fieldNode.directives?.filter(
           d => d.name.value !== GraphQLDeprecatedDirective.name,
         );
-        nodeByPath.delete(`${changedPath}.${GraphQLDeprecatedDirective.name}`);
+        nodeByPath.delete(`${change.path}.${GraphQLDeprecatedDirective.name}`);
       } else {
         handleError(change, new DeprecatedDirectiveNotFound(), config);
       }
@@ -299,8 +327,12 @@ export function fieldDescriptionAdded(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const fieldNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const fieldNode = nodeByPath.get(change.path);
   if (fieldNode) {
     if (fieldNode.kind === Kind.FIELD_DEFINITION) {
       (fieldNode.description as StringValueNode | undefined) = change.meta.addedDescription
@@ -319,8 +351,12 @@ export function fieldDescriptionRemoved(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const fieldNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const fieldNode = nodeByPath.get(change.path);
   if (fieldNode) {
     if (fieldNode.kind === Kind.FIELD_DEFINITION) {
       (fieldNode.description as StringValueNode | undefined) = undefined;
@@ -337,8 +373,12 @@ export function fieldDescriptionChanged(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const changedPath = change.path!;
-  const fieldNode = nodeByPath.get(changedPath);
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+
+  const fieldNode = nodeByPath.get(change.path);
   if (fieldNode) {
     if (fieldNode.kind === Kind.FIELD_DEFINITION) {
       if (fieldNode.description?.value === change.meta.oldDescription) {
