@@ -178,7 +178,7 @@ describe('enum', () => {
     `);
 
     const changes = await diff(a, b);
-    const change = findFirstChangeByPath(changes, 'enumA.A');
+    const change = findFirstChangeByPath(changes, 'enumA.A.deprecated');
 
     expect(changes.length).toEqual(1);
     expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);

@@ -34,18 +34,24 @@ export function changesInField(
     }
   }
 
-  if (!isVoid(oldField) && isNotEqual(isDeprecated(oldField), isDeprecated(newField))) {
+  if (isVoid(oldField) || !isDeprecated(oldField)) {
     if (isDeprecated(newField)) {
       addChange(fieldDeprecationAdded(type, newField));
-    } else {
+    }
+  } else if (!isDeprecated(newField)) {
+    if (isDeprecated(oldField)) {
       addChange(fieldDeprecationRemoved(type, oldField));
     }
-  } else if (isVoid(oldField) && isDeprecated(newField)) {
-    addChange(fieldDeprecationAdded(type, newField));
-  } else if (isNotEqual(oldField?.deprecationReason, newField.deprecationReason)) {
-    if (isVoid(oldField?.deprecationReason)) {
+  } else if (isNotEqual(oldField.deprecationReason, newField.deprecationReason)) {
+    if (
+      isVoid(oldField.deprecationReason) ||
+      oldField.deprecationReason === 'No longer supported'
+    ) {
       addChange(fieldDeprecationReasonAdded(type, newField));
-    } else if (isVoid(newField.deprecationReason)) {
+    } else if (
+      isVoid(newField.deprecationReason) ||
+      newField.deprecationReason === 'No longer supported'
+    ) {
       addChange(fieldDeprecationReasonRemoved(type, oldField));
     } else {
       addChange(fieldDeprecationReasonChanged(type, oldField, newField));

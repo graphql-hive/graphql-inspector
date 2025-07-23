@@ -1,4 +1,4 @@
-import { GraphQLEnumType, GraphQLEnumValue } from 'graphql';
+import { GraphQLDeprecatedDirective, GraphQLEnumType, GraphQLEnumValue } from 'graphql';
 import { isDeprecated } from '../../utils/is-deprecated.js';
 import {
   Change,
@@ -139,7 +139,7 @@ export function enumValueDeprecationReasonChangedFromMeta(
     },
     type: ChangeType.EnumValueDeprecationReasonChanged,
     message: buildEnumValueDeprecationChangedMessage(args.meta),
-    path: [args.meta.enumName, args.meta.enumValueName].join('.'),
+    path: [args.meta.enumName, args.meta.enumValueName, GraphQLDeprecatedDirective.name].join('.'),
     meta: args.meta,
   } as const;
 }

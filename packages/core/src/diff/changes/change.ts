@@ -40,7 +40,11 @@ export const ChangeType = {
   // Enum
   EnumValueRemoved: 'ENUM_VALUE_REMOVED',
   EnumValueAdded: 'ENUM_VALUE_ADDED',
+  // @todo This is missing from the code...
+  // EnumValueDescriptionAdded: 'ENUM_VALUE_DESCRIPTION_ADDED',
   EnumValueDescriptionChanged: 'ENUM_VALUE_DESCRIPTION_CHANGED',
+  // @todo this is not being emitted..... why?
+  // EnumValueDescriptionRemoved: 'ENUM_VALUE_DESCRIPTION_REMOVED',
   EnumValueDeprecationReasonChanged: 'ENUM_VALUE_DEPRECATION_REASON_CHANGED',
   EnumValueDeprecationReasonAdded: 'ENUM_VALUE_DEPRECATION_REASON_ADDED',
   EnumValueDeprecationReasonRemoved: 'ENUM_VALUE_DEPRECATION_REASON_REMOVED',
@@ -104,6 +108,7 @@ export const ChangeType = {
   DirectiveUsageInterfaceRemoved: 'DIRECTIVE_USAGE_INTERFACE_REMOVED',
   DirectiveUsageArgumentDefinitionAdded: 'DIRECTIVE_USAGE_ARGUMENT_DEFINITION_ADDED',
   DirectiveUsageArgumentDefinitionRemoved: 'DIRECTIVE_USAGE_ARGUMENT_DEFINITION_REMOVED',
+  // DirectiveUsageArgumentDefinitionChanged: 'DIRECTIVE_USAGE_ARGUMENT_DEFINITION_CHANGED',
   DirectiveUsageSchemaAdded: 'DIRECTIVE_USAGE_SCHEMA_ADDED',
   DirectiveUsageSchemaRemoved: 'DIRECTIVE_USAGE_SCHEMA_REMOVED',
   DirectiveUsageFieldDefinitionAdded: 'DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED',
@@ -717,6 +722,7 @@ export type DirectiveUsageInputFieldDefinitionAddedChange = {
   meta: {
     inputObjectName: string;
     inputFieldName: string;
+    inputFieldType: string;
     addedDirectiveName: string;
     addedToNewType: boolean;
   };
@@ -828,17 +834,6 @@ export type DirectiveUsageFieldDefinitionRemovedChange = {
   };
 };
 
-export type DirectiveUsageArgumentDefinitionChange = {
-  type: typeof ChangeType.DirectiveUsageArgumentDefinitionAdded;
-  meta: {
-    typeName: string;
-    fieldName: string;
-    argumentName: string;
-    addedDirectiveName: string;
-    addedToNewType: boolean;
-  };
-};
-
 export type DirectiveUsageArgumentDefinitionRemovedChange = {
   type: typeof ChangeType.DirectiveUsageArgumentDefinitionRemoved;
   meta: {
@@ -864,6 +859,7 @@ export type DirectiveUsageArgumentDefinitionAddedChange = {
     fieldName: string;
     argumentName: string;
     addedDirectiveName: string;
+    addedToNewType: boolean;
   };
 };
 

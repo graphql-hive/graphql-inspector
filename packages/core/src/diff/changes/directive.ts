@@ -71,7 +71,7 @@ export function directiveAdded(
     meta: {
       addedDirectiveName: directive.name,
       addedDirectiveDescription: directive.description ?? null,
-      addedDirectiveLocations: directive.locations.map(l => safeString(l)),
+      addedDirectiveLocations: directive.locations.map(l => String(l)),
       addedDirectiveRepeatable: directive.isRepeatable,
     },
   });
@@ -135,7 +135,7 @@ export function directiveLocationAdded(
     type: ChangeType.DirectiveLocationAdded,
     meta: {
       directiveName: directive.name,
-      addedDirectiveLocation: location.toString(),
+      addedDirectiveLocation: String(location),
     },
   });
 }
@@ -212,7 +212,8 @@ export function directiveArgumentAdded(
       directiveName: directive.name,
       addedDirectiveArgumentName: arg.name,
       addedDirectiveArgumentType: arg.type.toString(),
-      addedDirectiveDefaultValue: safeString(arg.defaultValue),
+      addedDirectiveDefaultValue:
+        arg.defaultValue === undefined ? '' : safeString(arg.defaultValue),
       addedDirectiveArgumentTypeIsNonNull: isNonNullType(arg.type),
       addedDirectiveArgumentDescription: arg.description ?? null,
       addedToNewDirective,

@@ -17,7 +17,7 @@ import {
   Change,
   ChangeType,
   CriticalityLevel,
-  DirectiveUsageArgumentDefinitionChange,
+  DirectiveUsageArgumentDefinitionAddedChange,
   DirectiveUsageArgumentDefinitionRemovedChange,
   DirectiveUsageEnumAddedChange,
   DirectiveUsageEnumRemovedChange,
@@ -115,7 +115,9 @@ type KindToPayload = {
       field: GraphQLInputField;
       type: GraphQLInputObjectType;
     };
-    change: DirectiveUsageArgumentDefinitionChange | DirectiveUsageArgumentDefinitionRemovedChange;
+    change:
+      | DirectiveUsageArgumentDefinitionAddedChange
+      | DirectiveUsageArgumentDefinitionRemovedChange;
   };
   [Kind.ARGUMENT]: {
     input: {
@@ -123,18 +125,20 @@ type KindToPayload = {
       type: GraphQLObjectType | GraphQLInterfaceType;
       argument: GraphQLArgument;
     };
-    change: DirectiveUsageArgumentDefinitionChange | DirectiveUsageArgumentDefinitionRemovedChange;
+    change:
+      | DirectiveUsageArgumentDefinitionAddedChange
+      | DirectiveUsageArgumentDefinitionRemovedChange;
   };
 };
 
 function buildDirectiveUsageArgumentDefinitionAddedMessage(
-  args: DirectiveUsageArgumentDefinitionChange['meta'],
+  args: DirectiveUsageArgumentDefinitionAddedChange['meta'],
 ): string {
   return `Directive '${args.addedDirectiveName}' was added to argument '${args.argumentName}' of field '${args.fieldName}' in type '${args.typeName}'`;
 }
 
 export function directiveUsageArgumentDefinitionAddedFromMeta(
-  args: DirectiveUsageArgumentDefinitionChange,
+  args: DirectiveUsageArgumentDefinitionAddedChange,
 ) {
   return {
     criticality: {
@@ -597,12 +601,39 @@ export function directiveUsageUnionMemberRemovedFromMeta(
   } as const;
 }
 
+export type DirectiveUsageAddedChange =
+  | typeof ChangeType.DirectiveUsageArgumentDefinitionAdded
+  | typeof ChangeType.DirectiveUsageInputFieldDefinitionAdded
+  | typeof ChangeType.DirectiveUsageInputObjectAdded
+  | typeof ChangeType.DirectiveUsageInterfaceAdded
+  | typeof ChangeType.DirectiveUsageObjectAdded
+  | typeof ChangeType.DirectiveUsageEnumAdded
+  | typeof ChangeType.DirectiveUsageFieldDefinitionAdded
+  | typeof ChangeType.DirectiveUsageUnionMemberAdded
+  | typeof ChangeType.DirectiveUsageEnumValueAdded
+  | typeof ChangeType.DirectiveUsageSchemaAdded
+  | typeof ChangeType.DirectiveUsageScalarAdded
+  | typeof ChangeType.DirectiveUsageFieldAdded;
+
+export type DirectiveUsageRemovedChange =
+  | typeof ChangeType.DirectiveUsageArgumentDefinitionRemoved
+  | typeof ChangeType.DirectiveUsageInputFieldDefinitionRemoved
+  | typeof ChangeType.DirectiveUsageInputObjectRemoved
+  | typeof ChangeType.DirectiveUsageInterfaceRemoved
+  | typeof ChangeType.DirectiveUsageObjectRemoved
+  | typeof ChangeType.DirectiveUsageEnumRemoved
+  | typeof ChangeType.DirectiveUsageFieldDefinitionRemoved
+  | typeof ChangeType.DirectiveUsageUnionMemberRemoved
+  | typeof ChangeType.DirectiveUsageEnumValueRemoved
+  | typeof ChangeType.DirectiveUsageSchemaRemoved
+  | typeof ChangeType.DirectiveUsageScalarRemoved;
+
 export function directiveUsageAdded<K extends keyof KindToPayload>(
   kind: K,
   directive: ConstDirectiveNode,
   payload: KindToPayload[K]['input'],
   addedToNewType: boolean,
-): Change {
+): Change<DirectiveUsageAddedChange> {
   if (isOfKind(kind, Kind.ARGUMENT, payload)) {
     return directiveUsageArgumentDefinitionAddedFromMeta({
       type: ChangeType.DirectiveUsageArgumentDefinitionAdded,
@@ -621,6 +652,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
       meta: {
         addedDirectiveName: directive.name.value,
         inputFieldName: payload.field.name,
+        inputFieldType: payload.field.type.toString(),
         inputObjectName: payload.type.name,
         addedToNewType,
       },

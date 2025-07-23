@@ -372,7 +372,7 @@ test('huge test', async () => {
     'Options.D',
     'Options.A',
     'Options.E',
-    'Options.F',
+    'Options.F.deprecated',
     '@willBeRemoved',
     '@yolo2',
     '@yolo',

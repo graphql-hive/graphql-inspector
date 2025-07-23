@@ -57,9 +57,16 @@ function changesInEnumValue(
   }
 
   if (isNotEqual(oldValue?.deprecationReason, newValue.deprecationReason)) {
-    if (isVoid(oldValue?.deprecationReason)) {
+    // @note "No longer supported" is the default graphql reason
+    if (
+      isVoid(oldValue?.deprecationReason) ||
+      oldValue?.deprecationReason === 'No longer supported'
+    ) {
       addChange(enumValueDeprecationReasonAdded(newEnum, oldValue, newValue));
-    } else if (isVoid(newValue.deprecationReason)) {
+    } else if (
+      isVoid(newValue.deprecationReason) ||
+      newValue?.deprecationReason === 'No longer supported'
+    ) {
       addChange(enumValueDeprecationReasonRemoved(newEnum, oldValue, newValue));
     } else {
       addChange(enumValueDeprecationReasonChanged(newEnum, oldValue, newValue));

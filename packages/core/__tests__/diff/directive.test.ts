@@ -173,13 +173,13 @@ describe('directive', () => {
       };
 
       // Nullable
-      expect(change.a.criticality.level).toEqual(CriticalityLevel.NonBreaking);
-      expect(change.a.type).toEqual('DIRECTIVE_ARGUMENT_ADDED');
-      expect(change.a.message).toEqual(`Argument 'name' was added to directive 'a'`);
+      expect(change.a?.type).toEqual('DIRECTIVE_ARGUMENT_ADDED');
+      expect(change.a?.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      expect(change.a?.message).toEqual(`Argument 'name' was added to directive 'a'`);
       // Non-nullable
-      expect(change.b.criticality.level).toEqual(CriticalityLevel.Breaking);
-      expect(change.b.type).toEqual('DIRECTIVE_ARGUMENT_ADDED');
-      expect(change.b.message).toEqual(`Argument 'name' was added to directive 'b'`);
+      expect(change.b?.type).toEqual('DIRECTIVE_ARGUMENT_ADDED');
+      expect(change.b?.criticality.level).toEqual(CriticalityLevel.Breaking);
+      expect(change.b?.message).toEqual(`Argument 'name' was added to directive 'b'`);
     });
 
     test('removed', async () => {

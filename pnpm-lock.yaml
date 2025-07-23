@@ -663,6 +663,17 @@ importers:
         version: 2.6.2
     publishDirectory: dist
 
+  packages/patch:
+    dependencies:
+      tslib:
+        specifier: 2.6.2
+        version: 2.6.2
+    devDependencies:
+      '@graphql-inspector/core':
+        specifier: workspace:*
+        version: link:../core/dist
+    publishDirectory: dist
+
   website:
     dependencies:
       '@graphql-inspector/core':

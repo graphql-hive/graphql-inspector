@@ -178,7 +178,6 @@ export {
   SerializableChange,
   DirectiveUsageArgumentDefinitionAddedChange,
   DirectiveUsageArgumentDefinitionRemovedChange,
-  DirectiveUsageArgumentDefinitionChange,
   DirectiveUsageEnumAddedChange,
   DirectiveUsageEnumRemovedChange,
   DirectiveUsageEnumValueAddedChange,
