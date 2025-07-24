@@ -8,6 +8,7 @@ import {
 } from '../errors.js';
 import { namedTypeNode } from '../node-templates.js';
 import type { PatchConfig } from '../types';
+import { findNamedNode } from '../utils.js';
 
 export function objectTypeInterfaceAdded(
   change: Change<typeof ChangeType.ObjectTypeInterfaceAdded>,
@@ -25,9 +26,7 @@ export function objectTypeInterfaceAdded(
       typeNode.kind === Kind.OBJECT_TYPE_DEFINITION ||
       typeNode.kind === Kind.INTERFACE_TYPE_DEFINITION
     ) {
-      const existing = typeNode.interfaces?.find(
-        i => i.name.value === change.meta.addedInterfaceName,
-      );
+      const existing = findNamedNode(typeNode.interfaces, change.meta.addedInterfaceName);
       if (existing) {
         handleError(
           change,
@@ -68,9 +67,7 @@ export function objectTypeInterfaceRemoved(
       typeNode.kind === Kind.OBJECT_TYPE_DEFINITION ||
       typeNode.kind === Kind.INTERFACE_TYPE_DEFINITION
     ) {
-      const existing = typeNode.interfaces?.find(
-        i => i.name.value === change.meta.removedInterfaceName,
-      );
+      const existing = findNamedNode(typeNode.interfaces, change.meta.removedInterfaceName);
       if (existing) {
         (typeNode.interfaces as NamedTypeNode[] | undefined) = typeNode.interfaces?.filter(
           i => i.name.value !== change.meta.removedInterfaceName,

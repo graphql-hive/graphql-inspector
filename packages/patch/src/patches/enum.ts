@@ -1,4 +1,4 @@
-import { ASTNode, EnumValueDefinitionNode, Kind, print, StringValueNode } from 'graphql';
+import { ArgumentNode, ASTNode, EnumValueDefinitionNode, Kind, print, StringValueNode, ValueNode } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
   CoordinateAlreadyExistsError,
@@ -10,7 +10,7 @@ import {
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
 import type { PatchConfig } from '../types';
-import { getDeprecatedDirectiveNode, parentPath, upsertArgument } from '../utils.js';
+import { findNamedNode, getDeprecatedDirectiveNode, parentPath } from '../utils.js';
 
 export function enumValueRemoved(
   change: Change<typeof ChangeType.EnumValueRemoved>,
@@ -101,11 +101,15 @@ export function enumValueDeprecationReasonAdded(
     if (enumValueNode.kind === Kind.ENUM_VALUE_DEFINITION) {
       const deprecation = getDeprecatedDirectiveNode(enumValueNode);
       if (deprecation) {
-        const argNode = upsertArgument(
-          deprecation,
-          'reason',
-          stringNode(change.meta.addedValueDeprecationReason),
-        );
+        if (findNamedNode(deprecation.arguments, 'reason')) {
+          handleError(change, new CoordinateAlreadyExistsError(Kind.ARGUMENT), config);
+        }
+        const argNode: ArgumentNode = {
+          kind: Kind.ARGUMENT,
+          name: nameNode('reason'),
+          value: stringNode(change.meta.addedValueDeprecationReason),
+        };
+        (deprecation.arguments as ArgumentNode[] | undefined) = [...(deprecation.arguments ?? []), argNode];
         nodeByPath.set(`${change.path}.reason`, argNode);
       } else {
         handleError(change, new CoordinateNotFoundError(), config);
@@ -135,7 +139,7 @@ export function enumValueDeprecationReasonChanged(
   const deprecatedNode = nodeByPath.get(change.path);
   if (deprecatedNode) {
     if (deprecatedNode.kind === Kind.DIRECTIVE) {
-      const reasonArgNode = deprecatedNode.arguments?.find(n => n.name.value === 'reason');
+      const reasonArgNode = findNamedNode(deprecatedNode.arguments, 'reason');
       if (reasonArgNode) {
         if (reasonArgNode.kind === Kind.ARGUMENT) {
           if (

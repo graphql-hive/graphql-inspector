@@ -26,7 +26,7 @@ import {
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
 import type { PatchConfig } from '../types';
-import { getDeprecatedDirectiveNode, parentPath } from '../utils.js';
+import { findNamedNode, getDeprecatedDirectiveNode, parentPath } from '../utils.js';
 
 export function fieldTypeChanged(
   change: Change<typeof ChangeType.FieldTypeChanged>,
@@ -172,7 +172,7 @@ export function fieldDeprecationReasonChanged(
   const deprecationNode = nodeByPath.get(change.path);
   if (deprecationNode) {
     if (deprecationNode.kind === Kind.DIRECTIVE) {
-      const reasonArgument = deprecationNode.arguments?.find(a => a.name.value === 'reason');
+      const reasonArgument = findNamedNode(deprecationNode.arguments, 'reason');
       if (reasonArgument) {
         if (print(reasonArgument.value) === change.meta.oldDeprecationReason) {
           const node = {
@@ -218,7 +218,7 @@ export function fieldDeprecationReasonAdded(
   const deprecationNode = nodeByPath.get(change.path);
   if (deprecationNode) {
     if (deprecationNode.kind === Kind.DIRECTIVE) {
-      const reasonArgument = deprecationNode.arguments?.find(a => a.name.value === 'reason');
+      const reasonArgument = findNamedNode(deprecationNode.arguments, 'reason');
       if (reasonArgument) {
         handleError(
           change,

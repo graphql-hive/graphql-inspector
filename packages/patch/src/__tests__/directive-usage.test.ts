@@ -1102,4 +1102,96 @@ describe('directiveUsages: removed', () => {
     const after = baseSchema;
     await expectPatchToMatch(before, after);
   });
+
+  test('schemaDirectiveUsageDefinitionAdded', async () => {
+    const before = baseSchema;
+    const after = /* GraphQL */ `
+      schema @meta(name: "owner", value: "kitchen") {
+        query: Query
+        mutation: Mutation
+      }
+      directive @meta(
+        name: String!
+        value: String!
+      ) on SCHEMA | SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | INTERFACE | UNION | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+      enum Flavor {
+        SWEET
+        SOUR
+        SAVORY
+        UMAMI
+      }
+      scalar Calories @meta(name: "owner", value: "kitchen")
+      interface Food {
+        name: String!
+        flavors: [Flavor!]
+      }
+      type Drink implements Food {
+        name: String!
+        flavors: [Flavor!]
+        volume: Int
+      }
+      type Burger {
+        name: String!
+        flavors: [Flavor!]
+        toppings: [Food]
+      }
+      union Snack = Drink | Burger
+      type Query {
+        food(name: String!): Food
+      }
+      type Mutation {
+        eat(input: EatInput): Calories
+      }
+      input EatInput {
+        foodName: String!
+      }
+    `;
+    await expectPatchToMatch(before, after);
+  });
+
+  test('schemaDirectiveUsageDefinitionRemoved', async () => {
+    const before = /* GraphQL */ `
+      schema @meta(name: "owner", value: "kitchen") {
+        query: Query
+        mutation: Mutation
+      }
+      directive @meta(
+        name: String!
+        value: String!
+      ) on SCHEMA | SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | INTERFACE | UNION | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+      enum Flavor {
+        SWEET
+        SOUR
+        SAVORY
+        UMAMI
+      }
+      scalar Calories
+      interface Food {
+        name: String!
+        flavors: [Flavor!]
+      }
+      type Drink implements Food {
+        name: String!
+        flavors: [Flavor!]
+        volume: Int
+      }
+      type Burger {
+        name: String!
+        flavors: [Flavor!]
+        toppings: [Food]
+      }
+      union Snack = Drink | Burger
+      type Query {
+        food(name: String!): Food
+      }
+      type Mutation {
+        eat(input: EatInput): Calories
+      }
+      input EatInput {
+        foodName: String!
+      }
+    `;
+    const after = baseSchema;
+    await expectPatchToMatch(before, after);
+  });
 });

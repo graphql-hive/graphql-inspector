@@ -8,7 +8,7 @@ import {
 } from '../errors.js';
 import { nameNode } from '../node-templates.js';
 import { PatchConfig, SchemaNode } from '../types.js';
-import { parentPath } from '../utils.js';
+import { findNamedNode, parentPath } from '../utils.js';
 
 export type DirectiveUsageAddedChange =
   | typeof ChangeType.DirectiveUsageArgumentDefinitionAdded
@@ -64,6 +64,37 @@ function directiveUsageDefinitionAdded(
   } else {
     handleError(change, new CoordinateNotFoundError(), config);
   }
+}
+
+function schemaDirectiveUsageDefinitionAdded(
+  change: Change<DirectiveUsageAddedChange>,
+  schemaNodes: SchemaNode[],
+  config: PatchConfig,
+) {
+  // @todo handle repeat directives
+  // findNamedNode(schemaNodes[0].directives, change.meta.addedDirectiveName)
+  throw new Error('DirectiveUsageAddedChange on schema node is not implemented yet.')
+}
+
+function schemaDirectiveUsageDefinitionRemoved(
+  change: Change<DirectiveUsageRemovedChange>,
+  schemaNodes: SchemaNode[],
+  config: PatchConfig,
+) {
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+  for (const node of schemaNodes) {
+    // @todo handle repeated directives
+    const directiveNode = findNamedNode(node.directives, change.meta.removedDirectiveName);
+    if (directiveNode) {
+      (node.directives as DirectiveNode[] | undefined) = node.directives?.filter(
+        d => d.name.value !== change.meta.removedDirectiveName,
+      );
+    }
+  }
+  handleError(change, new DeletedCoordinateNotFoundError(), config);
 }
 
 function directiveUsageDefinitionRemoved(
@@ -251,21 +282,19 @@ export function directiveUsageScalarRemoved(
 }
 
 export function directiveUsageSchemaAdded(
-  _change: Change<typeof ChangeType.DirectiveUsageSchemaAdded>,
-  _schemaDefs: SchemaNode[],
-  _config: PatchConfig,
+  change: Change<typeof ChangeType.DirectiveUsageSchemaAdded>,
+  schemaDefs: SchemaNode[],
+  config: PatchConfig,
 ) {
-  // @todo
-  // return directiveUsageDefinitionAdded(change, schemaDefs, config);
+  return schemaDirectiveUsageDefinitionAdded(change, schemaDefs, config);
 }
 
 export function directiveUsageSchemaRemoved(
-  _change: Change<typeof ChangeType.DirectiveUsageSchemaRemoved>,
-  _schemaDefs: SchemaNode[],
-  _config: PatchConfig,
+  change: Change<typeof ChangeType.DirectiveUsageSchemaRemoved>,
+  schemaDefs: SchemaNode[],
+  config: PatchConfig,
 ) {
-  // @todo
-  // return directiveUsageDefinitionRemoved(change, schemaDefs, config);
+  return schemaDirectiveUsageDefinitionRemoved(change, schemaDefs, config);
 }
 
 export function directiveUsageUnionMemberAdded(

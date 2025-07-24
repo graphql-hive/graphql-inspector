@@ -24,6 +24,7 @@ import {
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
 import { PatchConfig } from '../types.js';
+import { findNamedNode } from '../utils.js';
 
 export function directiveAdded(
   change: Change<typeof ChangeType.DirectiveAdded>,
@@ -66,18 +67,9 @@ export function directiveArgumentAdded(
   if (!directiveNode) {
     handleError(change, new CoordinateNotFoundError(), config);
   } else if (directiveNode.kind === Kind.DIRECTIVE_DEFINITION) {
-    const existingArg = directiveNode.arguments?.find(
-      d => d.name.value === change.meta.addedDirectiveArgumentName,
-    );
+    const existingArg = findNamedNode(directiveNode.arguments, change.meta.addedDirectiveArgumentName);
     if (existingArg) {
-      // @todo make sure to check that everything is equal to the change, else error
-      // because it conflicts.
-      // if (print(existingArg.type) === change.meta.addedDirectiveArgumentType) {
-      //   // warn
-      //   // handleError(change, new ArgumentAlreadyExistsError(), config);
-      // } else {
-      //   // error
-      // }
+      handleError(change, new CoordinateAlreadyExistsError(existingArg.kind), config)
     } else {
       const node: InputValueDefinitionNode = {
         kind: Kind.INPUT_VALUE_DEFINITION,

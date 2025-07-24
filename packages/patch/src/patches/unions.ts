@@ -8,7 +8,7 @@ import {
 } from '../errors.js';
 import { namedTypeNode } from '../node-templates.js';
 import { PatchConfig } from '../types.js';
-import { parentPath } from '../utils.js';
+import { findNamedNode, parentPath } from '../utils.js';
 
 export function unionMemberAdded(
   change: Change<typeof ChangeType.UnionMemberAdded>,
@@ -20,7 +20,7 @@ export function unionMemberAdded(
     | (ASTNode & { types?: NamedTypeNode[] })
     | undefined;
   if (union) {
-    if (union.types?.some(n => n.name.value === change.meta.addedUnionMemberTypeName)) {
+    if (findNamedNode(union.types, change.meta.addedUnionMemberTypeName)) {
       handleError(
         change,
         new UnionMemberAlreadyExistsError(
@@ -47,8 +47,8 @@ export function unionMemberRemoved(
     | (ASTNode & { types?: NamedTypeNode[] })
     | undefined;
   if (union) {
-    if (union.types?.some(n => n.name.value === change.meta.removedUnionMemberTypeName)) {
-      union.types = union.types.filter(
+    if (findNamedNode(union.types, change.meta.removedUnionMemberTypeName)) {
+      union.types = union.types!.filter(
         t => t.name.value !== change.meta.removedUnionMemberTypeName,
       );
     } else {

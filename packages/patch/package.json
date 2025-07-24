@@ -57,8 +57,12 @@
   "dependencies": {
     "tslib": "2.6.2"
   },
+  "peerDependencies": {
+    "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0"
+  },
   "devDependencies": {
-    "@graphql-inspector/core": "workspace:*"
+    "@graphql-inspector/core": "workspace:*",
+    "@graphql-tools/utils": "^10.0.0"
   },
   "publishConfig": {
     "directory": "dist",

@@ -9,7 +9,6 @@ export function schemaMutationTypeChanged(
   schemaNodes: SchemaNode[],
   config: PatchConfig,
 ) {
-  // @todo handle type extensions correctly
   for (const schemaNode of schemaNodes) {
     const mutation = schemaNode.operationTypes?.find(
       ({ operation }) => operation === OperationTypeNode.MUTATION,
@@ -33,7 +32,6 @@ export function schemaQueryTypeChanged(
   schemaNodes: SchemaNode[],
   config: PatchConfig,
 ) {
-  // @todo handle type extensions correctly
   for (const schemaNode of schemaNodes) {
     const query = schemaNode.operationTypes?.find(
       ({ operation }) => operation === OperationTypeNode.MUTATION,
@@ -57,7 +55,6 @@ export function schemaSubscriptionTypeChanged(
   schemaNodes: SchemaNode[],
   config: PatchConfig,
 ) {
-  // @todo handle type extensions correctly
   for (const schemaNode of schemaNodes) {
     const sub = schemaNode.operationTypes?.find(
       ({ operation }) => operation === OperationTypeNode.MUTATION,

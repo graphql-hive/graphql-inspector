@@ -28,7 +28,6 @@ export function typeAdded(
       name: nameNode(change.meta.addedTypeName),
       kind: change.meta.addedTypeKind as TypeDefinitionNode['kind'],
     };
-    // @todo is this enough?
     nodeByPath.set(change.path, node);
   }
 }
