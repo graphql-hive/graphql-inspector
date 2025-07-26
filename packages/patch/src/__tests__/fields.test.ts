@@ -93,6 +93,22 @@ describe('fields', () => {
     await expectPatchToMatch(before, after);
   });
 
+  test('fieldDeprecationAdded: with reason', async () => {
+    const before = /* GraphQL */ `
+      scalar ChatSession
+      type Query {
+        chat: ChatSession
+      }
+    `;
+    const after = /* GraphQL */ `
+      scalar ChatSession
+      type Query {
+        chat: ChatSession @deprecated(reason: "Because no one chats anymore")
+      }
+    `;
+    await expectPatchToMatch(before, after);
+  });
+
   test('fieldDeprecationRemoved', async () => {
     const before = /* GraphQL */ `
       scalar ChatSession

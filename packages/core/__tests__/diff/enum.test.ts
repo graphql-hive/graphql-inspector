@@ -1,6 +1,6 @@
 import { buildSchema } from 'graphql';
-import { CriticalityLevel, diff, DiffRule } from '../../src/index.js';
-import { findFirstChangeByPath } from '../../utils/testing.js';
+import { ChangeType, CriticalityLevel, diff, DiffRule } from '../../src/index.js';
+import { findChangesByPath, findFirstChangeByPath } from '../../utils/testing.js';
 
 describe('enum', () => {
   test('added', async () => {
@@ -178,7 +178,7 @@ describe('enum', () => {
     `);
 
     const changes = await diff(a, b);
-    const change = findFirstChangeByPath(changes, 'enumA.A.deprecated');
+    const change = findFirstChangeByPath(changes, 'enumA.A.@deprecated');
 
     expect(changes.length).toEqual(1);
     expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
@@ -211,11 +211,26 @@ describe('enum', () => {
     `);
 
     const changes = await diff(a, b);
-    const change = findFirstChangeByPath(changes, 'enumA.A');
+    expect(changes).toHaveLength(3);
+    const directiveChanges = findChangesByPath(changes, 'enumA.A.@deprecated');
+    expect(directiveChanges).toHaveLength(2);
 
-    expect(changes.length).toEqual(2);
-    expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
-    expect(change.message).toEqual(`Enum value 'enumA.A' was deprecated with reason 'New Reason'`);
+    for (const change of directiveChanges) {
+      expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      if (change.type === ChangeType.EnumValueDeprecationReasonAdded) {
+        expect(change.message).toEqual(
+          `Enum value 'enumA.A' was deprecated with reason 'New Reason'`,
+        );
+      } else if (change.type === ChangeType.DirectiveUsageEnumValueAdded) {
+        expect(change.message).toEqual(`Directive 'deprecated' was added to enum value 'enumA.A'`);
+      }
+    }
+
+    {
+      const change = findFirstChangeByPath(changes, 'enumA.A.@deprecated.reason');
+      expect(change.type).toEqual(ChangeType.DirectiveUsageArgumentAdded);
+      expect(change.message).toEqual(`Argument 'reason' was added to '@deprecated'`);
+    }
   });
 
   test('deprecation reason removed', async () => {

@@ -21,7 +21,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Query.a.external');
+      const change = findFirstChangeByPath(changes, 'Query.a.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED');
@@ -44,7 +44,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Query.a.external');
+      const change = findFirstChangeByPath(changes, 'Query.a.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED');
@@ -67,7 +67,7 @@ describe('directive-usage', () => {
         }
       `);
 
-      const change = findFirstChangeByPath(await diff(a, b), 'Query.a.external');
+      const change = findFirstChangeByPath(await diff(a, b), 'Query.a.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_DEFINITION_REMOVED');
@@ -91,7 +91,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Query.a.oneOf');
+      const change = findFirstChangeByPath(changes, 'Query.a.@oneOf');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED');
@@ -114,7 +114,7 @@ describe('directive-usage', () => {
         }
       `);
 
-      const change = findFirstChangeByPath(await diff(a, b), 'Query.a.oneOf');
+      const change = findFirstChangeByPath(await diff(a, b), 'Query.a.@oneOf');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_DEFINITION_REMOVED');
@@ -151,7 +151,7 @@ describe('directive-usage', () => {
         union Foo @external = A | B
       `);
 
-      const change = findFirstChangeByPath(await diff(a, b), 'Foo.external');
+      const change = findFirstChangeByPath(await diff(a, b), 'Foo.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_UNION_MEMBER_ADDED');
@@ -187,7 +187,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, 'Foo.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_UNION_MEMBER_REMOVED');
@@ -222,7 +222,7 @@ describe('directive-usage', () => {
         union Foo @oneOf = A | B
       `);
 
-      const change = findFirstChangeByPath(await diff(a, b), 'Foo.oneOf');
+      const change = findFirstChangeByPath(await diff(a, b), 'Foo.@oneOf');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.type).toEqual('DIRECTIVE_USAGE_UNION_MEMBER_ADDED');
@@ -258,7 +258,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.oneOf');
+      const change = findFirstChangeByPath(changes, 'Foo.@oneOf');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.type).toEqual('DIRECTIVE_USAGE_UNION_MEMBER_REMOVED');
@@ -293,7 +293,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'enumA.external');
+      const change = findFirstChangeByPath(changes, 'enumA.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.criticality.reason).toBeDefined();
@@ -325,7 +325,7 @@ describe('directive-usage', () => {
         }
       `);
 
-      const change = findFirstChangeByPath(await diff(a, b), 'enumA.external');
+      const change = findFirstChangeByPath(await diff(a, b), 'enumA.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_ENUM_REMOVED');
@@ -361,7 +361,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'enumA.B.external');
+      const change = findFirstChangeByPath(changes, 'enumA.B.@external');
 
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
@@ -396,7 +396,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'enumA.A.external');
+      const change = findFirstChangeByPath(changes, 'enumA.A.@external');
 
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
@@ -423,7 +423,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, 'Foo.@external');
 
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
@@ -447,7 +447,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, 'Foo.@external');
 
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
@@ -474,7 +474,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.a.external');
+      const change = findFirstChangeByPath(changes, 'Foo.a.@external');
 
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
@@ -500,7 +500,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.a.external');
+      const change = findFirstChangeByPath(changes, 'Foo.a.@external');
 
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
@@ -523,7 +523,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, 'Foo.@external');
 
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
@@ -541,7 +541,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, 'Foo.@external');
 
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
@@ -566,7 +566,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, 'Foo.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_OBJECT_ADDED');
@@ -587,7 +587,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, 'Foo.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_OBJECT_REMOVED');
@@ -611,7 +611,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, 'Foo.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_INTERFACE_ADDED');
@@ -633,7 +633,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, 'Foo.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_INTERFACE_REMOVED');
@@ -657,7 +657,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.a.a.external');
+      const change = findFirstChangeByPath(changes, 'Foo.a.a.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_ARGUMENT_DEFINITION_ADDED');
@@ -681,7 +681,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.a.a.external');
+      const change = findFirstChangeByPath(changes, 'Foo.a.a.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_ARGUMENT_DEFINITION_REMOVED');
@@ -713,7 +713,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, '.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_SCHEMA_ADDED');
@@ -740,7 +740,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, '.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_SCHEMA_REMOVED');

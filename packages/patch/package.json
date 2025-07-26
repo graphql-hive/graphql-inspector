@@ -54,15 +54,15 @@
   "scripts": {
     "prepack": "bob prepack"
   },
-  "dependencies": {
-    "tslib": "2.6.2"
-  },
   "peerDependencies": {
     "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0"
   },
+  "dependencies": {
+    "@graphql-tools/utils": "^10.0.0",
+    "tslib": "2.6.2"
+  },
   "devDependencies": {
-    "@graphql-inspector/core": "workspace:*",
-    "@graphql-tools/utils": "^10.0.0"
+    "@graphql-inspector/core": "workspace:*"
   },
   "publishConfig": {
     "directory": "dist",

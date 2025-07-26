@@ -139,7 +139,9 @@ export function enumValueDeprecationReasonChangedFromMeta(
     },
     type: ChangeType.EnumValueDeprecationReasonChanged,
     message: buildEnumValueDeprecationChangedMessage(args.meta),
-    path: [args.meta.enumName, args.meta.enumValueName, GraphQLDeprecatedDirective.name].join('.'),
+    path: [args.meta.enumName, args.meta.enumValueName, `@${GraphQLDeprecatedDirective.name}`].join(
+      '.',
+    ),
     meta: args.meta,
   } as const;
 }
@@ -175,7 +177,9 @@ export function enumValueDeprecationReasonAddedFromMeta(
     },
     type: ChangeType.EnumValueDeprecationReasonAdded,
     message: buildEnumValueDeprecationReasonAddedMessage(args.meta),
-    path: [args.meta.enumName, args.meta.enumValueName].join('.'),
+    path: [args.meta.enumName, args.meta.enumValueName, `@${GraphQLDeprecatedDirective.name}`].join(
+      '.',
+    ),
     meta: args.meta,
   } as const;
 }

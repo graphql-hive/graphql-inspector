@@ -6,13 +6,15 @@ import {
   isDefinitionNode,
   Kind,
   parse,
-  printSchema,
   visit,
 } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
+import { printSchemaWithDirectives } from '@graphql-tools/utils';
 import {
+  directiveUsageArgumentAdded,
   directiveUsageArgumentDefinitionAdded,
   directiveUsageArgumentDefinitionRemoved,
+  directiveUsageArgumentRemoved,
   directiveUsageEnumAdded,
   directiveUsageEnumRemoved,
   directiveUsageEnumValueAdded,
@@ -91,8 +93,9 @@ export function patchSchema(
   changes: Change<any>[],
   config?: PatchConfig,
 ): GraphQLSchema {
-  const ast = parse(printSchema(schema));
-  return buildASTSchema(patch(ast, changes, config), { assumeValid: true, assumeValidSDL: true });
+  const ast = parse(printSchemaWithDirectives(schema, { assumeValid: true }));
+  const patchedAst = patch(ast, changes, config);
+  return buildASTSchema(patchedAst, { assumeValid: true, assumeValidSDL: true });
 }
 
 function groupNodesByPath(ast: DocumentNode): [SchemaNode[], Map<string, ASTNode>] {
@@ -118,8 +121,7 @@ function groupNodesByPath(ast: DocumentNode): [SchemaNode[], Map<string, ASTNode
         case Kind.SCALAR_TYPE_DEFINITION:
         case Kind.SCALAR_TYPE_EXTENSION:
         case Kind.UNION_TYPE_DEFINITION:
-        case Kind.UNION_TYPE_EXTENSION:
-        case Kind.DIRECTIVE: {
+        case Kind.UNION_TYPE_EXTENSION: {
           pathArray.push(node.name.value);
           const path = pathArray.join('.');
           nodeByPath.set(path, node);
@@ -127,6 +129,21 @@ function groupNodesByPath(ast: DocumentNode): [SchemaNode[], Map<string, ASTNode
         }
         case Kind.DIRECTIVE_DEFINITION: {
           pathArray.push(`@${node.name.value}`);
+          const path = pathArray.join('.');
+          nodeByPath.set(path, node);
+          break;
+        }
+        case Kind.DIRECTIVE: {
+          /**
+           * Check if this directive is on the schema node. If so, then push an empty path
+           * to distinguish it from the definitions
+           */
+          const isRoot = pathArray.length === 0;
+          if (isRoot) {
+            pathArray.push(`.@${node.name.value}`);
+          } else {
+            pathArray.push(`@${node.name.value}`);
+          }
           const path = pathArray.join('.');
           nodeByPath.set(path, node);
           break;
@@ -139,11 +156,12 @@ function groupNodesByPath(ast: DocumentNode): [SchemaNode[], Map<string, ASTNode
           schemaNodes.push(node);
           break;
         }
-        default: {
-          // by definition this things like return types, names, named nodes...
-          // it's nothing we want to collect.
-          return false;
-        }
+        // default: {
+
+        //   // by definition this things like return types, names, named nodes...
+        //   // it's nothing we want to collect.
+        //   return false;
+        // }
       }
     },
     leave(node) {
@@ -165,9 +183,10 @@ function groupNodesByPath(ast: DocumentNode): [SchemaNode[], Map<string, ASTNode
         case Kind.SCALAR_TYPE_EXTENSION:
         case Kind.UNION_TYPE_DEFINITION:
         case Kind.UNION_TYPE_EXTENSION:
-        case Kind.DIRECTIVE:
-        case Kind.DIRECTIVE_DEFINITION: {
+        case Kind.DIRECTIVE_DEFINITION:
+        case Kind.DIRECTIVE: {
           pathArray.pop();
+          break;
         }
       }
     },
@@ -419,11 +438,11 @@ export function patch(
         break;
       }
       case ChangeType.DirectiveUsageSchemaAdded: {
-        directiveUsageSchemaAdded(change, schemaDefs, config);
+        directiveUsageSchemaAdded(change, schemaDefs, nodeByPath, config);
         break;
       }
       case ChangeType.DirectiveUsageSchemaRemoved: {
-        directiveUsageSchemaRemoved(change, schemaDefs, config);
+        directiveUsageSchemaRemoved(change, schemaDefs, nodeByPath, config);
         break;
       }
       case ChangeType.DirectiveUsageUnionMemberAdded: {
@@ -434,6 +453,14 @@ export function patch(
         directiveUsageUnionMemberRemoved(change, nodeByPath, config);
         break;
       }
+      case ChangeType.DirectiveUsageArgumentAdded: {
+        directiveUsageArgumentAdded(change, nodeByPath, config);
+        break;
+      }
+      case ChangeType.DirectiveUsageArgumentRemoved: {
+        directiveUsageArgumentRemoved(change, nodeByPath, config);
+        break;
+      }
       default: {
         console.log(`${change.type} is not implemented yet.`);
       }
@@ -442,8 +469,7 @@ export function patch(
 
   return {
     kind: Kind.DOCUMENT,
-
     // filter out the non-definition nodes (e.g. field definitions)
-    definitions: Array.from(nodeByPath.values()).filter(isDefinitionNode),
+    definitions: [...schemaDefs, ...Array.from(nodeByPath.values()).filter(isDefinitionNode)],
   };
 }

@@ -1,7 +1,7 @@
-import { buildSchema, GraphQLSchema, lexicographicSortSchema, printSchema } from 'graphql';
+import { buildSchema, GraphQLSchema, lexicographicSortSchema, parse, print } from 'graphql';
 import { Change, diff } from '@graphql-inspector/core';
+import { printSchemaWithDirectives } from '@graphql-tools/utils';
 import { patchSchema } from '../index.js';
-import { printSchemaWithDirectives } from '@graphql-tools/utils'
 
 function printSortedSchema(schema: GraphQLSchema) {
   return printSchemaWithDirectives(lexicographicSortSchema(schema));
@@ -12,7 +12,10 @@ export async function expectPatchToMatch(before: string, after: string): Promise
   const schemaB = buildSchema(after, { assumeValid: true, assumeValidSDL: true });
 
   const changes = await diff(schemaA, schemaB);
-  const patched = patchSchema(schemaA, changes, { throwOnError: true });
+  const patched = patchSchema(schemaA, changes, {
+    throwOnError: true,
+    debug: process.env.DEBUG === 'true',
+  });
   expect(printSortedSchema(schemaB)).toBe(printSortedSchema(patched));
   return changes;
 }

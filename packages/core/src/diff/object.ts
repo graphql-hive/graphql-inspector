@@ -1,6 +1,10 @@
 import { GraphQLObjectType, Kind } from 'graphql';
 import { compareLists } from '../utils/compare.js';
-import { directiveUsageAdded, directiveUsageRemoved } from './changes/directive-usage.js';
+import {
+  directiveUsageAdded,
+  directiveUsageChanged,
+  directiveUsageRemoved,
+} from './changes/directive-usage.js';
 import { fieldAdded, fieldRemoved } from './changes/field.js';
 import { objectTypeInterfaceAdded, objectTypeInterfaceRemoved } from './changes/object.js';
 import { changesInField } from './field.js';
@@ -42,6 +46,10 @@ export function changesInObject(
   compareLists(oldType?.astNode?.directives || [], newType.astNode?.directives || [], {
     onAdded(directive) {
       addChange(directiveUsageAdded(Kind.OBJECT, directive, newType, oldType === null));
+      directiveUsageChanged(null, directive, addChange, newType);
+    },
+    onMutual(directive) {
+      directiveUsageChanged(directive.oldVersion, directive.newVersion, addChange, newType);
     },
     onRemoved(directive) {
       addChange(directiveUsageRemoved(Kind.OBJECT, directive, oldType!));

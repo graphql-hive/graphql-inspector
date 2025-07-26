@@ -110,6 +110,8 @@ export const ChangeType = {
   DirectiveUsageFieldDefinitionRemoved: 'DIRECTIVE_USAGE_FIELD_DEFINITION_REMOVED',
   DirectiveUsageInputFieldDefinitionAdded: 'DIRECTIVE_USAGE_INPUT_FIELD_DEFINITION_ADDED',
   DirectiveUsageInputFieldDefinitionRemoved: 'DIRECTIVE_USAGE_INPUT_FIELD_DEFINITION_REMOVED',
+  DirectiveUsageArgumentAdded: 'DIRECTIVE_USAGE_ARGUMENT_ADDED',
+  DirectiveUsageArgumentRemoved: 'DIRECTIVE_USAGE_ARGUMENT_REMOVED',
 } as const;
 
 export type TypeOfChangeType = (typeof ChangeType)[keyof typeof ChangeType];
@@ -858,6 +860,43 @@ export type DirectiveUsageArgumentDefinitionAddedChange = {
   };
 };
 
+export type DirectiveUsageArgumentAddedChange = {
+  type: typeof ChangeType.DirectiveUsageArgumentAdded;
+  meta: {
+    /** Name of the directive that this argument is being added to */
+    directiveName: string;
+    addedArgumentName: string;
+    addedArgumentValue: string;
+    /** If the argument had an existing value */
+    oldArgumentValue: string | null;
+    /** The nearest ancestor that is a type, if any. If null, then this change is on the schema node */
+    parentTypeName: string | null;
+    /** The nearest ancestor that is a field, if any. If null, then this change is on a type node. */
+    parentFieldName: string | null;
+    /** The nearest ancestor that is a argument, if any. If null, then this change is on a field node. */
+    parentArgumentName: string | null;
+    /** The nearest ancestor that is an enum value. If the directive is used on an enum value rather than a field, then populate this. */
+    parentEnumValueName: string | null;
+  };
+};
+
+export type DirectiveUsageArgumentRemovedChange = {
+  type: typeof ChangeType.DirectiveUsageArgumentRemoved;
+  meta: {
+    /** Name of the directive that this argument is being removed from */
+    directiveName: string;
+    removedArgumentName: string;
+    /** The nearest ancestor that is a type, if any. If null, then this change is on the schema node */
+    parentTypeName: string | null;
+    /** The nearest ancestor that is a field, if any. If null, then this change is on a type node. */
+    parentFieldName: string | null;
+    /** The nearest ancestor that is a argument, if any. If null, then this change is on a field node. */
+    parentArgumentName: string | null;
+    /** The nearest ancestor that is an enum value. If the directive is used on an enum value rather than a field, then populate this. */
+    parentEnumValueName: string | null;
+  };
+};
+
 type Changes = {
   [ChangeType.TypeAdded]: TypeAddedChange;
   [ChangeType.TypeRemoved]: TypeRemovedChange;
@@ -955,6 +994,8 @@ type Changes = {
   [ChangeType.DirectiveUsageFieldDefinitionRemoved]: DirectiveUsageFieldDefinitionRemovedChange;
   [ChangeType.DirectiveUsageInputFieldDefinitionAdded]: DirectiveUsageInputFieldDefinitionAddedChange;
   [ChangeType.DirectiveUsageInputFieldDefinitionRemoved]: DirectiveUsageInputFieldDefinitionRemovedChange;
+  [ChangeType.DirectiveUsageArgumentAdded]: DirectiveUsageArgumentAddedChange;
+  [ChangeType.DirectiveUsageArgumentRemoved]: DirectiveUsageArgumentRemovedChange;
 };
 
 export type SerializableChange = Changes[keyof Changes];

@@ -1,8 +1,13 @@
 import { GraphQLField, GraphQLInterfaceType, GraphQLObjectType, Kind } from 'graphql';
+import { DEPRECATION_REASON_DEFAULT } from 'packages/patch/src/utils.js';
 import { compareLists, isNotEqual, isVoid } from '../utils/compare.js';
 import { isDeprecated } from '../utils/is-deprecated.js';
 import { changesInArgument } from './argument.js';
-import { directiveUsageAdded, directiveUsageRemoved } from './changes/directive-usage.js';
+import {
+  directiveUsageAdded,
+  directiveUsageChanged,
+  directiveUsageRemoved,
+} from './changes/directive-usage.js';
 import {
   fieldArgumentAdded,
   fieldArgumentRemoved,
@@ -45,12 +50,12 @@ export function changesInField(
   } else if (isNotEqual(oldField.deprecationReason, newField.deprecationReason)) {
     if (
       isVoid(oldField.deprecationReason) ||
-      oldField.deprecationReason === 'No longer supported'
+      oldField.deprecationReason === DEPRECATION_REASON_DEFAULT
     ) {
       addChange(fieldDeprecationReasonAdded(type, newField));
     } else if (
       isVoid(newField.deprecationReason) ||
-      newField.deprecationReason === 'No longer supported'
+      newField.deprecationReason === DEPRECATION_REASON_DEFAULT
     ) {
       addChange(fieldDeprecationReasonRemoved(type, oldField));
     } else {
@@ -87,6 +92,10 @@ export function changesInField(
           oldField === null,
         ),
       );
+      directiveUsageChanged(null, directive, addChange, type, newField);
+    },
+    onMutual(directive) {
+      directiveUsageChanged(directive.oldVersion, directive.newVersion, addChange, type, newField);
     },
     onRemoved(arg) {
       addChange(

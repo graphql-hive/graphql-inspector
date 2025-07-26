@@ -1,6 +1,10 @@
 import { GraphQLInterfaceType, Kind } from 'graphql';
 import { compareLists } from '../utils/compare.js';
-import { directiveUsageAdded, directiveUsageRemoved } from './changes/directive-usage.js';
+import {
+  directiveUsageAdded,
+  directiveUsageChanged,
+  directiveUsageRemoved,
+} from './changes/directive-usage.js';
 import { fieldAdded, fieldRemoved } from './changes/field.js';
 import { objectTypeInterfaceAdded, objectTypeInterfaceRemoved } from './changes/object.js';
 import { changesInField } from './field.js';
@@ -48,6 +52,10 @@ export function changesInInterface(
           oldInterface === null,
         ),
       );
+      directiveUsageChanged(null, directive, addChange, newInterface);
+    },
+    onMutual(directive) {
+      directiveUsageChanged(directive.oldVersion, directive.newVersion, addChange, newInterface);
     },
     onRemoved(directive) {
       addChange(directiveUsageRemoved(Kind.INTERFACE_TYPE_DEFINITION, directive, oldInterface!));

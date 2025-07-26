@@ -13,7 +13,11 @@ import {
 import { compareLists, isNotEqual, isVoid } from '../utils/compare.js';
 import { isPrimitive } from '../utils/graphql.js';
 import { Change } from './changes/change.js';
-import { directiveUsageAdded, directiveUsageRemoved } from './changes/directive-usage.js';
+import {
+  directiveUsageAdded,
+  directiveUsageChanged,
+  directiveUsageRemoved,
+} from './changes/directive-usage.js';
 import { directiveAdded, directiveRemoved } from './changes/directive.js';
 import {
   schemaMutationTypeChanged,
@@ -80,6 +84,10 @@ export function diffSchema(oldSchema: GraphQLSchema, newSchema: GraphQLSchema): 
   compareLists(oldSchema.astNode?.directives || [], newSchema.astNode?.directives || [], {
     onAdded(directive) {
       addChange(directiveUsageAdded(Kind.SCHEMA_DEFINITION, directive, newSchema, false));
+      directiveUsageChanged(null, directive, addChange);
+    },
+    onMutual(directive) {
+      directiveUsageChanged(directive.oldVersion, directive.newVersion, addChange);
     },
     onRemoved(directive) {
       addChange(directiveUsageRemoved(Kind.SCHEMA_DEFINITION, directive, oldSchema));

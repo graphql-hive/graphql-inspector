@@ -67,9 +67,12 @@ export function directiveArgumentAdded(
   if (!directiveNode) {
     handleError(change, new CoordinateNotFoundError(), config);
   } else if (directiveNode.kind === Kind.DIRECTIVE_DEFINITION) {
-    const existingArg = findNamedNode(directiveNode.arguments, change.meta.addedDirectiveArgumentName);
+    const existingArg = findNamedNode(
+      directiveNode.arguments,
+      change.meta.addedDirectiveArgumentName,
+    );
     if (existingArg) {
-      handleError(change, new CoordinateAlreadyExistsError(existingArg.kind), config)
+      handleError(change, new CoordinateAlreadyExistsError(existingArg.kind), config);
     } else {
       const node: InputValueDefinitionNode = {
         kind: Kind.INPUT_VALUE_DEFINITION,

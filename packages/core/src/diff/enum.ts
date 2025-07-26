@@ -1,6 +1,11 @@
 import { GraphQLEnumType, GraphQLEnumValue, Kind } from 'graphql';
+import { DEPRECATION_REASON_DEFAULT } from 'packages/patch/src/utils.js';
 import { compareLists, isNotEqual, isVoid } from '../utils/compare.js';
-import { directiveUsageAdded, directiveUsageRemoved } from './changes/directive-usage.js';
+import {
+  directiveUsageAdded,
+  directiveUsageChanged,
+  directiveUsageRemoved,
+} from './changes/directive-usage.js';
 import {
   enumValueAdded,
   enumValueDeprecationReasonAdded,
@@ -34,6 +39,10 @@ export function changesInEnum(
       addChange(
         directiveUsageAdded(Kind.ENUM_TYPE_DEFINITION, directive, newEnum, oldEnum === null),
       );
+      directiveUsageChanged(null, directive, addChange, newEnum);
+    },
+    onMutual(directive) {
+      directiveUsageChanged(directive.oldVersion, directive.newVersion, addChange, newEnum);
     },
     onRemoved(directive) {
       addChange(directiveUsageRemoved(Kind.ENUM_TYPE_DEFINITION, directive, newEnum));
@@ -57,15 +66,14 @@ function changesInEnumValue(
   }
 
   if (isNotEqual(oldValue?.deprecationReason, newValue.deprecationReason)) {
-    // @note "No longer supported" is the default graphql reason
     if (
       isVoid(oldValue?.deprecationReason) ||
-      oldValue?.deprecationReason === 'No longer supported'
+      oldValue?.deprecationReason === DEPRECATION_REASON_DEFAULT
     ) {
       addChange(enumValueDeprecationReasonAdded(newEnum, oldValue, newValue));
     } else if (
       isVoid(newValue.deprecationReason) ||
-      newValue?.deprecationReason === 'No longer supported'
+      newValue?.deprecationReason === DEPRECATION_REASON_DEFAULT
     ) {
       addChange(enumValueDeprecationReasonRemoved(newEnum, oldValue, newValue));
     } else {
@@ -85,6 +93,18 @@ function changesInEnumValue(
           },
           oldValue === null,
         ),
+      );
+      directiveUsageChanged(null, directive, addChange, newEnum, undefined, undefined, newValue);
+    },
+    onMutual(directive) {
+      directiveUsageChanged(
+        directive.oldVersion,
+        directive.newVersion,
+        addChange,
+        newEnum,
+        undefined,
+        undefined,
+        newValue,
       );
     },
     onRemoved(directive) {

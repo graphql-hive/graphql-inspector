@@ -290,7 +290,9 @@ export function fieldDeprecationReasonAddedFromMeta(args: FieldDeprecationReason
     },
     message: buildFieldDeprecationReasonAddedMessage(args.meta),
     meta: args.meta,
-    path: [args.meta.typeName, args.meta.fieldName, GraphQLDeprecatedDirective.name].join('.'),
+    path: [args.meta.typeName, args.meta.fieldName, `@${GraphQLDeprecatedDirective.name}`].join(
+      '.',
+    ),
   } as const;
 }
 

@@ -341,40 +341,45 @@ test('huge test', async () => {
     }
   }
 
-  for (const path of [
-    'WillBeRemoved',
+  const expectedPaths = [
     'DType',
+    'DType.b',
+    'WillBeRemoved',
+    'AInput.c',
+    'AInput.b',
+    'AInput.a',
+    'AInput.a',
+    'AInput.a',
+    'ListInput.a',
     'Query.a',
     'Query.a.anArg',
     'Query.b',
     'Query',
     'BType',
-    'AInput.b',
-    'AInput.c',
-    'AInput.a',
-    'AInput.a',
-    'AInput.a',
     'CType',
-    'CType.c',
     'CType.b',
+    'CType.c',
     'CType.a',
     'CType.a.arg',
     'CType.d.arg',
     'MyUnion',
     'MyUnion',
-    'AnotherInterface.anotherInterfaceField',
     'AnotherInterface.b',
+    'AnotherInterface.anotherInterfaceField',
     'WithInterfaces',
     'WithArguments.a.a',
     'WithArguments.a.b',
     'WithArguments.b.arg',
-    'Options.C',
     'Options.D',
+    'Options.C',
     'Options.A',
-    'Options.E',
-    'Options.F.deprecated',
-    '@willBeRemoved',
+    'Options.E.@deprecated',
+    'Options.E.@deprecated',
+    'Options.F.@deprecated',
     '@yolo2',
+    '@yolo2',
+    '@yolo2',
+    '@willBeRemoved',
     '@yolo',
     '@yolo',
     '@yolo',
@@ -383,14 +388,17 @@ test('huge test', async () => {
     '@yolo.someArg',
     '@yolo.someArg',
     '@yolo.anotherArg',
-  ]) {
+  ];
+  for (const path of expectedPaths) {
     try {
-      expect(changes.some(c => c.path === path)).toEqual(true);
+      expect(changes.find(c => c.path === path)?.path).toEqual(path);
     } catch (e) {
       console.log(`Couldn't find: ${path}`);
       throw e;
     }
   }
+  // make sure all expected changes are accounted for.
+  expect(expectedPaths).toHaveLength(changes.length);
 });
 
 test('array as default value in argument (same)', async () => {

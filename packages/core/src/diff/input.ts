@@ -1,6 +1,10 @@
 import { GraphQLInputField, GraphQLInputObjectType, Kind } from 'graphql';
 import { compareLists, diffArrays, isNotEqual, isVoid } from '../utils/compare.js';
-import { directiveUsageAdded, directiveUsageRemoved } from './changes/directive-usage.js';
+import {
+  directiveUsageAdded,
+  directiveUsageChanged,
+  directiveUsageRemoved,
+} from './changes/directive-usage.js';
 import {
   inputFieldAdded,
   inputFieldDefaultValueChanged,
@@ -43,6 +47,10 @@ export function changesInInputObject(
           oldInput === null,
         ),
       );
+      directiveUsageChanged(null, directive, addChange, newInput);
+    },
+    onMutual(directive) {
+      directiveUsageChanged(directive.oldVersion, directive.newVersion, addChange, newInput);
     },
     onRemoved(directive) {
       addChange(directiveUsageRemoved(Kind.INPUT_OBJECT_TYPE_DEFINITION, directive, oldInput!));
@@ -95,6 +103,16 @@ function changesInInputField(
             },
             oldField === null,
           ),
+        );
+        directiveUsageChanged(null, directive, addChange, input, newField);
+      },
+      onMutual(directive) {
+        directiveUsageChanged(
+          directive.oldVersion,
+          directive.newVersion,
+          addChange,
+          input,
+          newField,
         );
       },
       onRemoved(directive) {

@@ -1,5 +1,5 @@
 import type { SchemaDefinitionNode, SchemaExtensionNode } from 'graphql';
-import type { Change, ChangeType } from '@graphql-inspector/core';
+import { Change, ChangeType } from '@graphql-inspector/core';
 
 export type AdditionChangeType =
   | typeof ChangeType.DirectiveAdded

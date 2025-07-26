@@ -11,7 +11,11 @@ import {
   fieldArgumentDescriptionChanged,
   fieldArgumentTypeChanged,
 } from './changes/argument.js';
-import { directiveUsageAdded, directiveUsageRemoved } from './changes/directive-usage.js';
+import {
+  directiveUsageAdded,
+  directiveUsageChanged,
+  directiveUsageRemoved,
+} from './changes/directive-usage.js';
 import { AddChange } from './schema.js';
 
 export function changesInArgument(
@@ -54,6 +58,18 @@ export function changesInArgument(
             },
             oldArg === null,
           ),
+        );
+        directiveUsageChanged(null, directive, addChange, type, field, newArg);
+      },
+
+      onMutual(directive) {
+        directiveUsageChanged(
+          directive.oldVersion,
+          directive.newVersion,
+          addChange,
+          type,
+          field,
+          newArg,
         );
       },
 

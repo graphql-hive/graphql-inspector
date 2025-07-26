@@ -1,10 +1,12 @@
-import { ASTNode, DirectiveNode, Kind } from 'graphql';
+import { ArgumentNode, ASTNode, DirectiveNode, Kind, parseValue } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
   CoordinateAlreadyExistsError,
   CoordinateNotFoundError,
   DeletedCoordinateNotFoundError,
+  DirectiveAlreadyExists,
   handleError,
+  KindMismatchError,
 } from '../errors.js';
 import { nameNode } from '../node-templates.js';
 import { PatchConfig, SchemaNode } from '../types.js';
@@ -53,7 +55,7 @@ function directiveUsageDefinitionAdded(
     | { directives?: DirectiveNode[] }
     | undefined;
   if (directiveNode) {
-    handleError(change, new CoordinateAlreadyExistsError(directiveNode.kind), config);
+    handleError(change, new DirectiveAlreadyExists(change.meta.addedDirectiveName), config);
   } else if (parentNode) {
     const newDirective: DirectiveNode = {
       kind: Kind.DIRECTIVE,
@@ -67,34 +69,53 @@ function directiveUsageDefinitionAdded(
 }
 
 function schemaDirectiveUsageDefinitionAdded(
-  change: Change<DirectiveUsageAddedChange>,
+  change: Change<typeof ChangeType.DirectiveUsageSchemaAdded>,
   schemaNodes: SchemaNode[],
+  nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
   // @todo handle repeat directives
-  // findNamedNode(schemaNodes[0].directives, change.meta.addedDirectiveName)
-  throw new Error('DirectiveUsageAddedChange on schema node is not implemented yet.')
+  const directiveAlreadyExists = schemaNodes.some(schemaNode =>
+    findNamedNode(schemaNode.directives, change.meta.addedDirectiveName),
+  );
+  if (directiveAlreadyExists) {
+    handleError(change, new DirectiveAlreadyExists(change.meta.addedDirectiveName), config);
+  } else {
+    const directiveNode: DirectiveNode = {
+      kind: Kind.DIRECTIVE,
+      name: nameNode(change.meta.addedDirectiveName),
+    };
+    (schemaNodes[0].directives as DirectiveNode[] | undefined) = [
+      ...(schemaNodes[0].directives ?? []),
+      directiveNode,
+    ];
+    nodeByPath.set(`.@${change.meta.addedDirectiveName}`, directiveNode);
+  }
 }
 
 function schemaDirectiveUsageDefinitionRemoved(
   change: Change<DirectiveUsageRemovedChange>,
   schemaNodes: SchemaNode[],
+  nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
-    return;
-  }
+  let deleted = false;
+  // @todo handle repeated directives
   for (const node of schemaNodes) {
-    // @todo handle repeated directives
     const directiveNode = findNamedNode(node.directives, change.meta.removedDirectiveName);
     if (directiveNode) {
       (node.directives as DirectiveNode[] | undefined) = node.directives?.filter(
         d => d.name.value !== change.meta.removedDirectiveName,
       );
+      // nodeByPath.delete(change.path)
+      nodeByPath.delete(`.@${change.meta.removedDirectiveName}`);
+      deleted = true;
+      break;
     }
   }
-  handleError(change, new DeletedCoordinateNotFoundError(), config);
+  if (!deleted) {
+    handleError(change, new DeletedCoordinateNotFoundError(), config);
+  }
 }
 
 function directiveUsageDefinitionRemoved(
@@ -284,17 +305,19 @@ export function directiveUsageScalarRemoved(
 export function directiveUsageSchemaAdded(
   change: Change<typeof ChangeType.DirectiveUsageSchemaAdded>,
   schemaDefs: SchemaNode[],
+  nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  return schemaDirectiveUsageDefinitionAdded(change, schemaDefs, config);
+  return schemaDirectiveUsageDefinitionAdded(change, schemaDefs, nodeByPath, config);
 }
 
 export function directiveUsageSchemaRemoved(
   change: Change<typeof ChangeType.DirectiveUsageSchemaRemoved>,
   schemaDefs: SchemaNode[],
+  nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  return schemaDirectiveUsageDefinitionRemoved(change, schemaDefs, config);
+  return schemaDirectiveUsageDefinitionRemoved(change, schemaDefs, nodeByPath, config);
 }
 
 export function directiveUsageUnionMemberAdded(
@@ -311,4 +334,49 @@ export function directiveUsageUnionMemberRemoved(
   config: PatchConfig,
 ) {
   return directiveUsageDefinitionRemoved(change, nodeByPath, config);
+}
+
+export function directiveUsageArgumentAdded(
+  change: Change<typeof ChangeType.DirectiveUsageArgumentAdded>,
+  nodeByPath: Map<string, ASTNode>,
+  config: PatchConfig,
+) {
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+  const directiveNode = nodeByPath.get(parentPath(change.path));
+  if (!directiveNode) {
+    handleError(change, new CoordinateNotFoundError(), config);
+  } else if (directiveNode.kind === Kind.DIRECTIVE) {
+    const existing = findNamedNode(directiveNode.arguments, change.meta.addedArgumentName);
+    if (existing) {
+      handleError(change, new CoordinateAlreadyExistsError(directiveNode.kind), config);
+    } else {
+      const argNode: ArgumentNode = {
+        kind: Kind.ARGUMENT,
+        name: nameNode(change.meta.addedArgumentName),
+        value: parseValue(change.meta.addedArgumentValue),
+      };
+      (directiveNode.arguments as ArgumentNode[] | undefined) = [
+        ...(directiveNode.arguments ?? []),
+        argNode,
+      ];
+      nodeByPath.set(change.path, argNode);
+    }
+  } else {
+    handleError(change, new KindMismatchError(Kind.DIRECTIVE, directiveNode.kind), config);
+  }
+}
+
+export function directiveUsageArgumentRemoved(
+  change: Change<typeof ChangeType.DirectiveUsageArgumentRemoved>,
+  _nodeByPath: Map<string, ASTNode>,
+  config: PatchConfig,
+) {
+  if (!change.path) {
+    handleError(change, new CoordinateNotFoundError(), config);
+    return;
+  }
+  // @todo
 }

@@ -113,17 +113,23 @@ describe('ignoreNestedAdditions rule', () => {
     `);
 
     const changes = await diff(a, b, [ignoreNestedAdditions]);
-    expect(changes).toHaveLength(3);
 
     {
       const added = findFirstChangeByPath(changes, 'FooUnion');
-      expect(added.type).toBe(ChangeType.TypeAdded);
+      expect(added?.type).toBe(ChangeType.TypeAdded);
     }
 
     {
       const added = findFirstChangeByPath(changes, 'Foo');
-      expect(added.type).toBe(ChangeType.TypeAdded);
+      expect(added?.type).toBe(ChangeType.TypeAdded);
     }
+
+    {
+      const added = findFirstChangeByPath(changes, '@special');
+      expect(added?.type).toBe(ChangeType.DirectiveAdded);
+    }
+
+    expect(changes).toHaveLength(3);
   });
 
   test('added argument / location / description on new directive', async () => {

@@ -1,4 +1,12 @@
-import { ArgumentNode, ASTNode, EnumValueDefinitionNode, Kind, print, StringValueNode, ValueNode } from 'graphql';
+import {
+  ArgumentNode,
+  ASTNode,
+  DirectiveNode,
+  EnumValueDefinitionNode,
+  Kind,
+  print,
+  StringValueNode,
+} from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
   CoordinateAlreadyExistsError,
@@ -10,7 +18,7 @@ import {
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
 import type { PatchConfig } from '../types';
-import { findNamedNode, getDeprecatedDirectiveNode, parentPath } from '../utils.js';
+import { findNamedNode, parentPath } from '../utils.js';
 
 export function enumValueRemoved(
   change: Change<typeof ChangeType.EnumValueRemoved>,
@@ -96,10 +104,10 @@ export function enumValueDeprecationReasonAdded(
     return;
   }
 
-  const enumValueNode = nodeByPath.get(change.path);
+  const enumValueNode = nodeByPath.get(parentPath(change.path));
+  const deprecation = nodeByPath.get(change.path) as DirectiveNode | undefined;
   if (enumValueNode) {
     if (enumValueNode.kind === Kind.ENUM_VALUE_DEFINITION) {
-      const deprecation = getDeprecatedDirectiveNode(enumValueNode);
       if (deprecation) {
         if (findNamedNode(deprecation.arguments, 'reason')) {
           handleError(change, new CoordinateAlreadyExistsError(Kind.ARGUMENT), config);
@@ -109,7 +117,10 @@ export function enumValueDeprecationReasonAdded(
           name: nameNode('reason'),
           value: stringNode(change.meta.addedValueDeprecationReason),
         };
-        (deprecation.arguments as ArgumentNode[] | undefined) = [...(deprecation.arguments ?? []), argNode];
+        (deprecation.arguments as ArgumentNode[] | undefined) = [
+          ...(deprecation.arguments ?? []),
+          argNode,
+        ];
         nodeByPath.set(`${change.path}.reason`, argNode);
       } else {
         handleError(change, new CoordinateNotFoundError(), config);

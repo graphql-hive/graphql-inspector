@@ -1,9 +1,4 @@
-import {
-  ASTNode,
-  DirectiveNode,
-  GraphQLDeprecatedDirective,
-  NameNode,
-} from 'graphql';
+import { ASTNode, DirectiveNode, GraphQLDeprecatedDirective, NameNode } from 'graphql';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import { AdditionChangeType } from './types.js';
@@ -11,7 +6,7 @@ import { AdditionChangeType } from './types.js';
 export function getDeprecatedDirectiveNode(
   definitionNode: Maybe<{ readonly directives?: ReadonlyArray<DirectiveNode> }>,
 ): Maybe<DirectiveNode> {
-  return findNamedNode(definitionNode?.directives, GraphQLDeprecatedDirective.name);
+  return findNamedNode(definitionNode?.directives, `@${GraphQLDeprecatedDirective.name}`);
 }
 
 export function findNamedNode<T extends { readonly name: NameNode }>(
@@ -44,6 +39,19 @@ const isAdditionChange = (change: Change<any>): change is Change<AdditionChangeT
     case ChangeType.TypeDescriptionAdded:
     case ChangeType.TypeAdded:
     case ChangeType.UnionMemberAdded:
+    case ChangeType.DirectiveUsageArgumentAdded:
+    case ChangeType.DirectiveUsageArgumentDefinitionAdded:
+    case ChangeType.DirectiveUsageEnumAdded:
+    case ChangeType.DirectiveUsageEnumValueAdded:
+    case ChangeType.DirectiveUsageFieldAdded:
+    case ChangeType.DirectiveUsageFieldDefinitionAdded:
+    case ChangeType.DirectiveUsageInputFieldDefinitionAdded:
+    case ChangeType.DirectiveUsageInputObjectAdded:
+    case ChangeType.DirectiveUsageInterfaceAdded:
+    case ChangeType.DirectiveUsageObjectAdded:
+    case ChangeType.DirectiveUsageScalarAdded:
+    case ChangeType.DirectiveUsageSchemaAdded:
+    case ChangeType.DirectiveUsageUnionMemberAdded:
       return true;
     default:
       return false;
@@ -60,8 +68,10 @@ export function debugPrintChange(change: Change<any>, nodeByPath: Map<string, AS
       console.debug(`"${change.path}" has a change: [${change.type}] "${change.message}"`);
     } else {
       console.debug(
-        `The change to "${change.path}" cannot be applied. That coordinate does not exist in the schema.`,
+        `The "${change.type}" change to "${change.path}" cannot be applied. That coordinate does not exist in the schema.`,
       );
     }
   }
 }
+
+export const DEPRECATION_REASON_DEFAULT = 'No longer supported';

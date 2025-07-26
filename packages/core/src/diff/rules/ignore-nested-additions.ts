@@ -5,6 +5,7 @@ const additionChangeTypes = new Set([
   ChangeType.DirectiveAdded,
   ChangeType.DirectiveArgumentAdded,
   ChangeType.DirectiveLocationAdded,
+  ChangeType.DirectiveUsageArgumentAdded,
   ChangeType.DirectiveUsageArgumentDefinitionAdded,
   ChangeType.DirectiveUsageEnumAdded,
   ChangeType.DirectiveUsageEnumValueAdded,
@@ -44,7 +45,7 @@ export const ignoreNestedAdditions: Rule = ({ changes }) => {
   const filteredChanges = changes.filter(({ path, type }) => {
     if (path) {
       const parent = parentPath(path);
-      const matches = additionPaths.filter(matchedPath => matchedPath.includes(parent));
+      const matches = additionPaths.filter(matchedPath => matchedPath.startsWith(parent));
       const hasAddedParent = matches.length > 0;
 
       if (additionChangeTypes.has(type)) {

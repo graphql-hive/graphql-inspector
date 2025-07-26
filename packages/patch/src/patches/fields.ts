@@ -26,7 +26,12 @@ import {
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
 import type { PatchConfig } from '../types';
-import { findNamedNode, getDeprecatedDirectiveNode, parentPath } from '../utils.js';
+import {
+  DEPRECATION_REASON_DEFAULT,
+  findNamedNode,
+  getDeprecatedDirectiveNode,
+  parentPath,
+} from '../utils.js';
 
 export function fieldTypeChanged(
   change: Change<typeof ChangeType.FieldTypeChanged>,
@@ -265,7 +270,8 @@ export function fieldDeprecationAdded(
         const directiveNode = {
           kind: Kind.DIRECTIVE,
           name: nameNode(GraphQLDeprecatedDirective.name),
-          ...(change.meta.deprecationReason
+          ...(change.meta.deprecationReason &&
+          change.meta.deprecationReason !== DEPRECATION_REASON_DEFAULT
             ? {
                 arguments: [
                   {
@@ -282,7 +288,10 @@ export function fieldDeprecationAdded(
           ...(fieldNode.directives ?? []),
           directiveNode,
         ];
-        nodeByPath.set(`${change.path}.${GraphQLDeprecatedDirective.name}`, directiveNode);
+        nodeByPath.set(
+          [change.path, `@${GraphQLDeprecatedDirective.name}`].join(','),
+          directiveNode,
+        );
       }
     } else {
       handleError(change, new KindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind), config);
@@ -310,7 +319,7 @@ export function fieldDeprecationRemoved(
         (fieldNode.directives as DirectiveNode[] | undefined) = fieldNode.directives?.filter(
           d => d.name.value !== GraphQLDeprecatedDirective.name,
         );
-        nodeByPath.delete(`${change.path}.${GraphQLDeprecatedDirective.name}`);
+        nodeByPath.delete([change.path, `@${GraphQLDeprecatedDirective.name}`].join('.'));
       } else {
         handleError(change, new DeprecatedDirectiveNotFound(), config);
       }
