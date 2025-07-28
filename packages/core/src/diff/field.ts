@@ -1,5 +1,4 @@
 import { GraphQLField, GraphQLInterfaceType, GraphQLObjectType, Kind } from 'graphql';
-import { DEPRECATION_REASON_DEFAULT } from 'packages/patch/src/utils.js';
 import { compareLists, isNotEqual, isVoid } from '../utils/compare.js';
 import { isDeprecated } from '../utils/is-deprecated.js';
 import { changesInArgument } from './argument.js';
@@ -22,6 +21,8 @@ import {
   fieldTypeChanged,
 } from './changes/field.js';
 import { AddChange } from './schema.js';
+
+const DEPRECATION_REASON_DEFAULT = 'No longer supported';
 
 export function changesInField(
   type: GraphQLObjectType | GraphQLInterfaceType,
