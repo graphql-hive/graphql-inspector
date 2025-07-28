@@ -1,5 +1,4 @@
 import { GraphQLEnumType, GraphQLEnumValue, Kind } from 'graphql';
-import { DEPRECATION_REASON_DEFAULT } from 'packages/patch/src/utils.js';
 import { compareLists, isNotEqual, isVoid } from '../utils/compare.js';
 import {
   directiveUsageAdded,
@@ -15,6 +14,8 @@ import {
   enumValueRemoved,
 } from './changes/enum.js';
 import { AddChange } from './schema.js';
+
+const DEPRECATION_REASON_DEFAULT = 'No longer supported';
 
 export function changesInEnum(
   oldEnum: GraphQLEnumType | null,
