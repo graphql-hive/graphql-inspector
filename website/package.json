@@ -15,7 +15,7 @@
     "@graphql-inspector/core": "../packages/core/dist",
     "@monaco-editor/react": "4.6.0",
     "@theguild/components": "6.6.6",
-    "next": "14.2.26",
+    "next": "14.2.30",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-flip-move": "^3.0.5"
