@@ -1,10 +1,11 @@
 import { ASTNode, Kind, NamedTypeNode } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
-  CoordinateNotFoundError,
+  AddedAttributeAlreadyExistsError,
+  ChangedAncestorCoordinateNotFoundError,
+  ChangedCoordinateKindMismatchError,
+  ChangePathMissingError,
   handleError,
-  InterfaceAlreadyExistsOnTypeError,
-  KindMismatchError,
 } from '../errors.js';
 import { namedTypeNode } from '../node-templates.js';
 import type { PatchConfig } from '../types';
@@ -16,7 +17,7 @@ export function objectTypeInterfaceAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -30,7 +31,11 @@ export function objectTypeInterfaceAdded(
       if (existing) {
         handleError(
           change,
-          new InterfaceAlreadyExistsOnTypeError(change.meta.addedInterfaceName),
+          new AddedAttributeAlreadyExistsError(
+            typeNode.kind,
+            'interfaces',
+            change.meta.addedInterfaceName,
+          ),
           config,
         );
       } else {
@@ -42,12 +47,19 @@ export function objectTypeInterfaceAdded(
     } else {
       handleError(
         change,
-        new KindMismatchError(Kind.OBJECT_TYPE_DEFINITION, typeNode.kind),
+        new ChangedCoordinateKindMismatchError(
+          Kind.OBJECT_TYPE_DEFINITION, // or Kind.INTERFACE_TYPE_DEFINITION
+          typeNode.kind,
+        ),
         config,
       );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(
+      change,
+      new ChangedAncestorCoordinateNotFoundError(Kind.OBJECT_TYPE_DEFINITION, 'interfaces'),
+      config,
+    );
   }
 }
 
@@ -57,7 +69,7 @@ export function objectTypeInterfaceRemoved(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -73,16 +85,16 @@ export function objectTypeInterfaceRemoved(
           i => i.name.value !== change.meta.removedInterfaceName,
         );
       } else {
-        handleError(change, new CoordinateNotFoundError(), config);
+        handleError(change, new ChangePathMissingError(), config);
       }
     } else {
       handleError(
         change,
-        new KindMismatchError(Kind.OBJECT_TYPE_DEFINITION, typeNode.kind),
+        new ChangedCoordinateKindMismatchError(Kind.OBJECT_TYPE_DEFINITION, typeNode.kind),
         config,
       );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
   }
 }

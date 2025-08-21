@@ -9,12 +9,15 @@ import {
 } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
-  CoordinateAlreadyExistsError,
-  CoordinateNotFoundError,
-  EnumValueNotFoundError,
+  AddedAttributeAlreadyExistsError,
+  AddedAttributeCoordinateNotFoundError,
+  AddedCoordinateAlreadyExistsError,
+  ChangedAncestorCoordinateNotFoundError,
+  ChangedCoordinateKindMismatchError,
+  ChangePathMissingError,
+  DeletedAttributeNotFoundError,
   handleError,
-  KindMismatchError,
-  OldValueMismatchError,
+  ValueMismatchError,
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
 import type { PatchConfig } from '../types';
@@ -26,7 +29,7 @@ export function enumValueRemoved(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -34,13 +37,21 @@ export function enumValueRemoved(
     | (ASTNode & { values?: EnumValueDefinitionNode[] })
     | undefined;
   if (!enumNode) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
   } else if (enumNode.kind !== Kind.ENUM_TYPE_DEFINITION) {
-    handleError(change, new KindMismatchError(Kind.ENUM_TYPE_DEFINITION, enumNode.kind), config);
+    handleError(
+      change,
+      new ChangedCoordinateKindMismatchError(Kind.ENUM_TYPE_DEFINITION, enumNode.kind),
+      config,
+    );
   } else if (enumNode.values === undefined || enumNode.values.length === 0) {
     handleError(
       change,
-      new EnumValueNotFoundError(change.meta.enumName, change.meta.removedEnumValueName),
+      new DeletedAttributeNotFoundError(
+        Kind.ENUM_TYPE_DEFINITION,
+        'values',
+        change.meta.removedEnumValueName,
+      ),
       config,
     );
   } else {
@@ -51,7 +62,11 @@ export function enumValueRemoved(
     if (beforeLength === enumNode.values.length) {
       handleError(
         change,
-        new EnumValueNotFoundError(change.meta.enumName, change.meta.removedEnumValueName),
+        new DeletedAttributeNotFoundError(
+          Kind.ENUM_TYPE_DEFINITION,
+          'values',
+          change.meta.removedEnumValueName,
+        ),
         config,
       );
     } else {
@@ -72,12 +87,17 @@ export function enumValueAdded(
     | undefined;
   const changedNode = nodeByPath.get(enumValuePath);
   if (!enumNode) {
-    handleError(change, new CoordinateNotFoundError(), config);
-    console.warn(
-      `Cannot apply change: ${change.type} to ${enumValuePath}. Parent type is missing.`,
-    );
+    handleError(change, new ChangedAncestorCoordinateNotFoundError(Kind.ENUM, 'values'), config);
   } else if (changedNode) {
-    handleError(change, new CoordinateAlreadyExistsError(changedNode.kind), config);
+    handleError(
+      change,
+      new AddedAttributeAlreadyExistsError(
+        changedNode.kind,
+        'values',
+        change.meta.addedEnumValueName,
+      ),
+      config,
+    );
   } else if (enumNode.kind === Kind.ENUM_TYPE_DEFINITION) {
     const c = change as Change<typeof ChangeType.EnumValueAdded>;
     const node: EnumValueDefinitionNode = {
@@ -90,7 +110,11 @@ export function enumValueAdded(
     (enumNode.values as EnumValueDefinitionNode[]) = [...(enumNode.values ?? []), node];
     nodeByPath.set(enumValuePath, node);
   } else {
-    handleError(change, new KindMismatchError(Kind.ENUM_TYPE_DEFINITION, enumNode.kind), config);
+    handleError(
+      change,
+      new ChangedCoordinateKindMismatchError(Kind.ENUM_TYPE_DEFINITION, enumNode.kind),
+      config,
+    );
   }
 }
 
@@ -100,7 +124,7 @@ export function enumValueDeprecationReasonAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -110,7 +134,11 @@ export function enumValueDeprecationReasonAdded(
     if (enumValueNode.kind === Kind.ENUM_VALUE_DEFINITION) {
       if (deprecation) {
         if (findNamedNode(deprecation.arguments, 'reason')) {
-          handleError(change, new CoordinateAlreadyExistsError(Kind.ARGUMENT), config);
+          handleError(
+            change,
+            new AddedCoordinateAlreadyExistsError(Kind.ENUM_VALUE_DEFINITION, 'reason'),
+            config,
+          );
         }
         const argNode: ArgumentNode = {
           kind: Kind.ARGUMENT,
@@ -123,17 +151,21 @@ export function enumValueDeprecationReasonAdded(
         ];
         nodeByPath.set(`${change.path}.reason`, argNode);
       } else {
-        handleError(change, new CoordinateNotFoundError(), config);
+        handleError(change, new ChangePathMissingError(), config);
       }
     } else {
       handleError(
         change,
-        new KindMismatchError(Kind.ENUM_VALUE_DEFINITION, enumValueNode.kind),
+        new ChangedCoordinateKindMismatchError(Kind.ENUM_VALUE_DEFINITION, enumValueNode.kind),
         config,
       );
     }
   } else {
-    handleError(change, new EnumValueNotFoundError(change.meta.enumName), config);
+    handleError(
+      change,
+      new AddedAttributeCoordinateNotFoundError(Kind.ENUM_VALUE_DEFINITION, 'directives'),
+      config,
+    );
   }
 }
 
@@ -143,7 +175,7 @@ export function enumValueDeprecationReasonChanged(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -153,34 +185,43 @@ export function enumValueDeprecationReasonChanged(
       const reasonArgNode = findNamedNode(deprecatedNode.arguments, 'reason');
       if (reasonArgNode) {
         if (reasonArgNode.kind === Kind.ARGUMENT) {
-          if (
+          const oldValueMatches =
             reasonArgNode.value &&
-            print(reasonArgNode.value) === change.meta.oldEnumValueDeprecationReason
-          ) {
-            (reasonArgNode.value as StringValueNode | undefined) = stringNode(
-              change.meta.newEnumValueDeprecationReason,
-            );
-          } else {
+            print(reasonArgNode.value) === change.meta.oldEnumValueDeprecationReason;
+
+          if (!oldValueMatches) {
             handleError(
               change,
-              new OldValueMismatchError(
+              new ValueMismatchError(
+                Kind.ARGUMENT,
                 change.meta.oldEnumValueDeprecationReason,
                 reasonArgNode.value && print(reasonArgNode.value),
               ),
               config,
             );
           }
+          (reasonArgNode.value as StringValueNode | undefined) = stringNode(
+            change.meta.newEnumValueDeprecationReason,
+          );
         } else {
-          handleError(change, new KindMismatchError(Kind.ARGUMENT, reasonArgNode.kind), config);
+          handleError(
+            change,
+            new ChangedCoordinateKindMismatchError(Kind.ARGUMENT, reasonArgNode.kind),
+            config,
+          );
         }
       } else {
-        handleError(change, new CoordinateNotFoundError(), config);
+        handleError(change, new ChangePathMissingError(), config);
       }
     } else {
-      handleError(change, new KindMismatchError(Kind.DIRECTIVE, deprecatedNode.kind), config);
+      handleError(
+        change,
+        new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE, deprecatedNode.kind),
+        config,
+      );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
   }
 }
 
@@ -190,7 +231,7 @@ export function enumValueDescriptionChanged(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -198,29 +239,35 @@ export function enumValueDescriptionChanged(
   if (enumValueNode) {
     if (enumValueNode.kind === Kind.ENUM_VALUE_DEFINITION) {
       // eslint-disable-next-line eqeqeq
-      if (change.meta.oldEnumValueDescription == enumValueNode.description?.value) {
-        (enumValueNode.description as StringValueNode | undefined) = change.meta
-          .newEnumValueDescription
-          ? stringNode(change.meta.newEnumValueDescription)
-          : undefined;
-      } else {
+      const oldValueMatches =
+        change.meta.oldEnumValueDescription == enumValueNode.description?.value;
+      if (!oldValueMatches) {
         handleError(
           change,
-          new OldValueMismatchError(
+          new ValueMismatchError(
+            Kind.ENUM_TYPE_DEFINITION,
             change.meta.oldEnumValueDescription,
             enumValueNode.description?.value,
           ),
           config,
         );
       }
+      (enumValueNode.description as StringValueNode | undefined) = change.meta
+        .newEnumValueDescription
+        ? stringNode(change.meta.newEnumValueDescription)
+        : undefined;
     } else {
       handleError(
         change,
-        new KindMismatchError(Kind.ENUM_VALUE_DEFINITION, enumValueNode.kind),
+        new ChangedCoordinateKindMismatchError(Kind.ENUM_VALUE_DEFINITION, enumValueNode.kind),
         config,
       );
     }
   } else {
-    handleError(change, new EnumValueNotFoundError(change.meta.enumName), config);
+    handleError(
+      change,
+      new ChangedAncestorCoordinateNotFoundError(Kind.ENUM_VALUE_DEFINITION, 'values'),
+      config,
+    );
   }
 }

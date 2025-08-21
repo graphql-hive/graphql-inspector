@@ -13,14 +13,16 @@ import {
 } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
-  ArgumentDefaultValueMismatchError,
-  ArgumentDescriptionMismatchError,
-  CoordinateAlreadyExistsError,
-  CoordinateNotFoundError,
-  DirectiveLocationAlreadyExistsError,
+  AddedAttributeAlreadyExistsError,
+  AddedAttributeCoordinateNotFoundError,
+  AddedCoordinateAlreadyExistsError,
+  ChangedAncestorCoordinateNotFoundError,
+  ChangedCoordinateKindMismatchError,
+  ChangePathMissingError,
+  DeletedAncestorCoordinateNotFoundError,
+  DeletedAttributeNotFoundError,
   handleError,
-  KindMismatchError,
-  OldTypeMismatchError,
+  ValueMismatchError,
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
 import { PatchConfig } from '../types.js';
@@ -32,13 +34,17 @@ export function directiveAdded(
   config: PatchConfig,
 ) {
   if (change.path === undefined) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
   const changedNode = nodeByPath.get(change.path);
   if (changedNode) {
-    handleError(change, new CoordinateAlreadyExistsError(changedNode.kind), config);
+    handleError(
+      change,
+      new AddedCoordinateAlreadyExistsError(changedNode.kind, change.meta.addedDirectiveName),
+      config,
+    );
   } else {
     const node: DirectiveDefinitionNode = {
       kind: Kind.DIRECTIVE_DEFINITION,
@@ -59,20 +65,32 @@ export function directiveArgumentAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
   const directiveNode = nodeByPath.get(change.path);
   if (!directiveNode) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(
+      change,
+      new AddedAttributeCoordinateNotFoundError(Kind.DIRECTIVE, 'arguments'),
+      config,
+    );
   } else if (directiveNode.kind === Kind.DIRECTIVE_DEFINITION) {
     const existingArg = findNamedNode(
       directiveNode.arguments,
       change.meta.addedDirectiveArgumentName,
     );
     if (existingArg) {
-      handleError(change, new CoordinateAlreadyExistsError(existingArg.kind), config);
+      handleError(
+        change,
+        new AddedAttributeAlreadyExistsError(
+          existingArg.kind,
+          'arguments',
+          change.meta.addedDirectiveArgumentName,
+        ),
+        config,
+      );
     } else {
       const node: InputValueDefinitionNode = {
         kind: Kind.INPUT_VALUE_DEFINITION,
@@ -88,7 +106,7 @@ export function directiveArgumentAdded(
   } else {
     handleError(
       change,
-      new KindMismatchError(Kind.DIRECTIVE_DEFINITION, directiveNode.kind),
+      new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, directiveNode.kind),
       config,
     );
   }
@@ -100,7 +118,7 @@ export function directiveLocationAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -110,8 +128,9 @@ export function directiveLocationAdded(
       if (changedNode.locations.some(l => l.value === change.meta.addedDirectiveLocation)) {
         handleError(
           change,
-          new DirectiveLocationAlreadyExistsError(
-            change.meta.directiveName,
+          new AddedAttributeAlreadyExistsError(
+            Kind.DIRECTIVE_DEFINITION,
+            'locations',
             change.meta.addedDirectiveLocation,
           ),
           config,
@@ -125,12 +144,65 @@ export function directiveLocationAdded(
     } else {
       handleError(
         change,
-        new KindMismatchError(Kind.DIRECTIVE_DEFINITION, changedNode.kind),
+        new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, changedNode.kind),
         config,
       );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(
+      change,
+      new ChangedAncestorCoordinateNotFoundError(Kind.DIRECTIVE_DEFINITION, 'locations'),
+      config,
+    );
+  }
+}
+
+export function directiveLocationRemoved(
+  change: Change<typeof ChangeType.DirectiveLocationRemoved>,
+  nodeByPath: Map<string, ASTNode>,
+  config: PatchConfig,
+) {
+  if (!change.path) {
+    handleError(change, new ChangePathMissingError(), config);
+    return;
+  }
+
+  const changedNode = nodeByPath.get(change.path);
+  if (changedNode) {
+    if (changedNode.kind === Kind.DIRECTIVE_DEFINITION) {
+      const existing = changedNode.locations.findIndex(
+        l => l.value === change.meta.removedDirectiveLocation,
+      );
+      if (existing >= 0) {
+        (changedNode.locations as NameNode[]) = changedNode.locations.toSpliced(existing, 1);
+      } else {
+        handleError(
+          change,
+          new DeletedAttributeNotFoundError(
+            changedNode.kind,
+            'locations',
+            change.meta.removedDirectiveLocation,
+          ),
+          config,
+        );
+      }
+    } else {
+      handleError(
+        change,
+        new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, changedNode.kind),
+        config,
+      );
+    }
+  } else {
+    handleError(
+      change,
+      new DeletedAncestorCoordinateNotFoundError(
+        Kind.DIRECTIVE_DEFINITION,
+        'locations',
+        change.meta.removedDirectiveLocation,
+      ),
+      config,
+    );
   }
 }
 
@@ -140,34 +212,38 @@ export function directiveDescriptionChanged(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
   const directiveNode = nodeByPath.get(change.path);
   if (!directiveNode) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(
+      change,
+      new ChangedAncestorCoordinateNotFoundError(Kind.DIRECTIVE_DEFINITION, 'description'),
+      config,
+    );
   } else if (directiveNode.kind === Kind.DIRECTIVE_DEFINITION) {
     // eslint-disable-next-line eqeqeq
-    if (directiveNode.description?.value == change.meta.oldDirectiveDescription) {
-      (directiveNode.description as StringValueNode | undefined) = change.meta
-        .newDirectiveDescription
-        ? stringNode(change.meta.newDirectiveDescription)
-        : undefined;
-    } else {
+    if (directiveNode.description?.value !== change.meta.oldDirectiveDescription) {
       handleError(
         change,
-        new ArgumentDescriptionMismatchError(
+        new ValueMismatchError(
+          Kind.STRING,
           change.meta.oldDirectiveDescription,
           directiveNode.description?.value,
         ),
         config,
       );
     }
+
+    (directiveNode.description as StringValueNode | undefined) = change.meta.newDirectiveDescription
+      ? stringNode(change.meta.newDirectiveDescription)
+      : undefined;
   } else {
     handleError(
       change,
-      new KindMismatchError(Kind.DIRECTIVE_DEFINITION, directiveNode.kind),
+      new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, directiveNode.kind),
       config,
     );
   }
@@ -179,13 +255,17 @@ export function directiveArgumentDefaultValueChanged(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
   const argumentNode = nodeByPath.get(change.path);
   if (!argumentNode) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(
+      change,
+      new ChangedAncestorCoordinateNotFoundError(Kind.ARGUMENT, 'defaultValue'),
+      config,
+    );
   } else if (argumentNode.kind === Kind.INPUT_VALUE_DEFINITION) {
     if (
       (argumentNode.defaultValue && print(argumentNode.defaultValue)) ===
@@ -198,7 +278,8 @@ export function directiveArgumentDefaultValueChanged(
     } else {
       handleError(
         change,
-        new ArgumentDefaultValueMismatchError(
+        new ValueMismatchError(
+          Kind.INPUT_VALUE_DEFINITION,
           change.meta.oldDirectiveArgumentDefaultValue,
           argumentNode.defaultValue && print(argumentNode.defaultValue),
         ),
@@ -208,7 +289,7 @@ export function directiveArgumentDefaultValueChanged(
   } else {
     handleError(
       change,
-      new KindMismatchError(Kind.INPUT_VALUE_DEFINITION, argumentNode.kind),
+      new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, argumentNode.kind),
       config,
     );
   }
@@ -220,34 +301,38 @@ export function directiveArgumentDescriptionChanged(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
   const argumentNode = nodeByPath.get(change.path);
   if (!argumentNode) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(
+      change,
+      new AddedAttributeCoordinateNotFoundError(Kind.INPUT_VALUE_DEFINITION, 'description'),
+      config,
+    );
   } else if (argumentNode.kind === Kind.INPUT_VALUE_DEFINITION) {
     // eslint-disable-next-line eqeqeq
-    if (argumentNode.description?.value == change.meta.oldDirectiveArgumentDescription) {
-      (argumentNode.description as StringValueNode | undefined) = change.meta
-        .newDirectiveArgumentDescription
-        ? stringNode(change.meta.newDirectiveArgumentDescription)
-        : undefined;
-    } else {
+    if (argumentNode.description?.value != change.meta.oldDirectiveArgumentDescription) {
       handleError(
         change,
-        new ArgumentDescriptionMismatchError(
-          change.meta.oldDirectiveArgumentDescription,
+        new ValueMismatchError(
+          Kind.STRING,
+          change.meta.oldDirectiveArgumentDescription ?? undefined,
           argumentNode.description?.value,
         ),
         config,
       );
     }
+    (argumentNode.description as StringValueNode | undefined) = change.meta
+      .newDirectiveArgumentDescription
+      ? stringNode(change.meta.newDirectiveArgumentDescription)
+      : undefined;
   } else {
     handleError(
       change,
-      new KindMismatchError(Kind.INPUT_VALUE_DEFINITION, argumentNode.kind),
+      new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, argumentNode.kind),
       config,
     );
   }
@@ -259,27 +344,30 @@ export function directiveArgumentTypeChanged(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
   const argumentNode = nodeByPath.get(change.path);
   if (!argumentNode) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangedAncestorCoordinateNotFoundError(Kind.ARGUMENT, 'type'), config);
   } else if (argumentNode.kind === Kind.INPUT_VALUE_DEFINITION) {
-    if (print(argumentNode.type) === change.meta.oldDirectiveArgumentType) {
-      (argumentNode.type as TypeNode | undefined) = parseType(change.meta.newDirectiveArgumentType);
-    } else {
+    if (print(argumentNode.type) !== change.meta.oldDirectiveArgumentType) {
       handleError(
         change,
-        new OldTypeMismatchError(change.meta.oldDirectiveArgumentType, print(argumentNode.type)),
+        new ValueMismatchError(
+          Kind.STRING,
+          change.meta.oldDirectiveArgumentType,
+          print(argumentNode.type),
+        ),
         config,
       );
     }
+    (argumentNode.type as TypeNode | undefined) = parseType(change.meta.newDirectiveArgumentType);
   } else {
     handleError(
       change,
-      new KindMismatchError(Kind.INPUT_VALUE_DEFINITION, argumentNode.kind),
+      new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, argumentNode.kind),
       config,
     );
   }

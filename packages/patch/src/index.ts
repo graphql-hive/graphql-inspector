@@ -46,6 +46,7 @@ import {
   directiveArgumentTypeChanged,
   directiveDescriptionChanged,
   directiveLocationAdded,
+  directiveLocationRemoved,
 } from './patches/directives.js';
 import {
   enumValueAdded,
@@ -69,6 +70,7 @@ import {
 import {
   inputFieldAdded,
   inputFieldDescriptionAdded,
+  inputFieldDescriptionChanged,
   inputFieldRemoved,
 } from './patches/inputs.js';
 import { objectTypeInterfaceAdded, objectTypeInterfaceRemoved } from './patches/interfaces.js';
@@ -233,6 +235,10 @@ export function patch(
         directiveLocationAdded(change, nodeByPath, config);
         break;
       }
+      case ChangeType.DirectiveLocationRemoved: {
+        directiveLocationRemoved(change, nodeByPath, config);
+        break;
+      }
       case ChangeType.EnumValueAdded: {
         enumValueAdded(change, nodeByPath, config);
         break;
@@ -291,6 +297,10 @@ export function patch(
       }
       case ChangeType.InputFieldDescriptionAdded: {
         inputFieldDescriptionAdded(change, nodeByPath, config);
+        break;
+      }
+      case ChangeType.InputFieldDescriptionChanged: {
+        inputFieldDescriptionChanged(change, nodeByPath, config);
         break;
       }
       case ChangeType.ObjectTypeInterfaceAdded: {

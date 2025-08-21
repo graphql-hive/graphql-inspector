@@ -1,11 +1,13 @@
 import { ASTNode, isTypeDefinitionNode, Kind, StringValueNode, TypeDefinitionNode } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
-  CoordinateAlreadyExistsError,
-  CoordinateNotFoundError,
-  DescriptionMismatchError,
+  AddedCoordinateAlreadyExistsError,
+  ChangedCoordinateKindMismatchError,
+  ChangePathMissingError,
+  DeletedAncestorCoordinateNotFoundError,
+  DeletedCoordinateNotFound,
   handleError,
-  KindMismatchError,
+  ValueMismatchError,
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
 import type { PatchConfig } from '../types';
@@ -16,13 +18,17 @@ export function typeAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
   const existing = nodeByPath.get(change.path);
   if (existing) {
-    handleError(change, new CoordinateAlreadyExistsError(existing.kind), config);
+    handleError(
+      change,
+      new AddedCoordinateAlreadyExistsError(existing.kind, change.meta.addedTypeName),
+      config,
+    );
   } else {
     const node: TypeDefinitionNode = {
       name: nameNode(change.meta.addedTypeName),
@@ -38,7 +44,7 @@ export function typeRemoved(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -54,12 +60,12 @@ export function typeRemoved(
     } else {
       handleError(
         change,
-        new KindMismatchError(Kind.OBJECT_TYPE_DEFINITION, removedNode.kind),
+        new DeletedCoordinateNotFound(removedNode.kind, change.meta.removedTypeName),
         config,
       );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
   }
 }
 
@@ -69,7 +75,7 @@ export function typeDescriptionAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -82,12 +88,12 @@ export function typeDescriptionAdded(
     } else {
       handleError(
         change,
-        new KindMismatchError(Kind.OBJECT_TYPE_DEFINITION, typeNode.kind),
+        new ChangedCoordinateKindMismatchError(Kind.OBJECT_TYPE_DEFINITION, typeNode.kind),
         config,
       );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
   }
 }
 
@@ -97,7 +103,7 @@ export function typeDescriptionChanged(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -107,7 +113,11 @@ export function typeDescriptionChanged(
       if (typeNode.description?.value !== change.meta.oldTypeDescription) {
         handleError(
           change,
-          new DescriptionMismatchError(change.meta.oldTypeDescription, typeNode.description?.value),
+          new ValueMismatchError(
+            Kind.STRING,
+            change.meta.oldTypeDescription,
+            typeNode.description?.value,
+          ),
           config,
         );
       }
@@ -117,12 +127,12 @@ export function typeDescriptionChanged(
     } else {
       handleError(
         change,
-        new KindMismatchError(Kind.OBJECT_TYPE_DEFINITION, typeNode.kind),
+        new ChangedCoordinateKindMismatchError(Kind.OBJECT_TYPE_DEFINITION, typeNode.kind),
         config,
       );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
   }
 }
 
@@ -132,7 +142,7 @@ export function typeDescriptionRemoved(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -142,7 +152,11 @@ export function typeDescriptionRemoved(
       if (typeNode.description?.value !== change.meta.oldTypeDescription) {
         handleError(
           change,
-          new DescriptionMismatchError(change.meta.oldTypeDescription, typeNode.description?.value),
+          new ValueMismatchError(
+            Kind.STRING,
+            change.meta.oldTypeDescription,
+            typeNode.description?.value,
+          ),
           config,
         );
       }
@@ -150,11 +164,19 @@ export function typeDescriptionRemoved(
     } else {
       handleError(
         change,
-        new KindMismatchError(Kind.OBJECT_TYPE_DEFINITION, typeNode.kind),
+        new ChangedCoordinateKindMismatchError(Kind.OBJECT_TYPE_DEFINITION, typeNode.kind),
         config,
       );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(
+      change,
+      new DeletedAncestorCoordinateNotFoundError(
+        Kind.OBJECT_TYPE_DEFINITION,
+        'description',
+        change.meta.oldTypeDescription,
+      ),
+      config,
+    );
   }
 }

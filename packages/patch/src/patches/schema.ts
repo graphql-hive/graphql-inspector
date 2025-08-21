@@ -1,6 +1,7 @@
-import { NameNode, OperationTypeNode } from 'graphql';
+/* eslint-disable unicorn/no-negated-condition */
+import { Kind, NameNode, OperationTypeNode } from 'graphql';
 import type { Change, ChangeType } from '@graphql-inspector/core';
-import { CoordinateNotFoundError, handleError, OldTypeMismatchError } from '../errors.js';
+import { ChangedCoordinateNotFoundError, handleError, ValueMismatchError } from '../errors.js';
 import { nameNode } from '../node-templates.js';
 import { PatchConfig, SchemaNode } from '../types.js';
 
@@ -14,15 +15,24 @@ export function schemaMutationTypeChanged(
       ({ operation }) => operation === OperationTypeNode.MUTATION,
     );
     if (!mutation) {
-      handleError(change, new CoordinateNotFoundError(), config);
-    } else if (mutation.type.name.value === change.meta.oldMutationTypeName) {
-      (mutation.type.name as NameNode) = nameNode(change.meta.newMutationTypeName);
-    } else {
       handleError(
         change,
-        new OldTypeMismatchError(change.meta.oldMutationTypeName, mutation?.type.name.value),
+        new ChangedCoordinateNotFoundError(Kind.SCHEMA_DEFINITION, 'mutation'),
         config,
       );
+    } else {
+      if (mutation.type.name.value !== change.meta.oldMutationTypeName) {
+        handleError(
+          change,
+          new ValueMismatchError(
+            Kind.SCHEMA_DEFINITION,
+            change.meta.oldMutationTypeName,
+            mutation?.type.name.value,
+          ),
+          config,
+        );
+      }
+      (mutation.type.name as NameNode) = nameNode(change.meta.newMutationTypeName);
     }
   }
 }
@@ -37,15 +47,24 @@ export function schemaQueryTypeChanged(
       ({ operation }) => operation === OperationTypeNode.MUTATION,
     );
     if (!query) {
-      handleError(change, new CoordinateNotFoundError(), config);
-    } else if (query.type.name.value === change.meta.oldQueryTypeName) {
-      (query.type.name as NameNode) = nameNode(change.meta.newQueryTypeName);
-    } else {
       handleError(
         change,
-        new OldTypeMismatchError(change.meta.oldQueryTypeName, query?.type.name.value),
+        new ChangedCoordinateNotFoundError(Kind.SCHEMA_DEFINITION, 'query'),
         config,
       );
+    } else {
+      if (query.type.name.value !== change.meta.oldQueryTypeName) {
+        handleError(
+          change,
+          new ValueMismatchError(
+            Kind.SCHEMA_DEFINITION,
+            change.meta.oldQueryTypeName,
+            query?.type.name.value,
+          ),
+          config,
+        );
+      }
+      (query.type.name as NameNode) = nameNode(change.meta.newQueryTypeName);
     }
   }
 }
@@ -57,18 +76,27 @@ export function schemaSubscriptionTypeChanged(
 ) {
   for (const schemaNode of schemaNodes) {
     const sub = schemaNode.operationTypes?.find(
-      ({ operation }) => operation === OperationTypeNode.MUTATION,
+      ({ operation }) => operation === OperationTypeNode.SUBSCRIPTION,
     );
     if (!sub) {
-      handleError(change, new CoordinateNotFoundError(), config);
-    } else if (sub.type.name.value === change.meta.oldSubscriptionTypeName) {
-      (sub.type.name as NameNode) = nameNode(change.meta.newSubscriptionTypeName);
-    } else {
       handleError(
         change,
-        new OldTypeMismatchError(change.meta.oldSubscriptionTypeName, sub?.type.name.value),
+        new ChangedCoordinateNotFoundError(Kind.SCHEMA_DEFINITION, 'subscription'),
         config,
       );
+    } else {
+      if (sub.type.name.value !== change.meta.oldSubscriptionTypeName) {
+        handleError(
+          change,
+          new ValueMismatchError(
+            Kind.SCHEMA_DEFINITION,
+            change.meta.oldSubscriptionTypeName,
+            sub?.type.name.value,
+          ),
+          config,
+        );
+      }
+      (sub.type.name as NameNode) = nameNode(change.meta.newSubscriptionTypeName);
     }
   }
 }

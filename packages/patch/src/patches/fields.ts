@@ -13,16 +13,13 @@ import {
 } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
-  CoordinateAlreadyExistsError,
-  CoordinateNotFoundError,
-  DeprecatedDirectiveNotFound,
-  DeprecationReasonAlreadyExists,
-  DescriptionMismatchError,
-  DirectiveAlreadyExists,
-  FieldTypeMismatchError,
+  AddedAttributeAlreadyExistsError,
+  AddedCoordinateAlreadyExistsError,
+  ChangedCoordinateKindMismatchError,
+  ChangePathMissingError,
+  DeletedCoordinateNotFound,
   handleError,
-  KindMismatchError,
-  OldValueMismatchError,
+  ValueMismatchError,
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
 import type { PatchConfig } from '../types';
@@ -43,16 +40,23 @@ export function fieldTypeChanged(
   if (node) {
     if (node.kind === Kind.FIELD_DEFINITION) {
       const currentReturnType = print(node.type);
-      if (c.meta.oldFieldType === currentReturnType) {
-        (node.type as TypeNode) = parseType(c.meta.newFieldType);
-      } else {
-        handleError(c, new FieldTypeMismatchError(c.meta.oldFieldType, currentReturnType), config);
+      if (c.meta.oldFieldType !== currentReturnType) {
+        handleError(
+          c,
+          new ValueMismatchError(Kind.FIELD_DEFINITION, c.meta.oldFieldType, currentReturnType),
+          config,
+        );
       }
+      (node.type as TypeNode) = parseType(c.meta.newFieldType);
     } else {
-      handleError(c, new KindMismatchError(Kind.FIELD_DEFINITION, node.kind), config);
+      handleError(
+        c,
+        new ChangedCoordinateKindMismatchError(Kind.FIELD_DEFINITION, node.kind),
+        config,
+      );
     }
   } else {
-    handleError(c, new CoordinateNotFoundError(), config);
+    handleError(c, new ChangePathMissingError(), config);
   }
 }
 
@@ -62,7 +66,7 @@ export function fieldRemoved(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -70,12 +74,12 @@ export function fieldRemoved(
     | (ASTNode & { fields?: FieldDefinitionNode[] })
     | undefined;
   if (!typeNode || !typeNode.fields?.length) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
   } else {
     const beforeLength = typeNode.fields.length;
     typeNode.fields = typeNode.fields.filter(f => f.name.value !== change.meta.removedFieldName);
     if (beforeLength === typeNode.fields.length) {
-      handleError(change, new CoordinateNotFoundError(), config);
+      handleError(change, new ChangePathMissingError(), config);
     } else {
       // delete the reference to the removed field.
       nodeByPath.delete(change.path);
@@ -89,24 +93,40 @@ export function fieldAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
   const changedNode = nodeByPath.get(change.path);
   if (changedNode) {
-    handleError(change, new CoordinateAlreadyExistsError(changedNode.kind), config);
+    if (changedNode.kind === Kind.OBJECT_FIELD) {
+      handleError(
+        change,
+        new AddedCoordinateAlreadyExistsError(changedNode.kind, change.meta.addedFieldName),
+        config,
+      );
+    } else {
+      handleError(
+        change,
+        new ChangedCoordinateKindMismatchError(Kind.OBJECT_FIELD, changedNode.kind),
+        config,
+      );
+    }
   } else {
     const typeNode = nodeByPath.get(parentPath(change.path)) as ASTNode & {
       fields?: FieldDefinitionNode[];
     };
     if (!typeNode) {
-      handleError(change, new CoordinateNotFoundError(), config);
+      handleError(change, new ChangePathMissingError(), config);
     } else if (
       typeNode.kind !== Kind.OBJECT_TYPE_DEFINITION &&
       typeNode.kind !== Kind.INTERFACE_TYPE_DEFINITION
     ) {
-      handleError(change, new KindMismatchError(Kind.ENUM_TYPE_DEFINITION, typeNode.kind), config);
+      handleError(
+        change,
+        new ChangedCoordinateKindMismatchError(Kind.ENUM_TYPE_DEFINITION, typeNode.kind),
+        config,
+      );
     } else {
       const node: FieldDefinitionNode = {
         kind: Kind.FIELD_DEFINITION,
@@ -131,19 +151,23 @@ export function fieldArgumentAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
   const existing = nodeByPath.get(change.path);
   if (existing) {
-    handleError(change, new CoordinateAlreadyExistsError(existing.kind), config);
+    handleError(
+      change,
+      new AddedCoordinateAlreadyExistsError(Kind.ARGUMENT, change.meta.addedArgumentName),
+      config,
+    );
   } else {
     const fieldNode = nodeByPath.get(parentPath(change.path)) as ASTNode & {
       arguments?: InputValueDefinitionNode[];
     };
     if (!fieldNode) {
-      handleError(change, new CoordinateNotFoundError(), config);
+      handleError(change, new ChangePathMissingError(), config);
     } else if (fieldNode.kind === Kind.FIELD_DEFINITION) {
       const node: InputValueDefinitionNode = {
         kind: Kind.INPUT_VALUE_DEFINITION,
@@ -159,7 +183,11 @@ export function fieldArgumentAdded(
       // add new field to the node set
       nodeByPath.set(change.path, node);
     } else {
-      handleError(change, new KindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind), config);
+      handleError(
+        change,
+        new ChangedCoordinateKindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind),
+        config,
+      );
     }
   }
 }
@@ -170,7 +198,7 @@ export function fieldDeprecationReasonChanged(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -179,34 +207,39 @@ export function fieldDeprecationReasonChanged(
     if (deprecationNode.kind === Kind.DIRECTIVE) {
       const reasonArgument = findNamedNode(deprecationNode.arguments, 'reason');
       if (reasonArgument) {
-        if (print(reasonArgument.value) === change.meta.oldDeprecationReason) {
-          const node = {
-            kind: Kind.ARGUMENT,
-            name: nameNode('reason'),
-            value: stringNode(change.meta.newDeprecationReason),
-          } as ArgumentNode;
-          (deprecationNode.arguments as ArgumentNode[] | undefined) = [
-            ...(deprecationNode.arguments ?? []),
-            node,
-          ];
-        } else {
+        if (print(reasonArgument.value) !== change.meta.oldDeprecationReason) {
           handleError(
             change,
-            new OldValueMismatchError(
+            new ValueMismatchError(
+              Kind.ARGUMENT,
               print(reasonArgument.value),
               change.meta.oldDeprecationReason,
             ),
             config,
           );
         }
+
+        const node = {
+          kind: Kind.ARGUMENT,
+          name: nameNode('reason'),
+          value: stringNode(change.meta.newDeprecationReason),
+        } as ArgumentNode;
+        (deprecationNode.arguments as ArgumentNode[] | undefined) = [
+          ...(deprecationNode.arguments ?? []),
+          node,
+        ];
       } else {
-        handleError(change, new CoordinateNotFoundError(), config);
+        handleError(change, new ChangePathMissingError(), config);
       }
     } else {
-      handleError(change, new KindMismatchError(Kind.DIRECTIVE, deprecationNode.kind), config);
+      handleError(
+        change,
+        new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE, deprecationNode.kind),
+        config,
+      );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
   }
 }
 
@@ -216,7 +249,7 @@ export function fieldDeprecationReasonAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -227,7 +260,7 @@ export function fieldDeprecationReasonAdded(
       if (reasonArgument) {
         handleError(
           change,
-          new DeprecationReasonAlreadyExists((reasonArgument.value as StringValueNode)?.value),
+          new AddedAttributeAlreadyExistsError(Kind.DIRECTIVE, 'arguments', 'reason'),
           config,
         );
       } else {
@@ -243,10 +276,14 @@ export function fieldDeprecationReasonAdded(
         nodeByPath.set(`${change.path}.reason`, node);
       }
     } else {
-      handleError(change, new KindMismatchError(Kind.DIRECTIVE, deprecationNode.kind), config);
+      handleError(
+        change,
+        new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE, deprecationNode.kind),
+        config,
+      );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
   }
 }
 
@@ -256,7 +293,7 @@ export function fieldDeprecationAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -265,7 +302,11 @@ export function fieldDeprecationAdded(
     if (fieldNode.kind === Kind.FIELD_DEFINITION) {
       const hasExistingDeprecationDirective = getDeprecatedDirectiveNode(fieldNode);
       if (hasExistingDeprecationDirective) {
-        handleError(change, new DirectiveAlreadyExists(GraphQLDeprecatedDirective.name), config);
+        handleError(
+          change,
+          new AddedCoordinateAlreadyExistsError(Kind.DIRECTIVE, '@deprecated'),
+          config,
+        );
       } else {
         const directiveNode = {
           kind: Kind.DIRECTIVE,
@@ -294,10 +335,14 @@ export function fieldDeprecationAdded(
         );
       }
     } else {
-      handleError(change, new KindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind), config);
+      handleError(
+        change,
+        new ChangedCoordinateKindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind),
+        config,
+      );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
   }
 }
 
@@ -307,7 +352,7 @@ export function fieldDeprecationRemoved(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -321,13 +366,17 @@ export function fieldDeprecationRemoved(
         );
         nodeByPath.delete([change.path, `@${GraphQLDeprecatedDirective.name}`].join('.'));
       } else {
-        handleError(change, new DeprecatedDirectiveNotFound(), config);
+        handleError(change, new DeletedCoordinateNotFound(Kind.DIRECTIVE, '@deprecated'), config);
       }
     } else {
-      handleError(change, new KindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind), config);
+      handleError(
+        change,
+        new ChangedCoordinateKindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind),
+        config,
+      );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
   }
 }
 
@@ -337,7 +386,7 @@ export function fieldDescriptionAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -348,10 +397,14 @@ export function fieldDescriptionAdded(
         ? stringNode(change.meta.addedDescription)
         : undefined;
     } else {
-      handleError(change, new KindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind), config);
+      handleError(
+        change,
+        new ChangedCoordinateKindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind),
+        config,
+      );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
   }
 }
 
@@ -361,7 +414,7 @@ export function fieldDescriptionRemoved(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -370,10 +423,14 @@ export function fieldDescriptionRemoved(
     if (fieldNode.kind === Kind.FIELD_DEFINITION) {
       (fieldNode.description as StringValueNode | undefined) = undefined;
     } else {
-      handleError(change, new KindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind), config);
+      handleError(
+        change,
+        new ChangedCoordinateKindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind),
+        config,
+      );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
   }
 }
 
@@ -383,28 +440,36 @@ export function fieldDescriptionChanged(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
   const fieldNode = nodeByPath.get(change.path);
   if (fieldNode) {
     if (fieldNode.kind === Kind.FIELD_DEFINITION) {
-      if (fieldNode.description?.value === change.meta.oldDescription) {
-        (fieldNode.description as StringValueNode | undefined) = stringNode(
-          change.meta.newDescription,
-        );
-      } else {
+      if (fieldNode.description?.value !== change.meta.oldDescription) {
         handleError(
           change,
-          new DescriptionMismatchError(change.meta.oldDescription, fieldNode.description?.value),
+          new ValueMismatchError(
+            Kind.FIELD_DEFINITION,
+            change.meta.oldDescription,
+            fieldNode.description?.value,
+          ),
           config,
         );
       }
+
+      (fieldNode.description as StringValueNode | undefined) = stringNode(
+        change.meta.newDescription,
+      );
     } else {
-      handleError(change, new KindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind), config);
+      handleError(
+        change,
+        new ChangedCoordinateKindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind),
+        config,
+      );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
   }
 }

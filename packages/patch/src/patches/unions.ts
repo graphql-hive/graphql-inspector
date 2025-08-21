@@ -1,10 +1,11 @@
-import { ASTNode, NamedTypeNode } from 'graphql';
+import { ASTNode, Kind, NamedTypeNode } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
-  CoordinateNotFoundError,
+  AddedAttributeAlreadyExistsError,
+  ChangedAncestorCoordinateNotFoundError,
+  DeletedAncestorCoordinateNotFoundError,
+  DeletedAttributeNotFoundError,
   handleError,
-  UnionMemberAlreadyExistsError,
-  UnionMemberNotFoundError,
 } from '../errors.js';
 import { namedTypeNode } from '../node-templates.js';
 import { PatchConfig } from '../types.js';
@@ -23,8 +24,9 @@ export function unionMemberAdded(
     if (findNamedNode(union.types, change.meta.addedUnionMemberTypeName)) {
       handleError(
         change,
-        new UnionMemberAlreadyExistsError(
-          change.meta.unionName,
+        new AddedAttributeAlreadyExistsError(
+          Kind.UNION_TYPE_DEFINITION,
+          'types',
           change.meta.addedUnionMemberTypeName,
         ),
         config,
@@ -33,7 +35,11 @@ export function unionMemberAdded(
       union.types = [...(union.types ?? []), namedTypeNode(change.meta.addedUnionMemberTypeName)];
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(
+      change,
+      new ChangedAncestorCoordinateNotFoundError(Kind.UNION_TYPE_DEFINITION, 'types'),
+      config,
+    );
   }
 }
 
@@ -52,9 +58,25 @@ export function unionMemberRemoved(
         t => t.name.value !== change.meta.removedUnionMemberTypeName,
       );
     } else {
-      handleError(change, new UnionMemberNotFoundError(), config);
+      handleError(
+        change,
+        new DeletedAttributeNotFoundError(
+          Kind.UNION_TYPE_DEFINITION,
+          'types',
+          change.meta.removedUnionMemberTypeName,
+        ),
+        config,
+      );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(
+      change,
+      new DeletedAncestorCoordinateNotFoundError(
+        Kind.UNION_TYPE_DEFINITION,
+        'types',
+        change.meta.removedUnionMemberTypeName,
+      ),
+      config,
+    );
   }
 }

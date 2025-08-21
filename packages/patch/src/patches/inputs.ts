@@ -1,10 +1,13 @@
 import { ASTNode, InputValueDefinitionNode, Kind, parseType, StringValueNode } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
-  CoordinateAlreadyExistsError,
-  CoordinateNotFoundError,
+  AddedAttributeCoordinateNotFoundError,
+  AddedCoordinateAlreadyExistsError,
+  ChangedCoordinateKindMismatchError,
+  ChangePathMissingError,
+  DeletedAncestorCoordinateNotFoundError,
   handleError,
-  KindMismatchError,
+  ValueMismatchError,
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
 import type { PatchConfig } from '../types.js';
@@ -16,19 +19,38 @@ export function inputFieldAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
   const existingNode = nodeByPath.get(change.path);
   if (existingNode) {
-    handleError(change, new CoordinateAlreadyExistsError(existingNode.kind), config);
+    if (existingNode.kind === Kind.INPUT_VALUE_DEFINITION) {
+      handleError(
+        change,
+        new AddedCoordinateAlreadyExistsError(
+          Kind.INPUT_VALUE_DEFINITION,
+          change.meta.addedInputFieldName,
+        ),
+        config,
+      );
+    } else {
+      handleError(
+        change,
+        new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, existingNode.kind),
+        config,
+      );
+    }
   } else {
     const typeNode = nodeByPath.get(parentPath(change.path)) as ASTNode & {
       fields?: InputValueDefinitionNode[];
     };
     if (!typeNode) {
-      handleError(change, new CoordinateNotFoundError(), config);
+      handleError(
+        change,
+        new AddedAttributeCoordinateNotFoundError(Kind.INPUT_OBJECT_TYPE_DEFINITION, 'fields'),
+        config,
+      );
     } else if (typeNode.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION) {
       const node: InputValueDefinitionNode = {
         kind: Kind.INPUT_VALUE_DEFINITION,
@@ -46,7 +68,7 @@ export function inputFieldAdded(
     } else {
       handleError(
         change,
-        new KindMismatchError(Kind.INPUT_OBJECT_TYPE_DEFINITION, typeNode.kind),
+        new ChangedCoordinateKindMismatchError(Kind.INPUT_OBJECT_TYPE_DEFINITION, typeNode.kind),
         config,
       );
     }
@@ -59,7 +81,7 @@ export function inputFieldRemoved(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -69,7 +91,15 @@ export function inputFieldRemoved(
       fields?: InputValueDefinitionNode[];
     };
     if (!typeNode) {
-      handleError(change, new CoordinateNotFoundError(), config);
+      handleError(
+        change,
+        new DeletedAncestorCoordinateNotFoundError(
+          Kind.INPUT_OBJECT_TYPE_DEFINITION,
+          'fields',
+          change.meta.removedFieldName,
+        ),
+        config,
+      );
     } else if (typeNode.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION) {
       typeNode.fields = typeNode.fields?.filter(f => f.name.value !== change.meta.removedFieldName);
 
@@ -78,12 +108,12 @@ export function inputFieldRemoved(
     } else {
       handleError(
         change,
-        new KindMismatchError(Kind.INPUT_OBJECT_TYPE_DEFINITION, typeNode.kind),
+        new ChangedCoordinateKindMismatchError(Kind.INPUT_OBJECT_TYPE_DEFINITION, typeNode.kind),
         config,
       );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
   }
 }
 
@@ -93,7 +123,7 @@ export function inputFieldDescriptionAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
   const existingNode = nodeByPath.get(change.path);
@@ -105,12 +135,58 @@ export function inputFieldDescriptionAdded(
     } else {
       handleError(
         change,
-        new KindMismatchError(Kind.INPUT_VALUE_DEFINITION, existingNode.kind),
+        new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, existingNode.kind),
         config,
       );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(
+      change,
+      new DeletedAncestorCoordinateNotFoundError(
+        Kind.INPUT_VALUE_DEFINITION,
+        'description',
+        change.meta.addedInputFieldDescription,
+      ),
+      config,
+    );
+  }
+}
+
+export function inputFieldDescriptionChanged(
+  change: Change<typeof ChangeType.InputFieldDescriptionChanged>,
+  nodeByPath: Map<string, ASTNode>,
+  config: PatchConfig,
+) {
+  if (!change.path) {
+    handleError(change, new ChangePathMissingError(), config);
+    return;
+  }
+  const existingNode = nodeByPath.get(change.path);
+  if (existingNode) {
+    if (existingNode.kind === Kind.INPUT_VALUE_DEFINITION) {
+      if (existingNode.description?.value !== change.meta.oldInputFieldDescription) {
+        handleError(
+          change,
+          new ValueMismatchError(
+            Kind.STRING,
+            change.meta.oldInputFieldDescription,
+            existingNode.description?.value,
+          ),
+          config,
+        );
+      }
+      (existingNode.description as StringValueNode | undefined) = stringNode(
+        change.meta.newInputFieldDescription,
+      );
+    } else {
+      handleError(
+        change,
+        new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, existingNode.kind),
+        config,
+      );
+    }
+  } else {
+    handleError(change, new ChangePathMissingError(), config);
   }
 }
 
@@ -120,7 +196,7 @@ export function inputFieldDescriptionRemoved(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
     return;
   }
 
@@ -140,11 +216,11 @@ export function inputFieldDescriptionRemoved(
     } else {
       handleError(
         change,
-        new KindMismatchError(Kind.INPUT_VALUE_DEFINITION, existingNode.kind),
+        new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, existingNode.kind),
         config,
       );
     }
   } else {
-    handleError(change, new CoordinateNotFoundError(), config);
+    handleError(change, new ChangePathMissingError(), config);
   }
 }

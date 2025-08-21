@@ -665,6 +665,9 @@ importers:
 
   packages/patch:
     dependencies:
+      '@graphql-tools/utils':
+        specifier: ^10.0.0
+        version: 10.8.6(graphql@16.10.0)
       graphql:
         specifier: 16.10.0
         version: 16.10.0
@@ -675,9 +678,6 @@ importers:
       '@graphql-inspector/core':
         specifier: workspace:*
         version: link:../core/dist
-      '@graphql-tools/utils':
-        specifier: ^10.0.0
-        version: 10.8.6(graphql@16.10.0)
     publishDirectory: dist
 
   website:

@@ -3,10 +3,17 @@ import type { Change } from '@graphql-inspector/core';
 import type { PatchConfig } from './types.js';
 
 export function handleError(change: Change<any>, err: Error, config: PatchConfig) {
+  if (config.onError?.(err) === true) {
+    // handled by onError
+    return;
+  }
+
   if (err instanceof NoopError) {
     console.debug(
       `Ignoring change ${change.type} at "${change.path}" because it does not modify the resulting schema.`,
     );
+  } else if (!config.requireOldValueMatch && err instanceof ValueMismatchError) {
+    console.debug(`Ignoreing old value mismatch at "${change.path}".`);
   } else if (config.throwOnError === true) {
     throw err;
   } else {
@@ -25,67 +32,136 @@ export class NoopError extends Error {
   }
 }
 
-export class CoordinateNotFoundError extends Error {
-  constructor() {
-    super('Cannot find an element at the schema coordinate.');
+export class ValueMismatchError extends Error {
+  readonly mismatch = true;
+  constructor(kind: Kind, expected: string | undefined | null, actual: string | undefined | null) {
+    super(
+      `The existing value did not match what was expected. Expected the "${kind}" to be ${expected} but found ${actual}.`,
+    );
   }
 }
 
-export class DeletedCoordinateNotFoundError extends NoopError {
-  constructor() {
-    super('Cannot find an element at the schema coordinate.');
+/**
+ * If the requested change would not modify the schema because that change is effectively
+ * already applied.
+ *
+ * If the added coordinate exists but the kind does not match what's expected, then use
+ * ChangedCoordinateKindMismatchError instead.
+ */
+export class AddedCoordinateAlreadyExistsError extends NoopError {
+  constructor(
+    public readonly kind: Kind,
+    readonly expectedNameOrValue: string | undefined,
+  ) {
+    const expected = expectedNameOrValue ? `${expectedNameOrValue} ` : '';
+    super(`A "${kind}" ${expected}already exists at the schema coordinate.`);
   }
 }
 
-export class CoordinateAlreadyExistsError extends NoopError {
-  constructor(public readonly kind: Kind) {
-    super(`A "${kind}" already exists at the schema coordinate.`);
+export type AttributeName =
+  | 'description'
+  | 'defaultValue'
+  /** Enum values */
+  | 'values'
+  /** Union types */
+  | 'types'
+  /** Return type */
+  | 'type'
+  | 'interfaces'
+  | 'directives'
+  | 'arguments'
+  | 'locations'
+  | 'fields';
+
+/**
+ * If trying to add a node at a path, but that path no longer exists. E.g. add a description to
+ * a type, but that type was previously deleted.
+ * This differs from AddedCoordinateAlreadyExistsError because
+ */
+export class AddedAttributeCoordinateNotFoundError extends Error {
+  constructor(
+    public readonly parentKind: Kind,
+    readonly attributeName: AttributeName,
+  ) {
+    super(`Cannot set ${attributeName} on "${parentKind}" because it does not exist.`);
   }
 }
 
-export class DeprecationReasonAlreadyExists extends NoopError {
-  constructor(reason: string) {
-    super(`A deprecation reason already exists: "${reason}"`);
+/**
+ * If trying to manipulate a node at a path, but that path no longer exists. E.g. change a description of
+ * a type, but that type was previously deleted.
+ */
+export class ChangedAncestorCoordinateNotFoundError extends Error {
+  constructor(
+    public readonly parentKind: Kind,
+    readonly attributeName: AttributeName,
+  ) {
+    super(`Cannot set "${attributeName}" on "${parentKind}" because it does not exist.`);
   }
 }
 
-export class DeprecatedDirectiveNotFound extends NoopError {
-  constructor() {
-    super('This coordinate is not deprecated.');
+/**
+ * If trying to remove a node but that node no longer exists. E.g. remove a directive from
+ * a type, but that type does not exist.
+ */
+export class DeletedAncestorCoordinateNotFoundError extends NoopError {
+  constructor(
+    public readonly parentKind: Kind,
+    readonly attributeName: AttributeName,
+    readonly expectedValue: string,
+  ) {
+    super(
+      `Cannot delete "${expectedValue}" from "${attributeName}" on "${parentKind}" because the "${parentKind}" does not exist.`,
+    );
   }
 }
 
-export class EnumValueNotFoundError extends Error {
-  constructor(typeName: string, value?: string | undefined) {
-    super(`The enum "${typeName}" does not contain "${value}".`);
+/**
+ * If adding an attribute to a node, but that attribute already exists.
+ * E.g. adding an interface but that interface is already applied to the type.
+ */
+export class AddedAttributeAlreadyExistsError extends NoopError {
+  constructor(
+    public readonly parentKind: Kind,
+    readonly attributeName: AttributeName,
+    readonly attributeValue: string,
+  ) {
+    super(
+      `Cannot add "${attributeValue}" to "${attributeName}" on "${parentKind}" because it already exists.`,
+    );
   }
 }
 
-export class UnionMemberNotFoundError extends NoopError {
-  constructor() {
-    super(`The union does not contain the member.`);
+/**
+ * If deleting an attribute from a node, but that attribute does not exist.
+ * E.g. deleting an interface but that interface is not applied to the type.
+ */
+export class DeletedAttributeNotFoundError extends NoopError {
+  constructor(
+    public readonly parentKind: Kind,
+    readonly attributeName: AttributeName,
+    public readonly value: string,
+  ) {
+    super(
+      `Cannot delete "${value}" from "${parentKind}"'s "${attributeName}" because "${value}" does not exist.`,
+    );
   }
 }
 
-export class UnionMemberAlreadyExistsError extends NoopError {
-  constructor(typeName: string, type: string) {
-    super(`The union "${typeName}" already contains the member "${type}".`);
+export class ChangedCoordinateNotFoundError extends Error {
+  constructor(expectedKind: Kind, expectedNameOrValue: string | undefined) {
+    super(`The "${expectedKind}" ${expectedNameOrValue} does not exist.`);
   }
 }
 
-export class DirectiveLocationAlreadyExistsError extends NoopError {
-  constructor(directiveName: string, location: string) {
-    super(`The directive "${directiveName}" already can be located on "${location}".`);
+export class DeletedCoordinateNotFound extends NoopError {
+  constructor(expectedKind: Kind, expectedNameOrValue: string | undefined) {
+    const expected = expectedNameOrValue ? `${expectedNameOrValue} ` : '';
+    super(`The removed "${expectedKind}" ${expected}already does not exist.`);
   }
 }
 
-export class DirectiveAlreadyExists extends NoopError {
-  constructor(directiveName: string) {
-    super(`The directive "${directiveName}" already exists.`);
-  }
-}
-
-export class KindMismatchError extends Error {
+export class ChangedCoordinateKindMismatchError extends Error {
   constructor(
     public readonly expectedKind: Kind,
     public readonly receivedKind: Kind,
@@ -94,64 +170,11 @@ export class KindMismatchError extends Error {
   }
 }
 
-export class FieldTypeMismatchError extends Error {
-  constructor(expectedReturnType: string, receivedReturnType: string) {
-    super(`Expected the field to return ${expectedReturnType} but found ${receivedReturnType}.`);
-  }
-}
-
-export class OldValueMismatchError extends Error {
-  constructor(
-    expectedValue: string | null | undefined,
-    receivedOldValue: string | null | undefined,
-  ) {
-    super(`Expected the value ${expectedValue} but found ${receivedOldValue}.`);
-  }
-}
-
-export class OldTypeMismatchError extends Error {
-  constructor(expectedType: string | null | undefined, receivedOldType: string | null | undefined) {
-    super(`Expected the type ${expectedType} but found ${receivedOldType}.`);
-  }
-}
-
-export class InterfaceAlreadyExistsOnTypeError extends NoopError {
-  constructor(interfaceName: string) {
-    super(
-      `Cannot add the interface "${interfaceName}" because it already is applied at that coordinate.`,
-    );
-  }
-}
-
-export class ArgumentDefaultValueMismatchError extends Error {
-  constructor(
-    expectedDefaultValue: string | undefined | null,
-    actualDefaultValue: string | undefined | null,
-  ) {
-    super(
-      `The argument's default value "${actualDefaultValue}" does not match the expected value "${expectedDefaultValue}".`,
-    );
-  }
-}
-
-export class ArgumentDescriptionMismatchError extends Error {
-  constructor(
-    expectedDefaultValue: string | undefined | null,
-    actualDefaultValue: string | undefined | null,
-  ) {
-    super(
-      `The argument's description "${actualDefaultValue}" does not match the expected "${expectedDefaultValue}".`,
-    );
-  }
-}
-
-export class DescriptionMismatchError extends NoopError {
-  constructor(
-    expectedDescription: string | undefined | null,
-    actualDescription: string | undefined | null,
-  ) {
-    super(
-      `The description, "${actualDescription}", does not the expected description, "${expectedDescription}".`,
-    );
+/**
+ * This should not happen unless there's an issue with the diff creation.
+ */
+export class ChangePathMissingError extends Error {
+  constructor() {
+    super(`The change message is missing a "path". Cannot apply.`);
   }
 }
