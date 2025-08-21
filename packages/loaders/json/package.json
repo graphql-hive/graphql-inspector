@@ -64,11 +64,11 @@
     "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0"
   },
   "dependencies": {
-    "@graphql-tools/json-file-loader": "8.0.18",
-    "tslib": "2.6.2"
+    "@graphql-tools/json-file-loader": "8.0.20",
+    "tslib": "2.8.1"
   },
   "devDependencies": {
-    "graphql": "16.9.0"
+    "graphql": "16.11.0"
   },
   "publishConfig": {
     "directory": "dist",

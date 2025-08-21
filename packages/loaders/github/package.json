@@ -64,13 +64,13 @@
     "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0"
   },
   "dependencies": {
-    "@graphql-tools/github-loader": "8.0.19",
-    "tslib": "2.6.2"
+    "@graphql-tools/github-loader": "8.0.22",
+    "tslib": "2.8.1"
   },
   "devDependencies": {
-    "@babel/core": "7.26.10",
-    "@types/node": "20.14.15",
-    "graphql": "16.9.0"
+    "@babel/core": "7.28.3",
+    "@types/node": "20.19.11",
+    "graphql": "16.11.0"
   },
   "publishConfig": {
     "directory": "dist",

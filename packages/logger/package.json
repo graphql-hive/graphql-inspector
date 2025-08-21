@@ -58,8 +58,8 @@
     "chalk": "4.1.2",
     "figures": "3.2.0",
     "log-symbols": "4.1.0",
-    "std-env": "3.7.0",
-    "tslib": "2.6.2"
+    "std-env": "3.9.0",
+    "tslib": "2.8.1"
   },
   "publishConfig": {
     "directory": "dist",

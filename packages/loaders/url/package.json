@@ -64,12 +64,12 @@
     "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0"
   },
   "dependencies": {
-    "@graphql-tools/url-loader": "8.0.31",
-    "tslib": "2.6.2"
+    "@graphql-tools/url-loader": "8.0.33",
+    "tslib": "2.8.1"
   },
   "devDependencies": {
-    "@types/node": "20.14.15",
-    "graphql": "16.9.0"
+    "@types/node": "20.19.11",
+    "graphql": "16.11.0"
   },
   "publishConfig": {
     "directory": "dist",
