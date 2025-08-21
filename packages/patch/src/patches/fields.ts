@@ -204,7 +204,9 @@ export function fieldArgumentDefaultChanged(
 ) {
   const existingArg = getChangedNodeOfKind(change, nodeByPath, Kind.INPUT_VALUE_DEFINITION, config);
   if (existingArg) {
-    if ((existingArg.defaultValue && print(existingArg.defaultValue)) !== change.meta.oldDefaultValue) {
+    if (
+      (existingArg.defaultValue && print(existingArg.defaultValue)) !== change.meta.oldDefaultValue
+    ) {
       handleError(
         change,
         new ValueMismatchError(
@@ -215,7 +217,9 @@ export function fieldArgumentDefaultChanged(
         config,
       );
     }
-    (existingArg.defaultValue as ConstValueNode | undefined) = change.meta.newDefaultValue ? parseConstValue(change.meta.newDefaultValue) : undefined;
+    (existingArg.defaultValue as ConstValueNode | undefined) = change.meta.newDefaultValue
+      ? parseConstValue(change.meta.newDefaultValue)
+      : undefined;
   }
 }
 
@@ -254,20 +258,14 @@ export function fieldArgumentRemoved(
     } else {
       handleError(
         change,
-        new ChangedCoordinateKindMismatchError(
-          Kind.FIELD_DEFINITION,
-          fieldNode.kind,
-        ),
+        new ChangedCoordinateKindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind),
         config,
       );
     }
   } else {
     handleError(
       change,
-      new DeletedCoordinateNotFound(
-        Kind.ARGUMENT,
-        change.meta.removedFieldArgumentName,
-      ),
+      new DeletedCoordinateNotFound(Kind.ARGUMENT, change.meta.removedFieldArgumentName),
       config,
     );
   }

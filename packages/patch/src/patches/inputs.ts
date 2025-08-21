@@ -1,4 +1,13 @@
-import { ASTNode, InputValueDefinitionNode, Kind, parseType, StringValueNode, print, ConstValueNode, parseConstValue } from 'graphql';
+import {
+  ASTNode,
+  ConstValueNode,
+  InputValueDefinitionNode,
+  Kind,
+  parseConstValue,
+  parseType,
+  print,
+  StringValueNode,
+} from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
   AddedAttributeCoordinateNotFoundError,
@@ -164,7 +173,9 @@ export function inputFieldDefaultValueChanged(
   const existingNode = nodeByPath.get(change.path);
   if (existingNode) {
     if (existingNode.kind === Kind.INPUT_VALUE_DEFINITION) {
-      const oldValueMatches = (existingNode.defaultValue && print(existingNode.defaultValue)) === change.meta.oldDefaultValue;
+      const oldValueMatches =
+        (existingNode.defaultValue && print(existingNode.defaultValue)) ===
+        change.meta.oldDefaultValue;
       if (!oldValueMatches) {
         handleError(
           change,
@@ -176,7 +187,9 @@ export function inputFieldDefaultValueChanged(
           config,
         );
       }
-      (existingNode.defaultValue as ConstValueNode | undefined) = change.meta.newDefaultValue ? parseConstValue(change.meta.newDefaultValue) : undefined;
+      (existingNode.defaultValue as ConstValueNode | undefined) = change.meta.newDefaultValue
+        ? parseConstValue(change.meta.newDefaultValue)
+        : undefined;
     } else {
       handleError(
         change,

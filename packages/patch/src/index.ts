@@ -58,8 +58,8 @@ import {
 import {
   fieldAdded,
   fieldArgumentAdded,
-  fieldArgumentRemoved,
   fieldArgumentDefaultChanged,
+  fieldArgumentRemoved,
   fieldDeprecationAdded,
   fieldDeprecationReasonAdded,
   fieldDeprecationReasonChanged,
