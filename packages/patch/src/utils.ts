@@ -1,7 +1,8 @@
-import { ASTNode, DirectiveNode, GraphQLDeprecatedDirective, NameNode } from 'graphql';
+import { ASTKindToNode, ASTNode, DirectiveNode, GraphQLDeprecatedDirective, Kind, NameNode } from 'graphql';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { Change, ChangeType } from '@graphql-inspector/core';
-import { AdditionChangeType } from './types.js';
+import { AdditionChangeType, PatchConfig } from './types.js';
+import { ChangedCoordinateKindMismatchError, ChangedCoordinateNotFoundError, ChangePathMissingError, handleError } from './errors.js';
 
 export function getDeprecatedDirectiveNode(
   definitionNode: Maybe<{ readonly directives?: ReadonlyArray<DirectiveNode> }>,
@@ -75,3 +76,47 @@ export function debugPrintChange(change: Change<any>, nodeByPath: Map<string, AS
 }
 
 export const DEPRECATION_REASON_DEFAULT = 'No longer supported';
+
+export function assertChangeHasPath(change: Change<any>, config: PatchConfig): change is typeof change & { path: string } {
+  if (!change.path) {
+    handleError(change, new ChangePathMissingError(), config);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Handles verifying the change object has a path, that the node exists in the
+ * nodeByPath Map, and that the found node is the expected Kind.
+ */
+export function getChangedNodeOfKind<K extends Kind>(
+  change: Change<any>,
+  nodeByPath: Map<string, ASTNode>,
+  kind: K,
+  config: PatchConfig
+): ASTKindToNode[K] | void {
+  if (assertChangeHasPath(change, config)) {
+    const existing = nodeByPath.get(change.path);
+    if (!existing) {
+      handleError(
+        change,
+        new ChangedCoordinateNotFoundError(
+          Kind.INPUT_VALUE_DEFINITION,
+          change.meta.argumentName,
+        ),
+        config,
+      );
+    } else if (existing.kind === kind) {
+      return existing as ASTKindToNode[K];
+    } else {
+      handleError(
+        change,
+        new ChangedCoordinateKindMismatchError(
+          kind,
+          existing.kind,
+        ),
+        config,
+      );
+    }
+  }
+}

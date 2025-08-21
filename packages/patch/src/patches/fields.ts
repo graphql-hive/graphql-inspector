@@ -1,11 +1,13 @@
 import {
   ArgumentNode,
   ASTNode,
+  ConstValueNode,
   DirectiveNode,
   FieldDefinitionNode,
   GraphQLDeprecatedDirective,
   InputValueDefinitionNode,
   Kind,
+  parseConstValue,
   parseType,
   print,
   StringValueNode,
@@ -16,7 +18,9 @@ import {
   AddedAttributeAlreadyExistsError,
   AddedCoordinateAlreadyExistsError,
   ChangedCoordinateKindMismatchError,
+  ChangedCoordinateNotFoundError,
   ChangePathMissingError,
+  DeletedAncestorCoordinateNotFoundError,
   DeletedCoordinateNotFound,
   handleError,
   ValueMismatchError,
@@ -26,6 +30,7 @@ import type { PatchConfig } from '../types';
 import {
   DEPRECATION_REASON_DEFAULT,
   findNamedNode,
+  getChangedNodeOfKind,
   getDeprecatedDirectiveNode,
   parentPath,
 } from '../utils.js';
@@ -189,6 +194,82 @@ export function fieldArgumentAdded(
         config,
       );
     }
+  }
+}
+
+export function fieldArgumentDefaultChanged(
+  change: Change<typeof ChangeType.FieldArgumentDefaultChanged>,
+  nodeByPath: Map<string, ASTNode>,
+  config: PatchConfig,
+) {
+  const existingArg = getChangedNodeOfKind(change, nodeByPath, Kind.INPUT_VALUE_DEFINITION, config);
+  if (existingArg) {
+    if ((existingArg.defaultValue && print(existingArg.defaultValue)) !== change.meta.oldDefaultValue) {
+      handleError(
+        change,
+        new ValueMismatchError(
+          Kind.INPUT_VALUE_DEFINITION,
+          change.meta.oldDefaultValue,
+          existingArg.defaultValue && print(existingArg.defaultValue),
+        ),
+        config,
+      );
+    }
+    (existingArg.defaultValue as ConstValueNode | undefined) = change.meta.newDefaultValue ? parseConstValue(change.meta.newDefaultValue) : undefined;
+  }
+}
+
+export function fieldArgumentRemoved(
+  change: Change<typeof ChangeType.FieldArgumentRemoved>,
+  nodeByPath: Map<string, ASTNode>,
+  config: PatchConfig,
+) {
+  if (!change.path) {
+    handleError(change, new ChangePathMissingError(), config);
+    return;
+  }
+
+  const existing = nodeByPath.get(change.path);
+  if (existing) {
+    const fieldNode = nodeByPath.get(parentPath(change.path)) as ASTNode & {
+      arguments?: InputValueDefinitionNode[];
+    };
+    if (!fieldNode) {
+      handleError(
+        change,
+        new DeletedAncestorCoordinateNotFoundError(
+          Kind.FIELD_DEFINITION,
+          'arguments',
+          change.meta.removedFieldArgumentName,
+        ),
+        config,
+      );
+    } else if (fieldNode.kind === Kind.FIELD_DEFINITION) {
+      fieldNode.arguments = fieldNode.arguments?.filter(
+        a => a.name.value === change.meta.removedFieldArgumentName,
+      );
+
+      // add new field to the node set
+      nodeByPath.delete(change.path);
+    } else {
+      handleError(
+        change,
+        new ChangedCoordinateKindMismatchError(
+          Kind.FIELD_DEFINITION,
+          fieldNode.kind,
+        ),
+        config,
+      );
+    }
+  } else {
+    handleError(
+      change,
+      new DeletedCoordinateNotFound(
+        Kind.ARGUMENT,
+        change.meta.removedFieldArgumentName,
+      ),
+      config,
+    );
   }
 }
 

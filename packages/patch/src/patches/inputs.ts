@@ -1,4 +1,4 @@
-import { ASTNode, InputValueDefinitionNode, Kind, parseType, StringValueNode } from 'graphql';
+import { ASTNode, InputValueDefinitionNode, Kind, parseType, StringValueNode, print, ConstValueNode, parseConstValue } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
   AddedAttributeCoordinateNotFoundError,
@@ -152,6 +152,43 @@ export function inputFieldDescriptionAdded(
   }
 }
 
+export function inputFieldDefaultValueChanged(
+  change: Change<typeof ChangeType.InputFieldDefaultValueChanged>,
+  nodeByPath: Map<string, ASTNode>,
+  config: PatchConfig,
+) {
+  if (!change.path) {
+    handleError(change, new ChangePathMissingError(), config);
+    return;
+  }
+  const existingNode = nodeByPath.get(change.path);
+  if (existingNode) {
+    if (existingNode.kind === Kind.INPUT_VALUE_DEFINITION) {
+      const oldValueMatches = (existingNode.defaultValue && print(existingNode.defaultValue)) === change.meta.oldDefaultValue;
+      if (!oldValueMatches) {
+        handleError(
+          change,
+          new ValueMismatchError(
+            existingNode.defaultValue?.kind ?? Kind.INPUT_VALUE_DEFINITION,
+            change.meta.oldDefaultValue,
+            existingNode.defaultValue && print(existingNode.defaultValue),
+          ),
+          config,
+        );
+      }
+      (existingNode.defaultValue as ConstValueNode | undefined) = change.meta.newDefaultValue ? parseConstValue(change.meta.newDefaultValue) : undefined;
+    } else {
+      handleError(
+        change,
+        new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, existingNode.kind),
+        config,
+      );
+    }
+  } else {
+    handleError(change, new ChangePathMissingError(), config);
+  }
+}
+
 export function inputFieldDescriptionChanged(
   change: Change<typeof ChangeType.InputFieldDescriptionChanged>,
   nodeByPath: Map<string, ASTNode>,
@@ -221,6 +258,14 @@ export function inputFieldDescriptionRemoved(
       );
     }
   } else {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(
+      change,
+      new DeletedAncestorCoordinateNotFoundError(
+        Kind.INPUT_VALUE_DEFINITION,
+        'description',
+        change.meta.removedDescription,
+      ),
+      config,
+    );
   }
 }

@@ -58,8 +58,11 @@ import {
 import {
   fieldAdded,
   fieldArgumentAdded,
+  fieldArgumentRemoved,
+  fieldArgumentDefaultChanged,
   fieldDeprecationAdded,
   fieldDeprecationReasonAdded,
+  fieldDeprecationReasonChanged,
   fieldDeprecationRemoved,
   fieldDescriptionAdded,
   fieldDescriptionChanged,
@@ -69,8 +72,10 @@ import {
 } from './patches/fields.js';
 import {
   inputFieldAdded,
+  inputFieldDefaultValueChanged,
   inputFieldDescriptionAdded,
   inputFieldDescriptionChanged,
+  inputFieldDescriptionRemoved,
   inputFieldRemoved,
 } from './patches/inputs.js';
 import { objectTypeInterfaceAdded, objectTypeInterfaceRemoved } from './patches/interfaces.js';
@@ -267,6 +272,14 @@ export function patch(
         fieldArgumentAdded(change, nodeByPath, config);
         break;
       }
+      case ChangeType.FieldArgumentRemoved: {
+        fieldArgumentRemoved(change, nodeByPath, config);
+        break;
+      }
+      case ChangeType.FieldArgumentDefaultChanged: {
+        fieldArgumentDefaultChanged(change, nodeByPath, config);
+        break;
+      }
       case ChangeType.FieldDeprecationAdded: {
         fieldDeprecationAdded(change, nodeByPath, config);
         break;
@@ -277,6 +290,10 @@ export function patch(
       }
       case ChangeType.FieldDeprecationReasonAdded: {
         fieldDeprecationReasonAdded(change, nodeByPath, config);
+        break;
+      }
+      case ChangeType.FieldDeprecationReasonChanged: {
+        fieldDeprecationReasonChanged(change, nodeByPath, config);
         break;
       }
       case ChangeType.FieldDescriptionAdded: {
@@ -301,6 +318,14 @@ export function patch(
       }
       case ChangeType.InputFieldDescriptionChanged: {
         inputFieldDescriptionChanged(change, nodeByPath, config);
+        break;
+      }
+      case ChangeType.InputFieldDescriptionRemoved: {
+        inputFieldDescriptionRemoved(change, nodeByPath, config);
+        break;
+      }
+      case ChangeType.InputFieldDefaultValueChanged: {
+        inputFieldDefaultValueChanged(change, nodeByPath, config);
         break;
       }
       case ChangeType.ObjectTypeInterfaceAdded: {

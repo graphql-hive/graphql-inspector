@@ -78,9 +78,7 @@ export const ChangeType = {
   TypeAdded: 'TYPE_ADDED',
   TypeKindChanged: 'TYPE_KIND_CHANGED',
   TypeDescriptionChanged: 'TYPE_DESCRIPTION_CHANGED',
-  // TODO
   TypeDescriptionRemoved: 'TYPE_DESCRIPTION_REMOVED',
-  // TODO
   TypeDescriptionAdded: 'TYPE_DESCRIPTION_ADDED',
   // Union
   UnionMemberRemoved: 'UNION_MEMBER_REMOVED',
@@ -925,26 +923,6 @@ type Changes = {
   [ChangeType.FieldDescriptionChanged]: FieldDescriptionChangedChange;
   [ChangeType.FieldArgumentAdded]: FieldArgumentAddedChange;
   [ChangeType.FieldArgumentRemoved]: FieldArgumentRemovedChange;
-  [ChangeType.InputFieldRemoved]: InputFieldRemovedChange;
-  [ChangeType.InputFieldAdded]: InputFieldAddedChange;
-  [ChangeType.InputFieldDescriptionAdded]: InputFieldDescriptionAddedChange;
-  [ChangeType.InputFieldDescriptionRemoved]: InputFieldDescriptionRemovedChange;
-  [ChangeType.InputFieldDescriptionChanged]: InputFieldDescriptionChangedChange;
-  [ChangeType.InputFieldDefaultValueChanged]: InputFieldDefaultValueChangedChange;
-  [ChangeType.InputFieldTypeChanged]: InputFieldTypeChangedChange;
-  [ChangeType.ObjectTypeInterfaceAdded]: ObjectTypeInterfaceAddedChange;
-  [ChangeType.ObjectTypeInterfaceRemoved]: ObjectTypeInterfaceRemovedChange;
-  [ChangeType.SchemaQueryTypeChanged]: SchemaQueryTypeChangedChange;
-  [ChangeType.SchemaMutationTypeChanged]: SchemaMutationTypeChangedChange;
-  [ChangeType.SchemaSubscriptionTypeChanged]: SchemaSubscriptionTypeChangedChange;
-  [ChangeType.TypeAdded]: TypeAddedChange;
-  [ChangeType.TypeRemoved]: TypeRemovedChange;
-  [ChangeType.TypeKindChanged]: TypeKindChangedChange;
-  [ChangeType.TypeDescriptionChanged]: TypeDescriptionChangedChange;
-  [ChangeType.TypeDescriptionRemoved]: TypeDescriptionRemovedChange;
-  [ChangeType.TypeDescriptionAdded]: TypeDescriptionAddedChange;
-  [ChangeType.UnionMemberAdded]: UnionMemberAddedChange;
-  [ChangeType.UnionMemberRemoved]: UnionMemberRemovedChange;
   [ChangeType.DirectiveRemoved]: DirectiveRemovedChange;
   [ChangeType.DirectiveAdded]: DirectiveAddedChange;
   [ChangeType.DirectiveArgumentAdded]: DirectiveArgumentAddedChange;
