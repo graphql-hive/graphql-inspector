@@ -72,7 +72,7 @@
     "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0"
   },
   "dependencies": {
-    "@babel/core": "7.26.10",
+    "@babel/core": "7.28.3",
     "@graphql-inspector/audit-command": "workspace:*",
     "@graphql-inspector/code-loader": "workspace:*",
     "@graphql-inspector/commands": "workspace:*",
@@ -90,7 +90,7 @@
     "@graphql-inspector/similar-command": "workspace:*",
     "@graphql-inspector/url-loader": "workspace:*",
     "@graphql-inspector/validate-command": "workspace:*",
-    "tslib": "2.6.2",
+    "tslib": "2.8.1",
     "yargs": "17.7.2"
   },
   "publishConfig": {
