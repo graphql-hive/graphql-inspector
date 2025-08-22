@@ -61,6 +61,46 @@ describe('fields', () => {
     await expectPatchToMatch(before, after);
   });
 
+  test('fieldArgumentTypeChanged', async () => {
+    const before = /* GraphQL */ `
+      scalar ChatSession
+      type Query {
+        chat(id: String): ChatSession
+      }
+    `;
+    const after = /* GraphQL */ `
+      scalar ChatSession
+      type Query {
+        chat(id: ID!): ChatSession
+      }
+    `;
+    await expectPatchToMatch(before, after);
+  });
+
+  test('fieldArgumentDescriptionChanged', async () => {
+    const before = /* GraphQL */ `
+      scalar ChatSession
+      type Query {
+        """
+        The first is the worst
+        """
+        chat(firstMessage: String): ChatSession
+      }
+    `;
+    const after = /* GraphQL */ `
+      scalar ChatSession
+      type Query {
+        chat(
+          """
+          Second is best
+          """
+          firstMessage: String
+        ): ChatSession
+      }
+    `;
+    await expectPatchToMatch(before, after);
+  });
+
   test('fieldDeprecationReasonAdded', async () => {
     const before = /* GraphQL */ `
       scalar ChatSession

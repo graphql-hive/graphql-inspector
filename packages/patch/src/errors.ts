@@ -13,7 +13,7 @@ export function handleError(change: Change<any>, err: Error, config: PatchConfig
       `Ignoring change ${change.type} at "${change.path}" because it does not modify the resulting schema.`,
     );
   } else if (!config.requireOldValueMatch && err instanceof ValueMismatchError) {
-    console.debug(`Ignoreing old value mismatch at "${change.path}".`);
+    console.debug(`Ignoring old value mismatch at "${change.path}".`);
   } else if (config.throwOnError === true) {
     throw err;
   } else {
@@ -108,10 +108,10 @@ export class DeletedAncestorCoordinateNotFoundError extends NoopError {
   constructor(
     public readonly parentKind: Kind,
     readonly attributeName: AttributeName,
-    readonly expectedValue: string,
+    readonly expectedValue: string | undefined,
   ) {
     super(
-      `Cannot delete "${expectedValue}" from "${attributeName}" on "${parentKind}" because the "${parentKind}" does not exist.`,
+      `Cannot delete ${expectedValue ? `"${expectedValue}" ` : ''}from "${attributeName}" on "${parentKind}" because the "${parentKind}" does not exist.`,
     );
   }
 }

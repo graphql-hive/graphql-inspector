@@ -26,7 +26,12 @@ import {
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
 import { PatchConfig } from '../types.js';
-import { findNamedNode } from '../utils.js';
+import {
+  deleteNamedNode,
+  findNamedNode,
+  getDeletedNodeOfKind,
+  getDeletedParentNodeOfKind,
+} from '../utils.js';
 
 export function directiveAdded(
   change: Change<typeof ChangeType.DirectiveAdded>,
@@ -56,6 +61,17 @@ export function directiveAdded(
         : undefined,
     };
     nodeByPath.set(change.path, node);
+  }
+}
+
+export function directiveRemoved(
+  change: Change<typeof ChangeType.DirectiveRemoved>,
+  nodeByPath: Map<string, ASTNode>,
+  config: PatchConfig,
+) {
+  const existing = getDeletedNodeOfKind(change, nodeByPath, Kind.DIRECTIVE_DEFINITION, config);
+  if (existing) {
+    nodeByPath.delete(change.path!);
   }
 }
 
@@ -109,6 +125,28 @@ export function directiveArgumentAdded(
       new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, directiveNode.kind),
       config,
     );
+  }
+}
+
+export function directiveArgumentRemoved(
+  change: Change<typeof ChangeType.DirectiveArgumentRemoved>,
+  nodeByPath: Map<string, ASTNode>,
+  config: PatchConfig,
+) {
+  const argNode = getDeletedNodeOfKind(change, nodeByPath, Kind.INPUT_VALUE_DEFINITION, config);
+  if (argNode) {
+    const directiveNode = getDeletedParentNodeOfKind(
+      change,
+      nodeByPath,
+      Kind.DIRECTIVE_DEFINITION,
+      'arguments',
+      config,
+    );
+
+    if (directiveNode) {
+      (directiveNode.arguments as ReadonlyArray<InputValueDefinitionNode> | undefined) =
+        deleteNamedNode(directiveNode.arguments, change.meta.removedDirectiveArgumentName);
+    }
   }
 }
 

@@ -18,7 +18,6 @@ import {
   AddedAttributeAlreadyExistsError,
   AddedCoordinateAlreadyExistsError,
   ChangedCoordinateKindMismatchError,
-  ChangedCoordinateNotFoundError,
   ChangePathMissingError,
   DeletedAncestorCoordinateNotFoundError,
   DeletedCoordinateNotFound,
@@ -28,6 +27,7 @@ import {
 import { nameNode, stringNode } from '../node-templates.js';
 import type { PatchConfig } from '../types';
 import {
+  assertValueMatch,
   DEPRECATION_REASON_DEFAULT,
   findNamedNode,
   getChangedNodeOfKind,
@@ -197,6 +197,44 @@ export function fieldArgumentAdded(
   }
 }
 
+export function fieldArgumentTypeChanged(
+  change: Change<typeof ChangeType.FieldArgumentTypeChanged>,
+  nodeByPath: Map<string, ASTNode>,
+  config: PatchConfig,
+) {
+  const existingArg = getChangedNodeOfKind(change, nodeByPath, Kind.INPUT_VALUE_DEFINITION, config);
+  if (existingArg) {
+    assertValueMatch(
+      change,
+      Kind.INPUT_VALUE_DEFINITION,
+      change.meta.oldArgumentType,
+      print(existingArg.type),
+      config,
+    );
+    (existingArg.type as TypeNode) = parseType(change.meta.newArgumentType);
+  }
+}
+
+export function fieldArgumentDescriptionChanged(
+  change: Change<typeof ChangeType.FieldArgumentDescriptionChanged>,
+  nodeByPath: Map<string, ASTNode>,
+  config: PatchConfig,
+) {
+  const existingArg = getChangedNodeOfKind(change, nodeByPath, Kind.INPUT_VALUE_DEFINITION, config);
+  if (existingArg) {
+    assertValueMatch(
+      change,
+      Kind.INPUT_VALUE_DEFINITION,
+      change.meta.oldDescription ?? undefined,
+      existingArg.description?.value,
+      config,
+    );
+    (existingArg.description as StringValueNode | undefined) = change.meta.newDescription
+      ? stringNode(change.meta.newDescription)
+      : undefined;
+  }
+}
+
 export function fieldArgumentDefaultChanged(
   change: Change<typeof ChangeType.FieldArgumentDefaultChanged>,
   nodeByPath: Map<string, ASTNode>,
@@ -204,19 +242,13 @@ export function fieldArgumentDefaultChanged(
 ) {
   const existingArg = getChangedNodeOfKind(change, nodeByPath, Kind.INPUT_VALUE_DEFINITION, config);
   if (existingArg) {
-    if (
-      (existingArg.defaultValue && print(existingArg.defaultValue)) !== change.meta.oldDefaultValue
-    ) {
-      handleError(
-        change,
-        new ValueMismatchError(
-          Kind.INPUT_VALUE_DEFINITION,
-          change.meta.oldDefaultValue,
-          existingArg.defaultValue && print(existingArg.defaultValue),
-        ),
-        config,
-      );
-    }
+    assertValueMatch(
+      change,
+      Kind.INPUT_VALUE_DEFINITION,
+      change.meta.oldDefaultValue,
+      existingArg.defaultValue && print(existingArg.defaultValue),
+      config,
+    );
     (existingArg.defaultValue as ConstValueNode | undefined) = change.meta.newDefaultValue
       ? parseConstValue(change.meta.newDefaultValue)
       : undefined;

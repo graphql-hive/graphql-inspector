@@ -12,6 +12,17 @@ describe('directives', async () => {
     await expectPatchToMatch(before, after);
   });
 
+  test('directiveRemoved', async () => {
+    const before = /* GraphQL */ `
+      scalar Food
+      directive @tasty on FIELD_DEFINITION
+    `;
+    const after = /* GraphQL */ `
+      scalar Food
+    `;
+    await expectPatchToMatch(before, after);
+  });
+
   test('directiveArgumentAdded', async () => {
     const before = /* GraphQL */ `
       scalar Food
@@ -20,6 +31,18 @@ describe('directives', async () => {
     const after = /* GraphQL */ `
       scalar Food
       directive @tasty(reason: String) on FIELD_DEFINITION
+    `;
+    await expectPatchToMatch(before, after);
+  });
+
+  test('directiveArgumentRemoved', async () => {
+    const before = /* GraphQL */ `
+      scalar Food
+      directive @tasty(reason: String) on FIELD_DEFINITION
+    `;
+    const after = /* GraphQL */ `
+      scalar Food
+      directive @tasty on FIELD_DEFINITION
     `;
     await expectPatchToMatch(before, after);
   });

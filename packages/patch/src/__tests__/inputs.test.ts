@@ -48,6 +48,20 @@ describe('inputs', () => {
     await expectPatchToMatch(before, after);
   });
 
+  test('inputFieldTypeChanged', async () => {
+    const before = /* GraphQL */ `
+      input FooInput {
+        id: ID!
+      }
+    `;
+    const after = /* GraphQL */ `
+      input FooInput {
+        id: ID
+      }
+    `;
+    await expectPatchToMatch(before, after);
+  })
+
   test('inputFieldDescriptionRemoved', async () => {
     const before = /* GraphQL */ `
       """

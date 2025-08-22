@@ -9,10 +9,14 @@ import {
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
+  AttributeName,
   ChangedCoordinateKindMismatchError,
   ChangedCoordinateNotFoundError,
   ChangePathMissingError,
+  DeletedAncestorCoordinateNotFoundError,
+  DeletedCoordinateNotFound,
   handleError,
+  ValueMismatchError,
 } from './errors.js';
 import { AdditionChangeType, PatchConfig } from './types.js';
 
@@ -27,6 +31,16 @@ export function findNamedNode<T extends { readonly name: NameNode }>(
   name: string,
 ): T | undefined {
   return nodes?.find(value => value.name.value === name);
+}
+
+export function deleteNamedNode<T extends { readonly name: NameNode }>(
+  nodes: Maybe<ReadonlyArray<T>>,
+  name: string,
+): ReadonlyArray<T> | undefined {
+  if (nodes) {
+    const idx = nodes.findIndex(value => value.name.value === name);
+    return idx >= 0 ? nodes.toSpliced(idx, 1) : nodes;
+  }
 }
 
 export function parentPath(path: string) {
@@ -100,6 +114,18 @@ export function assertChangeHasPath(
   return true;
 }
 
+export function assertValueMatch(
+  change: Change<any>,
+  expectedKind: Kind,
+  expected: string | undefined,
+  actual: string | undefined,
+  config: PatchConfig,
+) {
+  if (expected !== actual) {
+    handleError(change, new ValueMismatchError(expectedKind, expected, actual), config);
+  }
+}
+
 /**
  * Handles verifying the change object has a path, that the node exists in the
  * nodeByPath Map, and that the found node is the expected Kind.
@@ -115,7 +141,55 @@ export function getChangedNodeOfKind<K extends Kind>(
     if (!existing) {
       handleError(
         change,
-        new ChangedCoordinateNotFoundError(Kind.INPUT_VALUE_DEFINITION, change.meta.argumentName),
+        // @todo improve the error by providing the name or value somehow.
+        new ChangedCoordinateNotFoundError(kind, undefined),
+        config,
+      );
+    } else if (existing.kind === kind) {
+      return existing as ASTKindToNode[K];
+    } else {
+      handleError(change, new ChangedCoordinateKindMismatchError(kind, existing.kind), config);
+    }
+  }
+}
+
+export function getDeletedNodeOfKind<K extends Kind>(
+  change: Change<any>,
+  nodeByPath: Map<string, ASTNode>,
+  kind: K,
+  config: PatchConfig,
+): ASTKindToNode[K] | void {
+  if (assertChangeHasPath(change, config)) {
+    const existing = nodeByPath.get(change.path);
+    if (!existing) {
+      handleError(
+        change,
+        // @todo improve the error by providing the name or value somehow.
+        new DeletedCoordinateNotFound(kind, undefined),
+        config,
+      );
+    } else if (existing.kind === kind) {
+      return existing as ASTKindToNode[K];
+    } else {
+      handleError(change, new ChangedCoordinateKindMismatchError(kind, existing.kind), config);
+    }
+  }
+}
+
+export function getDeletedParentNodeOfKind<K extends Kind>(
+  change: Change<any>,
+  nodeByPath: Map<string, ASTNode>,
+  kind: K,
+  attributeName: AttributeName,
+  config: PatchConfig,
+): ASTKindToNode[K] | void {
+  if (assertChangeHasPath(change, config)) {
+    const existing = nodeByPath.get(parentPath(change.path));
+    if (!existing) {
+      handleError(
+        change,
+        // @todo improve the error by providing the name or value somehow.
+        new DeletedAncestorCoordinateNotFoundError(kind, attributeName, undefined),
         config,
       );
     } else if (existing.kind === kind) {

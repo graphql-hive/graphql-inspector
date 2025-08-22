@@ -43,10 +43,12 @@ import {
   directiveArgumentAdded,
   directiveArgumentDefaultValueChanged,
   directiveArgumentDescriptionChanged,
+  directiveArgumentRemoved,
   directiveArgumentTypeChanged,
   directiveDescriptionChanged,
   directiveLocationAdded,
   directiveLocationRemoved,
+  directiveRemoved,
 } from './patches/directives.js';
 import {
   enumValueAdded,
@@ -59,7 +61,9 @@ import {
   fieldAdded,
   fieldArgumentAdded,
   fieldArgumentDefaultChanged,
+  fieldArgumentDescriptionChanged,
   fieldArgumentRemoved,
+  fieldArgumentTypeChanged,
   fieldDeprecationAdded,
   fieldDeprecationReasonAdded,
   fieldDeprecationReasonChanged,
@@ -72,6 +76,7 @@ import {
 } from './patches/fields.js';
 import {
   inputFieldAdded,
+  inputFieldTypeChanged,
   inputFieldDefaultValueChanged,
   inputFieldDescriptionAdded,
   inputFieldDescriptionChanged,
@@ -232,8 +237,16 @@ export function patch(
         directiveAdded(change, nodeByPath, config);
         break;
       }
+      case ChangeType.DirectiveRemoved: {
+        directiveRemoved(change, nodeByPath, config);
+        break;
+      }
       case ChangeType.DirectiveArgumentAdded: {
         directiveArgumentAdded(change, nodeByPath, config);
+        break;
+      }
+      case ChangeType.DirectiveArgumentRemoved: {
+        directiveArgumentRemoved(change, nodeByPath, config);
         break;
       }
       case ChangeType.DirectiveLocationAdded: {
@@ -272,8 +285,16 @@ export function patch(
         fieldArgumentAdded(change, nodeByPath, config);
         break;
       }
+      case ChangeType.FieldArgumentTypeChanged: {
+        fieldArgumentTypeChanged(change, nodeByPath, config);
+        break;
+      }
       case ChangeType.FieldArgumentRemoved: {
         fieldArgumentRemoved(change, nodeByPath, config);
+        break;
+      }
+      case ChangeType.FieldArgumentDescriptionChanged: {
+        fieldArgumentDescriptionChanged(change, nodeByPath, config);
         break;
       }
       case ChangeType.FieldArgumentDefaultChanged: {
@@ -314,6 +335,10 @@ export function patch(
       }
       case ChangeType.InputFieldDescriptionAdded: {
         inputFieldDescriptionAdded(change, nodeByPath, config);
+        break;
+      }
+      case ChangeType.InputFieldTypeChanged: {
+        inputFieldTypeChanged(change, nodeByPath, config);
         break;
       }
       case ChangeType.InputFieldDescriptionChanged: {

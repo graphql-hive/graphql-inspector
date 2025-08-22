@@ -7,6 +7,8 @@ import {
   parseType,
   print,
   StringValueNode,
+  printType,
+  TypeNode,
 } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
@@ -20,7 +22,7 @@ import {
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
 import type { PatchConfig } from '../types.js';
-import { parentPath } from '../utils.js';
+import { assertValueMatch, getChangedNodeOfKind, parentPath } from '../utils.js';
 
 export function inputFieldAdded(
   change: Change<typeof ChangeType.InputFieldAdded>,
@@ -158,6 +160,25 @@ export function inputFieldDescriptionAdded(
       ),
       config,
     );
+  }
+}
+
+export function inputFieldTypeChanged(
+  change: Change<typeof ChangeType.InputFieldTypeChanged>,
+  nodeByPath: Map<string, ASTNode>,
+  config: PatchConfig,
+) {
+  const inputFieldNode = getChangedNodeOfKind(change, nodeByPath, Kind.INPUT_VALUE_DEFINITION, config);
+  if (inputFieldNode) {
+    assertValueMatch(
+      change,
+      Kind.INPUT_VALUE_DEFINITION,
+      change.meta.oldInputFieldType,
+      print(inputFieldNode.type),
+      config,
+    );
+
+    (inputFieldNode.type as TypeNode) = parseType(change.meta.newInputFieldType);
   }
 }
 
