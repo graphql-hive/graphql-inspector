@@ -76,12 +76,12 @@ import {
 } from './patches/fields.js';
 import {
   inputFieldAdded,
-  inputFieldTypeChanged,
   inputFieldDefaultValueChanged,
   inputFieldDescriptionAdded,
   inputFieldDescriptionChanged,
   inputFieldDescriptionRemoved,
   inputFieldRemoved,
+  inputFieldTypeChanged,
 } from './patches/inputs.js';
 import { objectTypeInterfaceAdded, objectTypeInterfaceRemoved } from './patches/interfaces.js';
 import {

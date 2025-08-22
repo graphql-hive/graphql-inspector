@@ -7,7 +7,6 @@ import {
   parseType,
   print,
   StringValueNode,
-  printType,
   TypeNode,
 } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
@@ -168,7 +167,12 @@ export function inputFieldTypeChanged(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const inputFieldNode = getChangedNodeOfKind(change, nodeByPath, Kind.INPUT_VALUE_DEFINITION, config);
+  const inputFieldNode = getChangedNodeOfKind(
+    change,
+    nodeByPath,
+    Kind.INPUT_VALUE_DEFINITION,
+    config,
+  );
   if (inputFieldNode) {
     assertValueMatch(
       change,

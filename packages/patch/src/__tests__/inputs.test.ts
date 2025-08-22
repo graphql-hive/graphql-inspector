@@ -60,7 +60,7 @@ describe('inputs', () => {
       }
     `;
     await expectPatchToMatch(before, after);
-  })
+  });
 
   test('inputFieldDescriptionRemoved', async () => {
     const before = /* GraphQL */ `
