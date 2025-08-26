@@ -48,7 +48,7 @@ export type PatchConfig = {
    * @param err The raised error
    * @returns True if the error has been handled
    */
-  onError?: (err: Error) => boolean | undefined | null;
+  onError?: (err: Error, change: Change<any>) => boolean | undefined | null;
 
   /**
    * Enables debug logging

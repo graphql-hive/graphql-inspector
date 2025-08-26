@@ -3,7 +3,7 @@ import type { Change } from '@graphql-inspector/core';
 import type { PatchConfig } from './types.js';
 
 export function handleError(change: Change<any>, err: Error, config: PatchConfig) {
-  if (config.onError?.(err) === true) {
+  if (config.onError?.(err, change) === true) {
     // handled by onError
     return;
   }
@@ -150,7 +150,9 @@ export class DeletedAttributeNotFoundError extends NoopError {
 
 export class ChangedCoordinateNotFoundError extends Error {
   constructor(expectedKind: Kind, expectedNameOrValue: string | undefined) {
-    super(`The "${expectedKind}" ${expectedNameOrValue} does not exist.`);
+    super(
+      `The "${expectedKind}" ${expectedNameOrValue ? `"${expectedNameOrValue}"` : ''}does not exist.`,
+    );
   }
 }
 
@@ -174,7 +176,7 @@ export class ChangedCoordinateKindMismatchError extends Error {
  * This should not happen unless there's an issue with the diff creation.
  */
 export class ChangePathMissingError extends Error {
-  constructor() {
-    super(`The change message is missing a "path". Cannot apply.`);
+  constructor(public readonly change: Change<any>) {
+    super(`The change is missing a "path". Cannot apply.`);
   }
 }

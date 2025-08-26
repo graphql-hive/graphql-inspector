@@ -100,6 +100,8 @@ import { unionMemberAdded, unionMemberRemoved } from './patches/unions.js';
 import { PatchConfig, SchemaNode } from './types.js';
 import { debugPrintChange } from './utils.js';
 
+export * as errors from './errors.js';
+
 export function patchSchema(
   schema: GraphQLSchema,
   changes: Change<any>[],

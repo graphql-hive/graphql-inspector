@@ -17,7 +17,7 @@ export function objectTypeInterfaceAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -69,7 +69,7 @@ export function objectTypeInterfaceRemoved(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -85,7 +85,7 @@ export function objectTypeInterfaceRemoved(
           i => i.name.value !== change.meta.removedInterfaceName,
         );
       } else {
-        handleError(change, new ChangePathMissingError(), config);
+        handleError(change, new ChangePathMissingError(change), config);
       }
     } else {
       handleError(
@@ -95,6 +95,6 @@ export function objectTypeInterfaceRemoved(
       );
     }
   } else {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
   }
 }

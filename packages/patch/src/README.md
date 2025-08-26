@@ -25,7 +25,7 @@ expect(printSortedSchema(schemaB)).toBe(printSortedSchema(patched));
 
 > Allows handling errors more granularly if you only care about specific types of errors or want to capture the errors in a list somewhere etc. If 'true' is returned then this error is considered handled and the default error handling will not be ran. To halt patching, throw the error inside the handler.
 
-`onError?: (err: Error) => boolean | undefined | null`
+`onError?: (err: Error, change: Change<any>) => boolean | undefined | null`
 
 > Enables debug logging
 

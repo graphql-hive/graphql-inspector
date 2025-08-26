@@ -18,7 +18,7 @@ export function typeAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -44,7 +44,7 @@ export function typeRemoved(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -65,7 +65,11 @@ export function typeRemoved(
       );
     }
   } else {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(
+      change,
+      new DeletedCoordinateNotFound(Kind.OBJECT_TYPE_DEFINITION, change.meta.removedTypeName),
+      config,
+    );
   }
 }
 
@@ -75,7 +79,7 @@ export function typeDescriptionAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -93,7 +97,7 @@ export function typeDescriptionAdded(
       );
     }
   } else {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
   }
 }
 
@@ -103,7 +107,7 @@ export function typeDescriptionChanged(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -132,7 +136,7 @@ export function typeDescriptionChanged(
       );
     }
   } else {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
   }
 }
 
@@ -142,7 +146,7 @@ export function typeDescriptionRemoved(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 

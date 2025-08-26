@@ -39,7 +39,7 @@ export function directiveAdded(
   config: PatchConfig,
 ) {
   if (change.path === undefined) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -81,7 +81,7 @@ export function directiveArgumentAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -156,7 +156,7 @@ export function directiveLocationAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -201,7 +201,7 @@ export function directiveLocationRemoved(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -250,7 +250,7 @@ export function directiveDescriptionChanged(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -293,7 +293,7 @@ export function directiveArgumentDefaultValueChanged(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -339,7 +339,7 @@ export function directiveArgumentDescriptionChanged(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -382,7 +382,7 @@ export function directiveArgumentTypeChanged(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 

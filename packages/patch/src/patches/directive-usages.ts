@@ -160,7 +160,7 @@ function directiveUsageDefinitionRemoved(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -396,7 +396,7 @@ export function directiveUsageArgumentAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
   const directiveNode = nodeByPath.get(parentPath(change.path));
@@ -445,7 +445,7 @@ export function directiveUsageArgumentRemoved(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
   const directiveNode = nodeByPath.get(parentPath(change.path));

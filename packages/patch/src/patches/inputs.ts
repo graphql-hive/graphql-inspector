@@ -29,7 +29,7 @@ export function inputFieldAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -91,7 +91,7 @@ export function inputFieldRemoved(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -123,7 +123,7 @@ export function inputFieldRemoved(
       );
     }
   } else {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
   }
 }
 
@@ -133,7 +133,7 @@ export function inputFieldDescriptionAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
   const existingNode = nodeByPath.get(change.path);
@@ -192,7 +192,7 @@ export function inputFieldDefaultValueChanged(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
   const existingNode = nodeByPath.get(change.path);
@@ -223,7 +223,7 @@ export function inputFieldDefaultValueChanged(
       );
     }
   } else {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
   }
 }
 
@@ -233,7 +233,7 @@ export function inputFieldDescriptionChanged(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
   const existingNode = nodeByPath.get(change.path);
@@ -261,7 +261,7 @@ export function inputFieldDescriptionChanged(
       );
     }
   } else {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
   }
 }
 
@@ -271,7 +271,7 @@ export function inputFieldDescriptionRemoved(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 

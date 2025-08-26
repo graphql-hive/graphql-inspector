@@ -14,8 +14,10 @@ import {
   AddedCoordinateAlreadyExistsError,
   ChangedAncestorCoordinateNotFoundError,
   ChangedCoordinateKindMismatchError,
+  ChangedCoordinateNotFoundError,
   ChangePathMissingError,
   DeletedAttributeNotFoundError,
+  DeletedCoordinateNotFound,
   handleError,
   ValueMismatchError,
 } from '../errors.js';
@@ -29,7 +31,7 @@ export function enumValueRemoved(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -37,7 +39,11 @@ export function enumValueRemoved(
     | (ASTNode & { values?: EnumValueDefinitionNode[] })
     | undefined;
   if (!enumNode) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(
+      change,
+      new DeletedCoordinateNotFound(Kind.ENUM_TYPE_DEFINITION, change.meta.removedEnumValueName),
+      config,
+    );
   } else if (enumNode.kind !== Kind.ENUM_TYPE_DEFINITION) {
     handleError(
       change,
@@ -124,7 +130,7 @@ export function enumValueDeprecationReasonAdded(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -151,7 +157,7 @@ export function enumValueDeprecationReasonAdded(
         ];
         nodeByPath.set(`${change.path}.reason`, argNode);
       } else {
-        handleError(change, new ChangePathMissingError(), config);
+        handleError(change, new ChangePathMissingError(change), config);
       }
     } else {
       handleError(
@@ -175,7 +181,7 @@ export function enumValueDeprecationReasonChanged(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 
@@ -211,7 +217,7 @@ export function enumValueDeprecationReasonChanged(
           );
         }
       } else {
-        handleError(change, new ChangePathMissingError(), config);
+        handleError(change, new ChangedCoordinateNotFoundError(Kind.ARGUMENT, 'reason'), config);
       }
     } else {
       handleError(
@@ -221,7 +227,11 @@ export function enumValueDeprecationReasonChanged(
       );
     }
   } else {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(
+      change,
+      new ChangedAncestorCoordinateNotFoundError(Kind.DIRECTIVE, 'arguments'),
+      config,
+    );
   }
 }
 
@@ -231,7 +241,7 @@ export function enumValueDescriptionChanged(
   config: PatchConfig,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return;
   }
 

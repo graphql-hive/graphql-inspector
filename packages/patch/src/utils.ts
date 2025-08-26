@@ -108,7 +108,7 @@ export function assertChangeHasPath(
   config: PatchConfig,
 ): change is typeof change & { path: string } {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(), config);
+    handleError(change, new ChangePathMissingError(change), config);
     return false;
   }
   return true;
