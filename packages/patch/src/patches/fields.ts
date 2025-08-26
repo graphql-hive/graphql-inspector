@@ -460,7 +460,11 @@ export function fieldDescriptionRemoved(
       );
     }
   } else {
-    handleError(change, new ChangePathMissingError(change), config);
+    handleError(
+      change,
+      new DeletedCoordinateNotFound(Kind.FIELD_DEFINITION, change.meta.fieldName),
+      config,
+    );
   }
 }
 

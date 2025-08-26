@@ -13,15 +13,22 @@ import { Change, ChangeType } from '@graphql-inspector/core';
 import {
   AddedAttributeCoordinateNotFoundError,
   AddedCoordinateAlreadyExistsError,
+  ChangedAncestorCoordinateNotFoundError,
   ChangedCoordinateKindMismatchError,
   ChangePathMissingError,
   DeletedAncestorCoordinateNotFoundError,
+  DeletedCoordinateNotFound,
   handleError,
   ValueMismatchError,
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
 import type { PatchConfig } from '../types.js';
-import { assertValueMatch, getChangedNodeOfKind, parentPath } from '../utils.js';
+import {
+  assertValueMatch,
+  getChangedNodeOfKind,
+  getDeletedNodeOfKind,
+  parentPath,
+} from '../utils.js';
 
 export function inputFieldAdded(
   change: Change<typeof ChangeType.InputFieldAdded>,
@@ -127,7 +134,14 @@ export function inputFieldRemoved(
       );
     }
   } else {
-    handleError(change, new ChangePathMissingError(change), config);
+    handleError(
+      change,
+      new DeletedCoordinateNotFound(
+        Kind.INPUT_OBJECT_TYPE_DEFINITION,
+        change.meta.removedFieldName,
+      ),
+      config,
+    );
   }
 }
 
@@ -227,7 +241,11 @@ export function inputFieldDefaultValueChanged(
       );
     }
   } else {
-    handleError(change, new ChangePathMissingError(change), config);
+    handleError(
+      change,
+      new ChangedAncestorCoordinateNotFoundError(Kind.INPUT_VALUE_DEFINITION, 'defaultValue'),
+      config,
+    );
   }
 }
 
@@ -236,36 +254,27 @@ export function inputFieldDescriptionChanged(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
-    return;
-  }
-  const existingNode = nodeByPath.get(change.path);
+  const existingNode = getChangedNodeOfKind(
+    change,
+    nodeByPath,
+    Kind.INPUT_VALUE_DEFINITION,
+    config,
+  );
   if (existingNode) {
-    if (existingNode.kind === Kind.INPUT_VALUE_DEFINITION) {
-      if (existingNode.description?.value !== change.meta.oldInputFieldDescription) {
-        handleError(
-          change,
-          new ValueMismatchError(
-            Kind.STRING,
-            change.meta.oldInputFieldDescription,
-            existingNode.description?.value,
-          ),
-          config,
-        );
-      }
-      (existingNode.description as StringValueNode | undefined) = stringNode(
-        change.meta.newInputFieldDescription,
-      );
-    } else {
+    if (existingNode.description?.value !== change.meta.oldInputFieldDescription) {
       handleError(
         change,
-        new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, existingNode.kind),
+        new ValueMismatchError(
+          Kind.STRING,
+          change.meta.oldInputFieldDescription,
+          existingNode.description?.value,
+        ),
         config,
       );
     }
-  } else {
-    handleError(change, new ChangePathMissingError(change), config);
+    (existingNode.description as StringValueNode | undefined) = stringNode(
+      change.meta.newInputFieldDescription,
+    );
   }
 }
 
@@ -274,40 +283,20 @@ export function inputFieldDescriptionRemoved(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
-    return;
-  }
-
-  const existingNode = nodeByPath.get(change.path);
+  const existingNode = getDeletedNodeOfKind(
+    change,
+    nodeByPath,
+    Kind.INPUT_VALUE_DEFINITION,
+    config,
+  );
   if (existingNode) {
-    if (existingNode.kind === Kind.INPUT_VALUE_DEFINITION) {
-      if (existingNode.description === undefined) {
-        console.warn(
-          `Cannot remove a description at ${change.path} because no description is set.`,
-        );
-      } else if (existingNode.description.value !== change.meta.removedDescription) {
-        console.warn(
-          `Description at ${change.path} does not match expected description, but proceeding with description removal anyways.`,
-        );
-      }
-      (existingNode.description as StringValueNode | undefined) = undefined;
-    } else {
-      handleError(
-        change,
-        new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, existingNode.kind),
-        config,
+    if (existingNode.description === undefined) {
+      console.warn(`Cannot remove a description at ${change.path} because no description is set.`);
+    } else if (existingNode.description.value !== change.meta.removedDescription) {
+      console.warn(
+        `Description at ${change.path} does not match expected description, but proceeding with description removal anyways.`,
       );
     }
-  } else {
-    handleError(
-      change,
-      new DeletedAncestorCoordinateNotFoundError(
-        Kind.INPUT_VALUE_DEFINITION,
-        'description',
-        change.meta.removedDescription,
-      ),
-      config,
-    );
+    (existingNode.description as StringValueNode | undefined) = undefined;
   }
 }

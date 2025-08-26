@@ -2,6 +2,7 @@ import { ASTNode, isTypeDefinitionNode, Kind, StringValueNode, TypeDefinitionNod
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
   AddedCoordinateAlreadyExistsError,
+  ChangedAncestorCoordinateNotFoundError,
   ChangedCoordinateKindMismatchError,
   ChangePathMissingError,
   DeletedAncestorCoordinateNotFoundError,
@@ -97,7 +98,11 @@ export function typeDescriptionAdded(
       );
     }
   } else {
-    handleError(change, new ChangePathMissingError(change), config);
+    handleError(
+      change,
+      new ChangedAncestorCoordinateNotFoundError(Kind.OBJECT_TYPE_DEFINITION, 'description'),
+      config,
+    );
   }
 }
 
@@ -136,7 +141,11 @@ export function typeDescriptionChanged(
       );
     }
   } else {
-    handleError(change, new ChangePathMissingError(change), config);
+    handleError(
+      change,
+      new ChangedAncestorCoordinateNotFoundError(Kind.OBJECT_TYPE_DEFINITION, 'description'),
+      config,
+    );
   }
 }
 

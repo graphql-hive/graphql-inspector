@@ -157,7 +157,11 @@ export function enumValueDeprecationReasonAdded(
         ];
         nodeByPath.set(`${change.path}.reason`, argNode);
       } else {
-        handleError(change, new ChangePathMissingError(change), config);
+        handleError(
+          change,
+          new ChangedAncestorCoordinateNotFoundError(Kind.DIRECTIVE, 'arguments'),
+          config,
+        );
       }
     } else {
       handleError(

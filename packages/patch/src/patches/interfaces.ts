@@ -5,6 +5,8 @@ import {
   ChangedAncestorCoordinateNotFoundError,
   ChangedCoordinateKindMismatchError,
   ChangePathMissingError,
+  DeletedAncestorCoordinateNotFoundError,
+  DeletedCoordinateNotFound,
   handleError,
 } from '../errors.js';
 import { namedTypeNode } from '../node-templates.js';
@@ -85,7 +87,15 @@ export function objectTypeInterfaceRemoved(
           i => i.name.value !== change.meta.removedInterfaceName,
         );
       } else {
-        handleError(change, new ChangePathMissingError(change), config);
+        // @note this error isnt the best designed for this application
+        handleError(
+          change,
+          new DeletedCoordinateNotFound(
+            Kind.INTERFACE_TYPE_DEFINITION,
+            change.meta.removedInterfaceName,
+          ),
+          config,
+        );
       }
     } else {
       handleError(
@@ -95,6 +105,14 @@ export function objectTypeInterfaceRemoved(
       );
     }
   } else {
-    handleError(change, new ChangePathMissingError(change), config);
+    handleError(
+      change,
+      new DeletedAncestorCoordinateNotFoundError(
+        Kind.INPUT_OBJECT_TYPE_DEFINITION,
+        'interfaces',
+        change.meta.removedInterfaceName,
+      ),
+      config,
+    );
   }
 }
