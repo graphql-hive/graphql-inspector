@@ -89,7 +89,11 @@ export function directiveArgumentAdded(
   if (!directiveNode) {
     handleError(
       change,
-      new AddedAttributeCoordinateNotFoundError(Kind.DIRECTIVE, 'arguments'),
+      new AddedAttributeCoordinateNotFoundError(
+        change.meta.directiveName,
+        'arguments',
+        change.meta.addedDirectiveArgumentName,
+      ),
       config,
     );
   } else if (directiveNode.kind === Kind.DIRECTIVE_DEFINITION) {
@@ -347,7 +351,7 @@ export function directiveArgumentDescriptionChanged(
   if (!argumentNode) {
     handleError(
       change,
-      new AddedAttributeCoordinateNotFoundError(Kind.INPUT_VALUE_DEFINITION, 'description'),
+      new ChangedAncestorCoordinateNotFoundError(Kind.INPUT_VALUE_DEFINITION, 'description'),
       config,
     );
   } else if (argumentNode.kind === Kind.INPUT_VALUE_DEFINITION) {

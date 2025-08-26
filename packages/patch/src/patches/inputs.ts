@@ -58,7 +58,11 @@ export function inputFieldAdded(
     if (!typeNode) {
       handleError(
         change,
-        new AddedAttributeCoordinateNotFoundError(Kind.INPUT_OBJECT_TYPE_DEFINITION, 'fields'),
+        new AddedAttributeCoordinateNotFoundError(
+          change.meta.inputName,
+          'fields',
+          change.meta.addedInputFieldName,
+        ),
         config,
       );
     } else if (typeNode.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION) {

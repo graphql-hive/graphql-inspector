@@ -9,13 +9,13 @@ import {
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
-  AttributeName,
   ChangedCoordinateKindMismatchError,
   ChangedCoordinateNotFoundError,
   ChangePathMissingError,
   DeletedAncestorCoordinateNotFoundError,
   DeletedCoordinateNotFound,
   handleError,
+  NodeAttribute,
   ValueMismatchError,
 } from './errors.js';
 import { AdditionChangeType, PatchConfig } from './types.js';
@@ -103,8 +103,8 @@ export function debugPrintChange(change: Change<any>, nodeByPath: Map<string, AS
 
 export const DEPRECATION_REASON_DEFAULT = 'No longer supported';
 
-export function assertChangeHasPath(
-  change: Change<any>,
+export function assertChangeHasPath<C extends Change<any>>(
+  change: C,
   config: PatchConfig,
 ): change is typeof change & { path: string } {
   if (!change.path) {
@@ -180,7 +180,7 @@ export function getDeletedParentNodeOfKind<K extends Kind>(
   change: Change<any>,
   nodeByPath: Map<string, ASTNode>,
   kind: K,
-  attributeName: AttributeName,
+  attribute: NodeAttribute,
   config: PatchConfig,
 ): ASTKindToNode[K] | void {
   if (assertChangeHasPath(change, config)) {
@@ -189,7 +189,7 @@ export function getDeletedParentNodeOfKind<K extends Kind>(
       handleError(
         change,
         // @todo improve the error by providing the name or value somehow.
-        new DeletedAncestorCoordinateNotFoundError(kind, attributeName, undefined),
+        new DeletedAncestorCoordinateNotFoundError(kind, attribute, undefined),
         config,
       );
     } else if (existing.kind === kind) {

@@ -169,7 +169,11 @@ export function enumValueDeprecationReasonAdded(
   } else {
     handleError(
       change,
-      new AddedAttributeCoordinateNotFoundError(Kind.ENUM_VALUE_DEFINITION, 'directives'),
+      new AddedAttributeCoordinateNotFoundError(
+        change.meta.enumValueName,
+        'directives',
+        '@deprecated',
+      ),
       config,
     );
   }

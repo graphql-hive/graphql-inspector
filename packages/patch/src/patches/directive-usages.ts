@@ -403,7 +403,11 @@ export function directiveUsageArgumentAdded(
   if (!directiveNode) {
     handleError(
       change,
-      new AddedAttributeCoordinateNotFoundError(Kind.DIRECTIVE, 'arguments'),
+      new AddedAttributeCoordinateNotFoundError(
+        change.meta.directiveName,
+        'arguments',
+        change.meta.addedArgumentName,
+      ),
       config,
     );
   } else if (directiveNode.kind === Kind.DIRECTIVE) {
@@ -452,7 +456,11 @@ export function directiveUsageArgumentRemoved(
   if (!directiveNode) {
     handleError(
       change,
-      new AddedAttributeCoordinateNotFoundError(Kind.DIRECTIVE, 'arguments'),
+      new DeletedAncestorCoordinateNotFoundError(
+        Kind.DIRECTIVE,
+        'arguments',
+        change.meta.removedArgumentName,
+      ),
       config,
     );
   } else if (directiveNode.kind === Kind.DIRECTIVE) {

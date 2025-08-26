@@ -58,7 +58,7 @@ export class AddedCoordinateAlreadyExistsError extends NoopError {
   }
 }
 
-export type AttributeName =
+export type NodeAttribute =
   | 'description'
   | 'defaultValue'
   /** Enum values */
@@ -80,10 +80,13 @@ export type AttributeName =
  */
 export class AddedAttributeCoordinateNotFoundError extends Error {
   constructor(
-    public readonly parentKind: Kind,
-    readonly attributeName: AttributeName,
+    public readonly parentName: string,
+    readonly attribute: NodeAttribute,
+    readonly attributeValue: string,
   ) {
-    super(`Cannot set ${attributeName} on "${parentKind}" because it does not exist.`);
+    super(
+      `Cannot add "${attributeValue}" to "${attribute}", because "${parentName}" does not exist.`,
+    );
   }
 }
 
@@ -94,9 +97,9 @@ export class AddedAttributeCoordinateNotFoundError extends Error {
 export class ChangedAncestorCoordinateNotFoundError extends Error {
   constructor(
     public readonly parentKind: Kind,
-    readonly attributeName: AttributeName,
+    readonly attribute: NodeAttribute,
   ) {
-    super(`Cannot set "${attributeName}" on "${parentKind}" because it does not exist.`);
+    super(`Cannot change the "${attribute}" because the "${parentKind}" does not exist.`);
   }
 }
 
@@ -107,11 +110,11 @@ export class ChangedAncestorCoordinateNotFoundError extends Error {
 export class DeletedAncestorCoordinateNotFoundError extends NoopError {
   constructor(
     public readonly parentKind: Kind,
-    readonly attributeName: AttributeName,
+    readonly attribute: NodeAttribute,
     readonly expectedValue: string | undefined,
   ) {
     super(
-      `Cannot delete ${expectedValue ? `"${expectedValue}" ` : ''}from "${attributeName}" on "${parentKind}" because the "${parentKind}" does not exist.`,
+      `Cannot delete ${expectedValue ? `"${expectedValue}" ` : ''}from "${attribute}" on "${parentKind}" because the "${parentKind}" does not exist.`,
     );
   }
 }
@@ -123,11 +126,11 @@ export class DeletedAncestorCoordinateNotFoundError extends NoopError {
 export class AddedAttributeAlreadyExistsError extends NoopError {
   constructor(
     public readonly parentKind: Kind,
-    readonly attributeName: AttributeName,
+    readonly attribute: NodeAttribute,
     readonly attributeValue: string,
   ) {
     super(
-      `Cannot add "${attributeValue}" to "${attributeName}" on "${parentKind}" because it already exists.`,
+      `Cannot add "${attributeValue}" to "${attribute}" on "${parentKind}" because it already exists.`,
     );
   }
 }
@@ -139,11 +142,11 @@ export class AddedAttributeAlreadyExistsError extends NoopError {
 export class DeletedAttributeNotFoundError extends NoopError {
   constructor(
     public readonly parentKind: Kind,
-    readonly attributeName: AttributeName,
+    readonly attribute: NodeAttribute,
     public readonly value: string,
   ) {
     super(
-      `Cannot delete "${value}" from "${parentKind}"'s "${attributeName}" because "${value}" does not exist.`,
+      `Cannot delete "${value}" from "${parentKind}"'s "${attribute}" because "${value}" does not exist.`,
     );
   }
 }

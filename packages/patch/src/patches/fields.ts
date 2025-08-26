@@ -173,7 +173,11 @@ export function fieldArgumentAdded(
       if (!fieldNode) {
         handleError(
           change,
-          new AddedAttributeCoordinateNotFoundError(Kind.FIELD_DEFINITION, 'arguments'),
+          new AddedAttributeCoordinateNotFoundError(
+            change.meta.fieldName,
+            'arguments',
+            change.meta.addedArgumentName,
+          ),
           config,
         );
       } else if (fieldNode.kind === Kind.FIELD_DEFINITION) {
