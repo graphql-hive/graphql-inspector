@@ -32,7 +32,7 @@ describe('object', () => {
     `);
 
     const changes = await diff(a, b);
-    expect(changes).toHaveLength(4);
+    expect(changes).toHaveLength(5);
 
     const change = findFirstChangeByPath(changes, 'B');
     const mutation = findFirstChangeByPath(changes, 'Mutation');

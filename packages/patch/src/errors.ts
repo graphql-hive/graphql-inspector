@@ -154,7 +154,7 @@ export class DeletedAttributeNotFoundError extends NoopError {
 export class ChangedCoordinateNotFoundError extends Error {
   constructor(expectedKind: Kind, expectedNameOrValue: string | undefined) {
     super(
-      `The "${expectedKind}" ${expectedNameOrValue ? `"${expectedNameOrValue}"` : ''}does not exist.`,
+      `The "${expectedKind}" ${expectedNameOrValue ? `"${expectedNameOrValue}" ` : ''}does not exist.`,
     );
   }
 }

@@ -829,9 +829,45 @@ test('adding root type should not be breaking', async () => {
   `);
 
   const changes = await diff(schemaA, schemaB);
-  expect(changes).toHaveLength(2);
-
-  const subscription = findFirstChangeByPath(changes, 'Subscription');
-  expect(subscription).toBeDefined();
-  expect(subscription!.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+  expect(changes).toMatchInlineSnapshot(`
+    [
+      {
+        "criticality": {
+          "level": "BREAKING",
+        },
+        "message": "Schema subscription root has changed from 'unknown' to 'Subscription'",
+        "meta": {
+          "newSubscriptionTypeName": "Subscription",
+          "oldSubscriptionTypeName": "unknown",
+        },
+        "type": "SCHEMA_SUBSCRIPTION_TYPE_CHANGED",
+      },
+      {
+        "criticality": {
+          "level": "NON_BREAKING",
+        },
+        "message": "Type 'Subscription' was added",
+        "meta": {
+          "addedTypeKind": "ObjectTypeDefinition",
+          "addedTypeName": "Subscription",
+        },
+        "path": "Subscription",
+        "type": "TYPE_ADDED",
+      },
+      {
+        "criticality": {
+          "level": "NON_BREAKING",
+        },
+        "message": "Field 'onFoo' was added to object type 'Subscription'",
+        "meta": {
+          "addedFieldName": "onFoo",
+          "addedFieldReturnType": "String",
+          "typeName": "Subscription",
+          "typeType": "object type",
+        },
+        "path": "Subscription.onFoo",
+        "type": "FIELD_ADDED",
+      },
+    ]
+  `);
 });

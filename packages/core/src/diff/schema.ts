@@ -98,26 +98,15 @@ export function diffSchema(oldSchema: GraphQLSchema, newSchema: GraphQLSchema): 
 }
 
 function changesInSchema(oldSchema: GraphQLSchema, newSchema: GraphQLSchema, addChange: AddChange) {
-  const defaultNames = {
-    query: 'Query',
-    mutation: 'Mutation',
-    subscription: 'Subscription',
-  };
   const oldRoot = {
-    query: (oldSchema.getQueryType() || ({} as GraphQLObjectType)).name ?? defaultNames.query,
-    mutation:
-      (oldSchema.getMutationType() || ({} as GraphQLObjectType)).name ?? defaultNames.mutation,
-    subscription:
-      (oldSchema.getSubscriptionType() || ({} as GraphQLObjectType)).name ??
-      defaultNames.subscription,
+    query: (oldSchema.getQueryType() || ({} as GraphQLObjectType)).name,
+    mutation: (oldSchema.getMutationType() || ({} as GraphQLObjectType)).name,
+    subscription: (oldSchema.getSubscriptionType() || ({} as GraphQLObjectType)).name,
   };
   const newRoot = {
-    query: (newSchema.getQueryType() || ({} as GraphQLObjectType)).name ?? defaultNames.query,
-    mutation:
-      (newSchema.getMutationType() || ({} as GraphQLObjectType)).name ?? defaultNames.mutation,
-    subscription:
-      (newSchema.getSubscriptionType() || ({} as GraphQLObjectType)).name ??
-      defaultNames.subscription,
+    query: (newSchema.getQueryType() || ({} as GraphQLObjectType)).name,
+    mutation: (newSchema.getMutationType() || ({} as GraphQLObjectType)).name,
+    subscription: (newSchema.getSubscriptionType() || ({} as GraphQLObjectType)).name,
   };
 
   if (isNotEqual(oldRoot.query, newRoot.query)) {

@@ -31,6 +31,24 @@ describe('enum', () => {
     await expectPatchToMatch(before, after);
   });
 
+  test('typeAdded Mutation', async () => {
+    const before = /* GraphQL */ `
+      type Query {
+        foo: String
+      }
+    `;
+    const after = /* GraphQL */ `
+      type Query {
+        foo: String
+      }
+
+      type Mutation {
+        dooFoo: String
+      }
+    `;
+    await expectPatchToMatch(before, after);
+  });
+
   test('typeDescriptionChanged: Added', async () => {
     const before = /* GraphQL */ `
       enum Status {
