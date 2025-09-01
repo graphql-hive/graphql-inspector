@@ -95,6 +95,12 @@ describe('ignoreNestedAdditions rule', () => {
 
     const added = findFirstChangeByPath(changes, 'Foo.b');
     expect(added.type).toBe(ChangeType.FieldAdded);
+    expect(added.meta).toEqual({
+      addedFieldName: 'b',
+      addedFieldReturnType: 'String!',
+      typeName: 'Foo',
+      typeType: 'object type',
+    });
   });
 
   test('added type / directive / directive argument on new union', async () => {

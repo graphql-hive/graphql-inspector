@@ -6,7 +6,6 @@ import {
   GraphQLObjectType,
   isInterfaceType,
   isNonNullType,
-  print,
 } from 'graphql';
 import { safeChangeForField } from '../../utils/graphql.js';
 import {
@@ -92,7 +91,7 @@ export function fieldAdded(
       typeName: type.name,
       addedFieldName: field.name,
       typeType: entity,
-      addedFieldReturnType: field.astNode?.type ? print(field.astNode?.type) : '',
+      addedFieldReturnType: field.type.toString(),
     },
   });
 }
