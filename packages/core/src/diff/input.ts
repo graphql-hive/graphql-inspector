@@ -26,7 +26,7 @@ export function changesInInputObject(
 
   compareLists(Object.values(oldFields), Object.values(newFields), {
     onAdded(field) {
-      addChange(inputFieldAdded(newInput, field, oldInput === null));
+      addChange(inputFieldAdded(newInput, field, oldInput == null));
       changesInInputField(newInput, null, field, addChange);
     },
     onRemoved(field) {

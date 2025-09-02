@@ -833,7 +833,7 @@ test('adding root type should not be breaking', async () => {
     [
       {
         "criticality": {
-          "level": "BREAKING",
+          "level": "NON_BREAKING",
         },
         "message": "Schema subscription root has changed from 'unknown' to 'Subscription'",
         "meta": {

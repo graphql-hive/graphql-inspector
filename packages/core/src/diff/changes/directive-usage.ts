@@ -895,7 +895,7 @@ function isOfKind<K extends keyof KindToPayload>(
   return kind === expectedKind;
 }
 
-export function directiveUsageArgumentAdded(args: DirectiveUsageArgumentAddedChange): Change {
+export function directiveUsageArgumentAddedFromMeta(args: DirectiveUsageArgumentAddedChange): Change {
   return {
     type: ChangeType.DirectiveUsageArgumentAdded,
     criticality: {
@@ -916,7 +916,7 @@ export function directiveUsageArgumentAdded(args: DirectiveUsageArgumentAddedCha
   };
 }
 
-export function directiveUsageArgumentRemoved(args: DirectiveUsageArgumentRemovedChange): Change {
+export function directiveUsageArgumentRemovedFromMeta(args: DirectiveUsageArgumentRemovedChange): Change {
   return {
     type: ChangeType.DirectiveUsageArgumentRemoved,
     criticality: {
@@ -949,7 +949,7 @@ export function directiveUsageChanged(
   compareLists(oldDirective?.arguments || [], newDirective.arguments || [], {
     onAdded(argument) {
       addChange(
-        directiveUsageArgumentAdded({
+        directiveUsageArgumentAddedFromMeta({
           type: ChangeType.DirectiveUsageArgumentAdded,
           meta: {
             addedArgumentName: argument.name.value,
@@ -966,7 +966,7 @@ export function directiveUsageChanged(
     },
 
     onMutual(argument) {
-      directiveUsageArgumentAdded({
+      directiveUsageArgumentAddedFromMeta({
         type: ChangeType.DirectiveUsageArgumentAdded,
         meta: {
           addedArgumentName: argument.newVersion.name.value,
@@ -984,7 +984,7 @@ export function directiveUsageChanged(
 
     onRemoved(argument) {
       addChange(
-        directiveUsageArgumentRemoved({
+        directiveUsageArgumentRemovedFromMeta({
           type: ChangeType.DirectiveUsageArgumentRemoved,
           meta: {
             removedArgumentName: argument.name.value,

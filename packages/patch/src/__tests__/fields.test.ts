@@ -45,6 +45,20 @@ describe('fields', () => {
     await expectPatchToMatch(before, after);
   });
 
+  test('fieldAdded to new type', async () => {
+    const before = /* GraphQL */ `
+      scalar Foo
+    `;
+    const after = /* GraphQL */ `
+      scalar Foo
+      type Product {
+        id: ID!
+        name: String
+      }
+    `;
+    await expectPatchToMatch(before, after);
+  });
+
   test('fieldArgumentAdded', async () => {
     const before = /* GraphQL */ `
       scalar ChatSession

@@ -16,6 +16,23 @@ describe('inputs', () => {
     await expectPatchToMatch(before, after);
   });
 
+  test('inputFieldAdded to new input', async () => {
+    const before = /* GraphQL */ `
+      scalar Foo
+    `;
+    const after = /* GraphQL */ `
+      scalar Foo
+      input FooInput {
+        id: ID!
+        other: String
+      }
+      type Query {
+        foo(foo: FooInput): Foo
+      }
+    `;
+    const changes = await expectPatchToMatch(before, after);
+  });
+
   test('inputFieldRemoved', async () => {
     const before = /* GraphQL */ `
       input FooInput {

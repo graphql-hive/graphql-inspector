@@ -78,13 +78,13 @@ export function compareLists<T extends { name: string | NameNode }>(
   const mutual: Array<{ newVersion: T; oldVersion: T }> = [];
 
   for (const oldItem of oldList) {
-    const newItem = newMap[extractName(oldItem.name)];
-    if (newItem === undefined) {
+    const newItem = newMap[extractName(oldItem.name)] ?? null;
+    if (newItem === null) {
       removed.push(oldItem);
     } else {
       mutual.push({
         newVersion: newItem,
-        oldVersion: oldItem,
+        oldVersion: oldItem ?? null,
       });
     }
   }
