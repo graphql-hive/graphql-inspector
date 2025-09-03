@@ -57,7 +57,7 @@ export {
   directiveUsageUnionMemberAddedFromMeta,
   directiveUsageUnionMemberRemovedFromMeta,
   directiveUsageArgumentRemovedFromMeta,
-  directiveUsageArgumentAddedFromMeta
+  directiveUsageArgumentAddedFromMeta,
 } from './diff/changes/directive-usage.js';
 export {
   directiveRemovedFromMeta,
@@ -202,4 +202,6 @@ export {
   DirectiveUsageSchemaRemovedChange,
   DirectiveUsageUnionMemberAddedChange,
   DirectiveUsageUnionMemberRemovedChange,
+  DirectiveUsageArgumentAddedChange,
+  DirectiveUsageArgumentRemovedChange,
 } from './diff/changes/change.js';

@@ -895,7 +895,9 @@ function isOfKind<K extends keyof KindToPayload>(
   return kind === expectedKind;
 }
 
-export function directiveUsageArgumentAddedFromMeta(args: DirectiveUsageArgumentAddedChange): Change {
+export function directiveUsageArgumentAddedFromMeta(
+  args: DirectiveUsageArgumentAddedChange,
+): Change {
   return {
     type: ChangeType.DirectiveUsageArgumentAdded,
     criticality: {
@@ -916,7 +918,9 @@ export function directiveUsageArgumentAddedFromMeta(args: DirectiveUsageArgument
   };
 }
 
-export function directiveUsageArgumentRemovedFromMeta(args: DirectiveUsageArgumentRemovedChange): Change {
+export function directiveUsageArgumentRemovedFromMeta(
+  args: DirectiveUsageArgumentRemovedChange,
+): Change {
   return {
     type: ChangeType.DirectiveUsageArgumentRemoved,
     criticality: {
