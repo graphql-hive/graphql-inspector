@@ -43,6 +43,22 @@ const baseSchema = /* GraphQL */ `
 `;
 
 describe('directiveUsages: added', () => {
+  test('directiveUsageFieldDefinitionAdded: @deprecated', async () => {
+    const before = `
+      type Foo {
+        new: String
+        old: String
+      }
+    `;
+    const after = /* GraphQL */ `
+      type Foo {
+        new: String
+        old: String @deprecated(reason: "No good")
+      }
+    `;
+    await expectPatchToMatch(before, after);
+  });
+
   test('directiveUsageArgumentDefinitionAdded', async () => {
     const before = baseSchema;
     const after = /* GraphQL */ `

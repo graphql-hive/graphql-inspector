@@ -199,7 +199,9 @@ export function fieldDeprecationAddedFromMeta(args: FieldDeprecationAddedChange)
     },
     message: buildFieldDeprecatedAddedMessage(args.meta),
     meta: args.meta,
-    path: [args.meta.typeName, args.meta.fieldName].join('.'),
+    path: [args.meta.typeName, args.meta.fieldName, `@${GraphQLDeprecatedDirective.name}`].join(
+      '.',
+    ),
   } as const;
 }
 
@@ -226,7 +228,9 @@ export function fieldDeprecationRemovedFromMeta(args: FieldDeprecationRemovedCha
     },
     message: `Field '${args.meta.typeName}.${args.meta.fieldName}' is no longer deprecated`,
     meta: args.meta,
-    path: [args.meta.typeName, args.meta.fieldName].join('.'),
+    path: [args.meta.typeName, args.meta.fieldName, `@${GraphQLDeprecatedDirective.name}`].join(
+      '.',
+    ),
   } as const;
 }
 
@@ -257,7 +261,9 @@ export function fieldDeprecationReasonChangedFromMeta(args: FieldDeprecationReas
     },
     message: buildFieldDeprecationReasonChangedMessage(args.meta),
     meta: args.meta,
-    path: [args.meta.typeName, args.meta.fieldName].join('.'),
+    path: [args.meta.typeName, args.meta.fieldName, `@${GraphQLDeprecatedDirective.name}`].join(
+      '.',
+    ),
   } as const;
 }
 

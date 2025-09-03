@@ -329,9 +329,9 @@ describe('object', () => {
 
       const changes = await diff(a, b);
       const change = {
-        a: findFirstChangeByPath(changes, 'Foo.a'),
-        b: findFirstChangeByPath(changes, 'Foo.b'),
-        c: findFirstChangeByPath(changes, 'Foo.c'),
+        a: findFirstChangeByPath(changes, 'Foo.a.@deprecated'),
+        b: findFirstChangeByPath(changes, 'Foo.b.@deprecated'),
+        c: findFirstChangeByPath(changes, 'Foo.c.@deprecated'),
       };
 
       // Changed
@@ -366,8 +366,8 @@ describe('object', () => {
 
       const changes = await diff(a, b);
       const change = {
-        a: findFirstChangeByPath(changes, 'Foo.a'),
-        b: findFirstChangeByPath(changes, 'Foo.b'),
+        a: findFirstChangeByPath(changes, 'Foo.a.@deprecated'),
+        b: findFirstChangeByPath(changes, 'Foo.b.@deprecated'),
       };
 
       // Changed

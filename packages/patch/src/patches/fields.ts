@@ -36,6 +36,7 @@ import {
   findNamedNode,
   getChangedNodeOfKind,
   getDeletedNodeOfKind,
+  getDeletedParentNodeOfKind,
   getDeprecatedDirectiveNode,
   parentPath,
 } from '../utils.js';
@@ -370,38 +371,48 @@ export function fieldDeprecationAdded(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const fieldNode = getChangedNodeOfKind(change, nodeByPath, Kind.FIELD_DEFINITION, config);
-  if (fieldNode) {
-    const hasExistingDeprecationDirective = getDeprecatedDirectiveNode(fieldNode);
-    if (hasExistingDeprecationDirective) {
-      handleError(
-        change,
-        new AddedCoordinateAlreadyExistsError(Kind.DIRECTIVE, '@deprecated'),
-        config,
-      );
-    } else {
-      const directiveNode = {
-        kind: Kind.DIRECTIVE,
-        name: nameNode(GraphQLDeprecatedDirective.name),
-        ...(change.meta.deprecationReason &&
-        change.meta.deprecationReason !== DEPRECATION_REASON_DEFAULT
-          ? {
-              arguments: [
-                {
-                  kind: Kind.ARGUMENT,
-                  name: nameNode('reason'),
-                  value: stringNode(change.meta.deprecationReason),
-                },
-              ],
-            }
-          : {}),
-      } as DirectiveNode;
+  if (assertChangeHasPath(change, config)) {
+    const fieldNode = nodeByPath.get(parentPath(change.path));
+    if (fieldNode) {
+      if (fieldNode.kind !== Kind.FIELD_DEFINITION) {
+        handleError(
+          change,
+          new ChangedCoordinateKindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind),
+          config,
+        );
+        return;
+      }
+      const hasExistingDeprecationDirective = getDeprecatedDirectiveNode(fieldNode);
+      if (hasExistingDeprecationDirective) {
+        handleError(
+          change,
+          new AddedCoordinateAlreadyExistsError(Kind.DIRECTIVE, '@deprecated'),
+          config,
+        );
+      } else {
+        const directiveNode = {
+          kind: Kind.DIRECTIVE,
+          name: nameNode(GraphQLDeprecatedDirective.name),
+          ...(change.meta.deprecationReason &&
+          change.meta.deprecationReason !== DEPRECATION_REASON_DEFAULT
+            ? {
+                arguments: [
+                  {
+                    kind: Kind.ARGUMENT,
+                    name: nameNode('reason'),
+                    value: stringNode(change.meta.deprecationReason),
+                  },
+                ],
+              }
+            : {}),
+        } as DirectiveNode;
 
-      (fieldNode.directives as DirectiveNode[] | undefined) = [
-        ...(fieldNode.directives ?? []),
-        directiveNode,
-      ];
-      nodeByPath.set([change.path, `@${GraphQLDeprecatedDirective.name}`].join(','), directiveNode);
+        (fieldNode.directives as DirectiveNode[] | undefined) = [
+          ...(fieldNode.directives ?? []),
+          directiveNode,
+        ];
+        nodeByPath.set(change.path, directiveNode);
+      }
     }
   }
 }
@@ -411,16 +422,24 @@ export function fieldDeprecationRemoved(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const fieldNode = getChangedNodeOfKind(change, nodeByPath, Kind.FIELD_DEFINITION, config);
-  if (fieldNode) {
-    const hasExistingDeprecationDirective = getDeprecatedDirectiveNode(fieldNode);
-    if (hasExistingDeprecationDirective) {
-      (fieldNode.directives as DirectiveNode[] | undefined) = fieldNode.directives?.filter(
-        d => d.name.value !== GraphQLDeprecatedDirective.name,
-      );
-      nodeByPath.delete([change.path, `@${GraphQLDeprecatedDirective.name}`].join('.'));
-    } else {
-      handleError(change, new DeletedCoordinateNotFound(Kind.DIRECTIVE, '@deprecated'), config);
+  if (assertChangeHasPath(change, config)) {
+    const fieldNode = getDeletedParentNodeOfKind(
+      change,
+      nodeByPath,
+      Kind.FIELD_DEFINITION,
+      'directives',
+      config,
+    );
+    if (fieldNode) {
+      const hasExistingDeprecationDirective = getDeprecatedDirectiveNode(fieldNode);
+      if (hasExistingDeprecationDirective) {
+        (fieldNode.directives as DirectiveNode[] | undefined) = fieldNode.directives?.filter(
+          d => d.name.value !== GraphQLDeprecatedDirective.name,
+        );
+        nodeByPath.delete(change.path);
+      } else {
+        handleError(change, new DeletedCoordinateNotFound(Kind.DIRECTIVE, '@deprecated'), config);
+      }
     }
   }
 }

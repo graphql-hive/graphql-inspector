@@ -359,7 +359,7 @@ test('huge test', async () => {
     'CType',
     'CType.b',
     'CType.c',
-    'CType.a',
+    'CType.a.@deprecated',
     'CType.a.arg',
     'CType.d.arg',
     'MyUnion',

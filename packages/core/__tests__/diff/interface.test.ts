@@ -168,9 +168,9 @@ describe('interface', () => {
 
       const changes = await diff(a, b);
       const change = {
-        a: findFirstChangeByPath(changes, 'Foo.a'),
-        b: findFirstChangeByPath(changes, 'Foo.b'),
-        c: findFirstChangeByPath(changes, 'Foo.c'),
+        a: findFirstChangeByPath(changes, 'Foo.a.@deprecated'),
+        b: findFirstChangeByPath(changes, 'Foo.b.@deprecated'),
+        c: findFirstChangeByPath(changes, 'Foo.c.@deprecated'),
       };
 
       // Changed
@@ -205,8 +205,8 @@ describe('interface', () => {
 
       const changes = await diff(a, b);
       const change = {
-        a: findFirstChangeByPath(changes, 'Foo.a'),
-        b: findFirstChangeByPath(changes, 'Foo.b'),
+        a: findFirstChangeByPath(changes, 'Foo.a.@deprecated'),
+        b: findFirstChangeByPath(changes, 'Foo.b.@deprecated'),
       };
 
       // Changed
@@ -234,8 +234,9 @@ describe('interface', () => {
 
     const changes = await diff(a, b);
 
-    expect(findChangesByPath(changes, 'Foo.a')).toHaveLength(1);
-    const change = findFirstChangeByPath(changes, 'Foo.a');
+    // one for deprecation added, and one for the reason added
+    expect(findChangesByPath(changes, 'Foo.a.@deprecated')).toHaveLength(2);
+    const change = findFirstChangeByPath(changes, 'Foo.a.@deprecated');
 
     // added
     expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);

@@ -61,7 +61,7 @@ function directiveUsageDefinitionAdded(
 
   const directiveNode = nodeByPath.get(change.path);
   const parentNode = nodeByPath.get(parentPath(change.path)) as
-    | { directives?: DirectiveNode[] }
+    | { kind: Kind; directives?: DirectiveNode[] }
     | undefined;
   if (directiveNode) {
     handleError(
@@ -70,6 +70,13 @@ function directiveUsageDefinitionAdded(
       config,
     );
   } else if (parentNode) {
+    if (
+      change.meta.addedDirectiveName === 'deprecated' &&
+      (parentNode.kind === Kind.FIELD_DEFINITION || parentNode.kind === Kind.ENUM_VALUE_DEFINITION)
+    ) {
+      return; // ignore because deprecated is handled by its own change... consider adjusting this.
+    }
+
     const newDirective: DirectiveNode = {
       kind: Kind.DIRECTIVE,
       name: nameNode(change.meta.addedDirectiveName),
