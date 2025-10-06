@@ -1,4 +1,4 @@
-import { buildSchema, GraphQLSchema } from 'graphql';
+import { buildSchema, GraphQLSchema, isInterfaceType, isObjectType, printSchema } from 'graphql';
 import { InspectorConfig } from '@graphql-inspector/config';
 import {
   loadDocuments,
@@ -26,16 +26,81 @@ export class LoadersRegistry {
     }
   }
 
-  loadSchema(
+  async loadSchema(
     pointer: string,
     options: Omit<LoadSchemaOptions, 'loaders'> = {},
     enableApolloFederation: boolean,
+    enableApolloFederationV2: boolean,
     enableAWS: boolean,
   ): Promise<GraphQLSchema> {
-    return enrichError(
+    const schema = await enrichError(
       loadSchema(pointer, {
         loaders: this.loaders,
         ...options,
+        ...(enableApolloFederationV2
+          ? {
+              schemas: [
+                buildSchema(/* GraphQL */ `
+                  scalar _Any
+                  union _Entity
+                  scalar FieldSet
+                  scalar link__Import
+                  scalar federation__ContextFieldValue
+                  scalar federation__Scope
+                  scalar federation__Policy
+                  type Query
+
+                  enum link__Purpose {
+                    SECURITY
+                    EXECUTION
+                  }
+
+                  type _Service {
+                    sdl: String!
+                  }
+
+                  extend type Query {
+                    _entities(representations: [_Any!]!): [_Entity]!
+                    _service: _Service!
+                  }
+
+                  directive @external on FIELD_DEFINITION | OBJECT
+                  directive @requires(fields: FieldSet!) on FIELD_DEFINITION
+                  directive @provides(fields: FieldSet!) on FIELD_DEFINITION
+                  directive @key(
+                    fields: FieldSet!
+                    resolvable: Boolean = true
+                  ) repeatable on OBJECT | INTERFACE
+                  directive @link(
+                    url: String!
+                    as: String
+                    for: link__Purpose
+                    import: [link__Import]
+                  ) repeatable on SCHEMA
+                  directive @shareable repeatable on OBJECT | FIELD_DEFINITION
+                  directive @inaccessible on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+                  directive @tag(
+                    name: String!
+                  ) repeatable on FIELD_DEFINITION | INTERFACE | OBJECT | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+                  directive @override(from: String!) on FIELD_DEFINITION
+                  directive @composeDirective(name: String!) repeatable on SCHEMA
+                  directive @interfaceObject on OBJECT
+                  directive @authenticated on FIELD_DEFINITION | OBJECT | INTERFACE | SCALAR | ENUM
+                  directive @requiresScopes(
+                    scopes: [[federation__Scope!]!]!
+                  ) on FIELD_DEFINITION | OBJECT | INTERFACE | SCALAR | ENUM
+                  directive @policy(
+                    policies: [[federation__Policy!]!]!
+                  ) on FIELD_DEFINITION | OBJECT | INTERFACE | SCALAR | ENUM
+                  directive @context(name: String!) repeatable on INTERFACE | OBJECT | UNION
+                  directive @fromContext(
+                    field: federation__ContextFieldValue
+                  ) on ARGUMENT_DEFINITION
+                  directive @extends on OBJECT | INTERFACE
+                `),
+              ],
+            }
+          : {}),
         ...(enableApolloFederation
           ? {
               schemas: [
@@ -86,6 +151,12 @@ export class LoadersRegistry {
           : {}),
       }),
     );
+
+    if (enableApolloFederationV2) {
+      return this.buildEntityUnion(schema);
+    }
+
+    return schema;
   }
 
   loadDocuments(
@@ -98,6 +169,33 @@ export class LoadersRegistry {
         ...options,
       }),
     );
+  }
+
+  private buildEntityUnion(schema: GraphQLSchema): GraphQLSchema {
+    const entityTypes: string[] = [];
+    const typeMap = schema.getTypeMap();
+
+    // Find all types with @key directive
+    Object.values(typeMap).forEach(type => {
+      if (
+        (isObjectType(type) || isInterfaceType(type)) &&
+        type.astNode?.directives?.some(dir => dir.name.value === 'key')
+      ) {
+        entityTypes.push(type.name);
+      }
+    });
+
+    if (entityTypes.length === 0) {
+      return schema; // No entities found
+    }
+
+    // Create new schema SDL with populated _Entity union
+    const entityUnion = `union _Entity = ${entityTypes.join(' | ')}`;
+
+    // Rebuild schema with proper _Entity union
+    const schemaSDL = printSchema(schema).replace('union _Entity', entityUnion);
+
+    return buildSchema(schemaSDL);
   }
 }
 

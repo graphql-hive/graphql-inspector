@@ -38,6 +38,7 @@ export interface GlobalArgs {
   leftHeader?: string[];
   rightHeader?: string[];
   federation?: boolean;
+  federationV2?: boolean;
   aws?: boolean;
   method?: string;
 }
