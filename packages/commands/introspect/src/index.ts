@@ -89,6 +89,7 @@ export default createCommand<
       const output = args.write!;
       const comments = args.comments || false;
       const apolloFederation = args.federation || false;
+      const apolloFederationV2 = args.federationV2 || false;
       const aws = args.aws || false;
       const method = args.method?.toUpperCase() || 'POST';
 
@@ -100,6 +101,7 @@ export default createCommand<
           method,
         },
         apolloFederation,
+        apolloFederationV2,
         aws,
       );
 
