@@ -177,14 +177,14 @@ export class LoadersRegistry {
     const typeMap = schema.getTypeMap();
 
     // Find all types with @key directive
-    Object.values(typeMap).forEach(type => {
+    for (const type of Object.values(typeMap)) {
       if (
         (isObjectType(type) || isInterfaceType(type)) &&
         type.astNode?.directives?.some(dir => dir.name.value === 'key')
       ) {
         entityTypes.push(type.name);
       }
-    });
+    }
 
     if (entityTypes.length === 0) {
       return schema; // No entities found
