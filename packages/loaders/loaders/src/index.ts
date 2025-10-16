@@ -48,7 +48,6 @@ export class LoadersRegistry {
                   scalar federation__ContextFieldValue
                   scalar federation__Scope
                   scalar federation__Policy
-
                   type Query
 
                   enum link__Purpose {
