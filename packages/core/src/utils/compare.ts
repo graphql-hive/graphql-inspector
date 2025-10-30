@@ -1,4 +1,4 @@
-import { NameNode, print } from 'graphql';
+import { NameNode } from 'graphql';
 
 export function keyMap<T>(list: readonly T[], keyFn: (item: T) => string): Record<string, T> {
   return list.reduce((map, item) => {
