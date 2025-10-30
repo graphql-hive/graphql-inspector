@@ -211,23 +211,45 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      expect(changes).toHaveLength(1);
+      expect(changes).toHaveLength(2);
       expect(changes).toMatchInlineSnapshot(`
         [
           {
             "criticality": {
               "level": "DANGEROUS",
-              "reason": "Directive 'tag' was removed from field 'a'",
+              "reason": "Changing an argument on a directive can change runtime behavior.",
             },
-            "message": "Directive 'tag' was removed from field 'Query.a'",
+            "message": "Argument 'name' was removed from '@tag'",
             "meta": {
+              "directiveName": "tag",
               "directiveRepeatedTimes": 2,
-              "fieldName": "a",
-              "removedDirectiveName": "tag",
-              "typeName": "Query",
+              "parentArgumentName": null,
+              "parentEnumValueName": null,
+              "parentFieldName": "a",
+              "parentTypeName": "Query",
+              "removedArgumentName": "name",
             },
-            "path": "Query.a.@tag",
-            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_REMOVED",
+            "path": "Query.a.@tag.name",
+            "type": "DIRECTIVE_USAGE_ARGUMENT_REMOVED",
+          },
+          {
+            "criticality": {
+              "level": "NON_BREAKING",
+            },
+            "message": "Argument 'name' was added to '@tag'",
+            "meta": {
+              "addedArgumentName": "name",
+              "addedArgumentValue": ""bar"",
+              "directiveName": "tag",
+              "directiveRepeatedTimes": 2,
+              "oldArgumentValue": ""foo2"",
+              "parentArgumentName": null,
+              "parentEnumValueName": null,
+              "parentFieldName": "a",
+              "parentTypeName": "Query",
+            },
+            "path": "Query.a.@tag.name",
+            "type": "DIRECTIVE_USAGE_ARGUMENT_ADDED",
           },
         ]
       `);
@@ -289,7 +311,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      expect(changes).toHaveLength(2);
+      expect(changes).toHaveLength(4);
       expect(changes).toMatchInlineSnapshot(`
         [
           {
@@ -321,6 +343,43 @@ describe('directive-usage', () => {
             },
             "path": "Query.a.@tag",
             "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_REMOVED",
+          },
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Changing an argument on a directive can change runtime behavior.",
+            },
+            "message": "Argument 'name' was removed from '@tag'",
+            "meta": {
+              "directiveName": "tag",
+              "directiveRepeatedTimes": 1,
+              "parentArgumentName": null,
+              "parentEnumValueName": null,
+              "parentFieldName": "a",
+              "parentTypeName": "Query",
+              "removedArgumentName": "name",
+            },
+            "path": "Query.a.@tag.name",
+            "type": "DIRECTIVE_USAGE_ARGUMENT_REMOVED",
+          },
+          {
+            "criticality": {
+              "level": "NON_BREAKING",
+            },
+            "message": "Argument 'name' was added to '@tag'",
+            "meta": {
+              "addedArgumentName": "name",
+              "addedArgumentValue": ""mid"",
+              "directiveName": "tag",
+              "directiveRepeatedTimes": 1,
+              "oldArgumentValue": ""start"",
+              "parentArgumentName": null,
+              "parentEnumValueName": null,
+              "parentFieldName": "a",
+              "parentTypeName": "Query",
+            },
+            "path": "Query.a.@tag.name",
+            "type": "DIRECTIVE_USAGE_ARGUMENT_ADDED",
           },
         ]
       `);

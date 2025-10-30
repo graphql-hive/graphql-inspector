@@ -28,7 +28,7 @@ import {
   ValueMismatchError,
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
-import type { PatchConfig } from '../types';
+import type { PatchConfig, PatchContext } from '../types';
 import {
   assertChangeHasPath,
   assertValueMatch,
@@ -45,6 +45,7 @@ export function fieldTypeChanged(
   change: Change<typeof ChangeType.FieldTypeChanged>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   const node = getChangedNodeOfKind(change, nodeByPath, Kind.FIELD_DEFINITION, config);
   if (node) {
@@ -64,6 +65,7 @@ export function fieldRemoved(
   change: Change<typeof ChangeType.FieldRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -104,6 +106,7 @@ export function fieldAdded(
   change: Change<typeof ChangeType.FieldAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (assertChangeHasPath(change, config)) {
     const changedNode = nodeByPath.get(change.path);
@@ -159,6 +162,7 @@ export function fieldArgumentAdded(
   change: Change<typeof ChangeType.FieldArgumentAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (assertChangeHasPath(change, config)) {
     const existing = nodeByPath.get(change.path);
@@ -211,6 +215,7 @@ export function fieldArgumentTypeChanged(
   change: Change<typeof ChangeType.FieldArgumentTypeChanged>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   const existingArg = getChangedNodeOfKind(change, nodeByPath, Kind.INPUT_VALUE_DEFINITION, config);
   if (existingArg) {
@@ -229,6 +234,7 @@ export function fieldArgumentDescriptionChanged(
   change: Change<typeof ChangeType.FieldArgumentDescriptionChanged>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   const existingArg = getChangedNodeOfKind(change, nodeByPath, Kind.INPUT_VALUE_DEFINITION, config);
   if (existingArg) {
@@ -249,6 +255,7 @@ export function fieldArgumentDefaultChanged(
   change: Change<typeof ChangeType.FieldArgumentDefaultChanged>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   const existingArg = getChangedNodeOfKind(change, nodeByPath, Kind.INPUT_VALUE_DEFINITION, config);
   if (existingArg) {
@@ -269,6 +276,7 @@ export function fieldArgumentRemoved(
   change: Change<typeof ChangeType.FieldArgumentRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   const existing = getDeletedNodeOfKind(change, nodeByPath, Kind.ARGUMENT, config);
   if (existing) {
@@ -306,6 +314,7 @@ export function fieldDeprecationReasonChanged(
   change: Change<typeof ChangeType.FieldDeprecationReasonChanged>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   assertChangeHasPath(change, config);
   const parentNode = nodeByPath.get(parentPath(change.path!)) as
@@ -346,6 +355,7 @@ export function fieldDeprecationReasonAdded(
   change: Change<typeof ChangeType.FieldDeprecationReasonAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   assertChangeHasPath(change, config);
   const parentNode = nodeByPath.get(parentPath(change.path!)) as
@@ -378,6 +388,7 @@ export function fieldDeprecationAdded(
   change: Change<typeof ChangeType.FieldDeprecationAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (assertChangeHasPath(change, config)) {
     const fieldNode = nodeByPath.get(parentPath(change.path));
@@ -428,6 +439,7 @@ export function fieldDeprecationRemoved(
   change: Change<typeof ChangeType.FieldDeprecationRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (assertChangeHasPath(change, config)) {
     const fieldNode = getDeletedParentNodeOfKind(
@@ -455,6 +467,7 @@ export function fieldDescriptionAdded(
   change: Change<typeof ChangeType.FieldDescriptionAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   const fieldNode = getChangedNodeOfKind(change, nodeByPath, Kind.FIELD_DEFINITION, config);
   if (fieldNode) {
@@ -468,6 +481,7 @@ export function fieldDescriptionRemoved(
   change: Change<typeof ChangeType.FieldDescriptionRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -498,6 +512,7 @@ export function fieldDescriptionChanged(
   change: Change<typeof ChangeType.FieldDescriptionChanged>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   const fieldNode = getChangedNodeOfKind(change, nodeByPath, Kind.FIELD_DEFINITION, config);
   if (fieldNode) {

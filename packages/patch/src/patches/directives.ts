@@ -25,7 +25,7 @@ import {
   ValueMismatchError,
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
-import { PatchConfig } from '../types.js';
+import { PatchConfig, PatchContext } from '../types.js';
 import {
   deleteNamedNode,
   findNamedNode,
@@ -37,6 +37,7 @@ export function directiveAdded(
   change: Change<typeof ChangeType.DirectiveAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (change.path === undefined) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -68,6 +69,7 @@ export function directiveRemoved(
   change: Change<typeof ChangeType.DirectiveRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   const existing = getDeletedNodeOfKind(change, nodeByPath, Kind.DIRECTIVE_DEFINITION, config);
   if (existing) {
@@ -79,6 +81,7 @@ export function directiveArgumentAdded(
   change: Change<typeof ChangeType.DirectiveArgumentAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -136,6 +139,7 @@ export function directiveArgumentRemoved(
   change: Change<typeof ChangeType.DirectiveArgumentRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   const argNode = getDeletedNodeOfKind(change, nodeByPath, Kind.INPUT_VALUE_DEFINITION, config);
   if (argNode) {
@@ -158,6 +162,7 @@ export function directiveLocationAdded(
   change: Change<typeof ChangeType.DirectiveLocationAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -203,6 +208,7 @@ export function directiveLocationRemoved(
   change: Change<typeof ChangeType.DirectiveLocationRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -252,6 +258,7 @@ export function directiveDescriptionChanged(
   change: Change<typeof ChangeType.DirectiveDescriptionChanged>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -295,6 +302,7 @@ export function directiveArgumentDefaultValueChanged(
   change: Change<typeof ChangeType.DirectiveArgumentDefaultValueChanged>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -341,6 +349,7 @@ export function directiveArgumentDescriptionChanged(
   change: Change<typeof ChangeType.DirectiveArgumentDescriptionChanged>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -384,6 +393,7 @@ export function directiveArgumentTypeChanged(
   change: Change<typeof ChangeType.DirectiveArgumentTypeChanged>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -419,6 +429,7 @@ export function directiveRepeatableAdded(
   change: Change<typeof ChangeType.DirectiveRepeatableAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -456,6 +467,7 @@ export function directiveRepeatableRemoved(
   change: Change<typeof ChangeType.DirectiveRepeatableRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);

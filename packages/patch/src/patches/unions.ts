@@ -8,13 +8,14 @@ import {
   handleError,
 } from '../errors.js';
 import { namedTypeNode } from '../node-templates.js';
-import { PatchConfig } from '../types.js';
+import { PatchConfig, PatchContext } from '../types.js';
 import { findNamedNode, parentPath } from '../utils.js';
 
 export function unionMemberAdded(
   change: Change<typeof ChangeType.UnionMemberAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   const changedPath = change.path!;
   const union = nodeByPath.get(parentPath(changedPath)) as
@@ -47,6 +48,7 @@ export function unionMemberRemoved(
   change: Change<typeof ChangeType.UnionMemberRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   const changedPath = change.path!;
   const union = nodeByPath.get(parentPath(changedPath)) as

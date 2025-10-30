@@ -1005,7 +1005,9 @@ export function directiveUsageArgumentRemovedFromMeta(
       args.meta.parentArgumentName,
       `@${args.meta.directiveName}`,
       args.meta.removedArgumentName,
-    ].join('.'),
+    ]
+      .filter(a => a !== null)
+      .join('.'),
     meta: args.meta,
   };
 }
@@ -1046,28 +1048,61 @@ export function directiveUsageChanged(
       );
     },
 
+    /** Treat a mutual change as a removal then addition. */
     onMutual(argument) {
-      directiveUsageArgumentAddedFromMeta({
-        type: ChangeType.DirectiveUsageArgumentAdded,
-        meta: {
-          addedArgumentName: argument.newVersion.name.value,
-          addedArgumentValue: print(argument.newVersion.value),
-          oldArgumentValue:
-            (argument.oldVersion?.value && print(argument.oldVersion.value)) ?? null,
-          directiveName: newDirective.name.value,
-          parentTypeName: parentType?.name ?? null,
-          parentFieldName: parentField?.name ?? null,
-          parentArgumentName: parentArgument?.name ?? null,
-          parentEnumValueName: parentEnumValue?.name ?? null,
-          directiveRepeatedTimes:
-            // @todo should this lastly fall back to the GraphQLSchema?
-            directiveRepeatTimes(
-              (parentEnumValue || parentArgument || parentField || parentType)?.astNode
-                ?.directives ?? [],
-              newDirective,
-            ),
-        },
-      });
+      if (
+        argument.oldVersion &&
+        print(argument.oldVersion.value) === print(argument.newVersion.value)
+      ) {
+        return;
+      }
+
+      if (argument.oldVersion) {
+        addChange(
+          directiveUsageArgumentRemovedFromMeta({
+            type: ChangeType.DirectiveUsageArgumentRemoved,
+            meta: {
+              removedArgumentName: argument.oldVersion.name.value,
+              directiveName: newDirective.name.value,
+              parentTypeName: parentType?.name ?? null,
+              parentFieldName: parentField?.name ?? null,
+              parentArgumentName: parentArgument?.name ?? null,
+              parentEnumValueName: parentEnumValue?.name ?? null,
+              directiveRepeatedTimes:
+                // @todo should this lastly fall back to the GraphQLSchema?
+                directiveRepeatTimes(
+                  (parentEnumValue || parentArgument || parentField || parentType)?.astNode
+                    ?.directives ?? [],
+                  newDirective,
+                ),
+            },
+          }),
+        );
+      }
+
+      addChange(
+        directiveUsageArgumentAddedFromMeta({
+          type: ChangeType.DirectiveUsageArgumentAdded,
+          meta: {
+            addedArgumentName: argument.newVersion.name.value,
+            addedArgumentValue: print(argument.newVersion.value),
+            oldArgumentValue:
+              (argument.oldVersion?.value && print(argument.oldVersion.value)) ?? null,
+            directiveName: newDirective.name.value,
+            parentTypeName: parentType?.name ?? null,
+            parentFieldName: parentField?.name ?? null,
+            parentArgumentName: parentArgument?.name ?? null,
+            parentEnumValueName: parentEnumValue?.name ?? null,
+            directiveRepeatedTimes:
+              // @todo should this lastly fall back to the GraphQLSchema?
+              directiveRepeatTimes(
+                (parentEnumValue || parentArgument || parentField || parentType)?.astNode
+                  ?.directives ?? [],
+                newDirective,
+              ),
+          },
+        }),
+      );
     },
 
     onRemoved(argument) {

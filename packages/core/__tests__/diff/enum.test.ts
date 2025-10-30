@@ -180,7 +180,8 @@ describe('enum', () => {
     const changes = await diff(a, b);
     const change = findFirstChangeByPath(changes, 'enumA.A.@deprecated');
 
-    expect(changes.length).toEqual(1);
+    // Changes include deprecated change, directive remove argument, and directive add argument.
+    expect(changes.length).toEqual(3);
     expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
     expect(change.message).toEqual(
       `Enum value 'enumA.A' deprecation reason changed from 'Old Reason' to 'New Reason'`,

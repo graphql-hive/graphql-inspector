@@ -10,13 +10,14 @@ import {
   handleError,
 } from '../errors.js';
 import { namedTypeNode } from '../node-templates.js';
-import type { PatchConfig } from '../types';
+import type { PatchConfig, PatchContext } from '../types';
 import { findNamedNode } from '../utils.js';
 
 export function objectTypeInterfaceAdded(
   change: Change<typeof ChangeType.ObjectTypeInterfaceAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -69,6 +70,7 @@ export function objectTypeInterfaceRemoved(
   change: Change<typeof ChangeType.ObjectTypeInterfaceRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);

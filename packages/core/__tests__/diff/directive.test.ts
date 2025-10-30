@@ -381,5 +381,38 @@ describe('directive', () => {
       expect(change.type).toEqual('DIRECTIVE_REPEATABLE_REMOVED');
       expect(change.message).toEqual("Directive 'a' removed repeatable.");
     });
+
+    test('complex remove', async () => {
+      const before = buildSchema(/* GraphQL */ `
+        directive @flavor(flavor: String!) repeatable on OBJECT
+        type Pancake @flavor(flavor: "bread") {
+          radius: Int!
+        }
+      `);
+      const after = buildSchema(/* GraphQL */ `
+        directive @flavor(flavor: String!) repeatable on OBJECT
+        type Pancake
+          @flavor(flavor: "sweet")
+          @flavor(flavor: "bread")
+          @flavor(flavor: "chocolate")
+          @flavor(flavor: "strawberry") {
+          radius: Int!
+        }
+      `);
+      const changes = await diff(before, after);
+      expect(changes.map(c => `[${c.criticality.level}] ${c.path}: ${c.message}`))
+        .toMatchInlineSnapshot(`
+        [
+          "[DANGEROUS] Pancake.@flavor: Directive 'flavor' was added to object 'Pancake'",
+          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to '@flavor'",
+          "[DANGEROUS] Pancake.@flavor: Directive 'flavor' was added to object 'Pancake'",
+          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to '@flavor'",
+          "[DANGEROUS] Pancake.@flavor: Directive 'flavor' was added to object 'Pancake'",
+          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to '@flavor'",
+          "[DANGEROUS] Pancake.@flavor.flavor: Argument 'flavor' was removed from '@flavor'",
+          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to '@flavor'",
+        ]
+      `);
+    });
   });
 });

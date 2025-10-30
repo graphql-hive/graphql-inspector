@@ -1,5 +1,5 @@
 /* eslint-disable unicorn/no-negated-condition */
-import { ArgumentNode, ASTNode, DirectiveNode, Kind, parseValue } from 'graphql';
+import { ArgumentNode, ASTNode, DirectiveNode, Kind, parseValue, print, ValueNode } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
   AddedAttributeAlreadyExistsError,
@@ -12,9 +12,10 @@ import {
   DeletedAncestorCoordinateNotFoundError,
   DeletedAttributeNotFoundError,
   handleError,
+  ValueMismatchError,
 } from '../errors.js';
 import { nameNode } from '../node-templates.js';
-import { PatchConfig, SchemaNode } from '../types.js';
+import { PatchConfig, PatchContext, SchemaNode } from '../types.js';
 import { findNamedNode, parentPath } from '../utils.js';
 
 export type DirectiveUsageAddedChange =
@@ -53,7 +54,8 @@ function findNthDirective(directives: readonly DirectiveNode[], name: string, n:
   let lastDirective: DirectiveNode | undefined;
   let count = 0;
   for (const d of directives) {
-    if (d.name.value === name) {
+    // @note this nullish check is critical even though the types dont recognize it.
+    if (d?.name.value === name) {
       lastDirective = d;
       count += 1;
       if (count === n) {
@@ -68,6 +70,7 @@ function directiveUsageDefinitionAdded(
   change: Change<DirectiveUsageAddedChange>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(
@@ -130,6 +133,7 @@ function schemaDirectiveUsageDefinitionAdded(
   schemaNodes: SchemaNode[],
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(
@@ -185,6 +189,7 @@ function schemaDirectiveUsageDefinitionRemoved(
   schemaNodes: SchemaNode[],
   _nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   let deleted = false;
   for (const node of schemaNodes) {
@@ -220,6 +225,7 @@ function directiveUsageDefinitionRemoved(
   change: Change<DirectiveUsageRemovedChange>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -255,9 +261,19 @@ function directiveUsageDefinitionRemoved(
       config,
     );
   } else {
-    parentNode.directives = parentNode.directives?.filter(
-      d => d.name.value !== change.meta.removedDirectiveName,
-    );
+    // null the value out for filtering later. The index is important so it can't be removed.
+    // @note the nullish check is critical here even though the types dont show it
+    const removedIndex = (parentNode.directives ?? []).findIndex(d => d === directiveNode);
+    const directiveList = [...(parentNode.directives ?? [])];
+    if (removedIndex !== -1) {
+      (directiveList[removedIndex] as any) = undefined;
+    }
+    parentNode.directives = directiveList;
+    context.removedDirectiveNodes.push(parentNode);
+    // parentNode.directives = parentNode.direct
+    // ives?.filter(
+    //   d => d.name.value !== change.meta.removedDirectiveName,
+    // );
   }
 }
 
@@ -265,160 +281,180 @@ export function directiveUsageArgumentDefinitionAdded(
   change: Change<typeof ChangeType.DirectiveUsageArgumentDefinitionAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionAdded(change, nodeByPath, config);
+  return directiveUsageDefinitionAdded(change, nodeByPath, config, context);
 }
 
 export function directiveUsageArgumentDefinitionRemoved(
   change: Change<typeof ChangeType.DirectiveUsageArgumentDefinitionRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionRemoved(change, nodeByPath, config);
+  return directiveUsageDefinitionRemoved(change, nodeByPath, config, context);
 }
 
 export function directiveUsageEnumAdded(
   change: Change<typeof ChangeType.DirectiveUsageEnumAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionAdded(change, nodeByPath, config);
+  return directiveUsageDefinitionAdded(change, nodeByPath, config, context);
 }
 
 export function directiveUsageEnumRemoved(
   change: Change<typeof ChangeType.DirectiveUsageEnumRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionRemoved(change, nodeByPath, config);
+  return directiveUsageDefinitionRemoved(change, nodeByPath, config, context);
 }
 
 export function directiveUsageEnumValueAdded(
   change: Change<typeof ChangeType.DirectiveUsageEnumValueAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionAdded(change, nodeByPath, config);
+  return directiveUsageDefinitionAdded(change, nodeByPath, config, context);
 }
 
 export function directiveUsageEnumValueRemoved(
   change: Change<typeof ChangeType.DirectiveUsageEnumValueRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionRemoved(change, nodeByPath, config);
+  return directiveUsageDefinitionRemoved(change, nodeByPath, config, context);
 }
 
 export function directiveUsageFieldAdded(
   change: Change<typeof ChangeType.DirectiveUsageFieldAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionAdded(change, nodeByPath, config);
+  return directiveUsageDefinitionAdded(change, nodeByPath, config, context);
 }
 
 export function directiveUsageFieldDefinitionAdded(
   change: Change<typeof ChangeType.DirectiveUsageFieldDefinitionAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionAdded(change, nodeByPath, config);
+  return directiveUsageDefinitionAdded(change, nodeByPath, config, context);
 }
 
 export function directiveUsageFieldDefinitionRemoved(
   change: Change<typeof ChangeType.DirectiveUsageFieldDefinitionRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionRemoved(change, nodeByPath, config);
+  return directiveUsageDefinitionRemoved(change, nodeByPath, config, context);
 }
 
 export function directiveUsageFieldRemoved(
   change: Change<typeof ChangeType.DirectiveUsageFieldRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionRemoved(change, nodeByPath, config);
+  return directiveUsageDefinitionRemoved(change, nodeByPath, config, context);
 }
 
 export function directiveUsageInputFieldDefinitionAdded(
   change: Change<typeof ChangeType.DirectiveUsageInputFieldDefinitionAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionAdded(change, nodeByPath, config);
+  return directiveUsageDefinitionAdded(change, nodeByPath, config, context);
 }
 
 export function directiveUsageInputFieldDefinitionRemoved(
   change: Change<typeof ChangeType.DirectiveUsageInputFieldDefinitionRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionRemoved(change, nodeByPath, config);
+  return directiveUsageDefinitionRemoved(change, nodeByPath, config, context);
 }
 
 export function directiveUsageInputObjectAdded(
   change: Change<typeof ChangeType.DirectiveUsageInputObjectAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionAdded(change, nodeByPath, config);
+  return directiveUsageDefinitionAdded(change, nodeByPath, config, context);
 }
 
 export function directiveUsageInputObjectRemoved(
   change: Change<typeof ChangeType.DirectiveUsageInputObjectRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionRemoved(change, nodeByPath, config);
+  return directiveUsageDefinitionRemoved(change, nodeByPath, config, context);
 }
 
 export function directiveUsageInterfaceAdded(
   change: Change<typeof ChangeType.DirectiveUsageInterfaceAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionAdded(change, nodeByPath, config);
+  return directiveUsageDefinitionAdded(change, nodeByPath, config, context);
 }
 
 export function directiveUsageInterfaceRemoved(
   change: Change<typeof ChangeType.DirectiveUsageInterfaceRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionRemoved(change, nodeByPath, config);
+  return directiveUsageDefinitionRemoved(change, nodeByPath, config, context);
 }
 
 export function directiveUsageObjectAdded(
   change: Change<typeof ChangeType.DirectiveUsageObjectAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionAdded(change, nodeByPath, config);
+  return directiveUsageDefinitionAdded(change, nodeByPath, config, context);
 }
 
 export function directiveUsageObjectRemoved(
   change: Change<typeof ChangeType.DirectiveUsageObjectRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionRemoved(change, nodeByPath, config);
+  return directiveUsageDefinitionRemoved(change, nodeByPath, config, context);
 }
 
 export function directiveUsageScalarAdded(
   change: Change<typeof ChangeType.DirectiveUsageScalarAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionAdded(change, nodeByPath, config);
+  return directiveUsageDefinitionAdded(change, nodeByPath, config, context);
 }
 
 export function directiveUsageScalarRemoved(
   change: Change<typeof ChangeType.DirectiveUsageScalarRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionRemoved(change, nodeByPath, config);
+  return directiveUsageDefinitionRemoved(change, nodeByPath, config, context);
 }
 
 export function directiveUsageSchemaAdded(
@@ -426,8 +462,9 @@ export function directiveUsageSchemaAdded(
   schemaDefs: SchemaNode[],
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return schemaDirectiveUsageDefinitionAdded(change, schemaDefs, nodeByPath, config);
+  return schemaDirectiveUsageDefinitionAdded(change, schemaDefs, nodeByPath, config, context);
 }
 
 export function directiveUsageSchemaRemoved(
@@ -435,31 +472,40 @@ export function directiveUsageSchemaRemoved(
   schemaDefs: SchemaNode[],
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return schemaDirectiveUsageDefinitionRemoved(change, schemaDefs, nodeByPath, config);
+  return schemaDirectiveUsageDefinitionRemoved(change, schemaDefs, nodeByPath, config, context);
 }
 
 export function directiveUsageUnionMemberAdded(
   change: Change<typeof ChangeType.DirectiveUsageUnionMemberAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionAdded(change, nodeByPath, config);
+  return directiveUsageDefinitionAdded(change, nodeByPath, config, context);
 }
 
 export function directiveUsageUnionMemberRemoved(
   change: Change<typeof ChangeType.DirectiveUsageUnionMemberRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  context: PatchContext,
 ) {
-  return directiveUsageDefinitionRemoved(change, nodeByPath, config);
+  return directiveUsageDefinitionRemoved(change, nodeByPath, config, context);
 }
 
 export function directiveUsageArgumentAdded(
   change: Change<typeof ChangeType.DirectiveUsageArgumentAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
+  // ignore because deprecated is handled by its own change... consider adjusting this.
+  if (change.meta.directiveName === 'deprecated') {
+    return;
+  }
+
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
     return;
@@ -485,16 +531,14 @@ export function directiveUsageArgumentAdded(
     );
   } else if (directiveNode.kind === Kind.DIRECTIVE) {
     const existing = findNamedNode(directiveNode.arguments, change.meta.addedArgumentName);
+    // "ArgumentAdded" but argument already exists.
     if (existing) {
       handleError(
         change,
-        new AddedAttributeAlreadyExistsError(
-          directiveNode.kind,
-          'arguments',
-          change.meta.addedArgumentName,
-        ),
+        new ValueMismatchError(directiveNode.kind, null, print(existing.value)),
         config,
       );
+      (existing.value as ValueNode) = parseValue(change.meta.addedArgumentValue);
     } else {
       const argNode: ArgumentNode = {
         kind: Kind.ARGUMENT,
@@ -520,20 +564,21 @@ export function directiveUsageArgumentRemoved(
   change: Change<typeof ChangeType.DirectiveUsageArgumentRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
     return;
   }
-  const parentNode = nodeByPath.get(parentPath(change.path)) as
+  // Must use double parentPath b/c the path is referencing the argument
+  const parentNode = nodeByPath.get(parentPath(parentPath(change.path))) as
     | { kind: Kind; directives?: DirectiveNode[] }
     | undefined;
-  // if (
-  //   change.meta.directiveName === 'deprecated' &&
-  //   parentNode && (parentNode.kind === Kind.FIELD_DEFINITION || parentNode.kind === Kind.ENUM_VALUE_DEFINITION)
-  // ) {
-  //   return; // ignore because deprecated is handled by its own change... consider adjusting this.
-  // }
+
+  // ignore because deprecated is handled by its own change... consider adjusting this.
+  if (change.meta.directiveName === 'deprecated') {
+    return;
+  }
 
   const directiveNode = findNthDirective(
     parentNode?.directives ?? [],

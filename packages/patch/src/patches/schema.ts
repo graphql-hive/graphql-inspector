@@ -3,12 +3,13 @@ import { Kind, NameNode, OperationTypeDefinitionNode, OperationTypeNode } from '
 import type { Change, ChangeType } from '@graphql-inspector/core';
 import { handleError, ValueMismatchError } from '../errors.js';
 import { nameNode } from '../node-templates.js';
-import { PatchConfig, SchemaNode } from '../types.js';
+import { PatchConfig, PatchContext, SchemaNode } from '../types.js';
 
 export function schemaMutationTypeChanged(
   change: Change<typeof ChangeType.SchemaMutationTypeChanged>,
   schemaNodes: SchemaNode[],
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   for (const schemaNode of schemaNodes) {
     const mutation = schemaNode.operationTypes?.find(
@@ -58,6 +59,7 @@ export function schemaQueryTypeChanged(
   change: Change<typeof ChangeType.SchemaQueryTypeChanged>,
   schemaNodes: SchemaNode[],
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   for (const schemaNode of schemaNodes) {
     const query = schemaNode.operationTypes?.find(
@@ -103,6 +105,7 @@ export function schemaSubscriptionTypeChanged(
   change: Change<typeof ChangeType.SchemaSubscriptionTypeChanged>,
   schemaNodes: SchemaNode[],
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   for (const schemaNode of schemaNodes) {
     const sub = schemaNode.operationTypes?.find(

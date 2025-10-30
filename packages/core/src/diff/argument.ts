@@ -5,7 +5,7 @@ import {
   GraphQLObjectType,
   Kind,
 } from 'graphql';
-import { compareDirectiveLists, compareLists, diffArrays, isNotEqual } from '../utils/compare.js';
+import { compareDirectiveLists, diffArrays, isNotEqual } from '../utils/compare.js';
 import {
   fieldArgumentDefaultChanged,
   fieldArgumentDescriptionChanged,

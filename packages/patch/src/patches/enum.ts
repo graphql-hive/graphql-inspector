@@ -22,13 +22,14 @@ import {
   ValueMismatchError,
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
-import type { PatchConfig } from '../types';
+import type { PatchConfig, PatchContext } from '../types';
 import { findNamedNode, getDeprecatedDirectiveNode, parentPath } from '../utils.js';
 
 export function enumValueRemoved(
   change: Change<typeof ChangeType.EnumValueRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -86,6 +87,7 @@ export function enumValueAdded(
   change: Change<typeof ChangeType.EnumValueAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   const enumValuePath = change.path!;
   const enumNode = nodeByPath.get(parentPath(enumValuePath)) as
@@ -128,6 +130,7 @@ export function enumValueDeprecationReasonAdded(
   change: Change<typeof ChangeType.EnumValueDeprecationReasonAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -187,6 +190,7 @@ export function enumValueDeprecationReasonChanged(
   change: Change<typeof ChangeType.EnumValueDeprecationReasonChanged>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -249,6 +253,7 @@ export function enumValueDescriptionChanged(
   change: Change<typeof ChangeType.EnumValueDescriptionChanged>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);

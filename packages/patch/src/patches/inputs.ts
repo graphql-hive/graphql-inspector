@@ -22,7 +22,7 @@ import {
   ValueMismatchError,
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
-import type { PatchConfig } from '../types.js';
+import type { PatchConfig, PatchContext } from '../types.js';
 import {
   assertValueMatch,
   getChangedNodeOfKind,
@@ -34,6 +34,7 @@ export function inputFieldAdded(
   change: Change<typeof ChangeType.InputFieldAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -100,6 +101,7 @@ export function inputFieldRemoved(
   change: Change<typeof ChangeType.InputFieldRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -149,6 +151,7 @@ export function inputFieldDescriptionAdded(
   change: Change<typeof ChangeType.InputFieldDescriptionAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -184,6 +187,7 @@ export function inputFieldTypeChanged(
   change: Change<typeof ChangeType.InputFieldTypeChanged>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   const inputFieldNode = getChangedNodeOfKind(
     change,
@@ -208,6 +212,7 @@ export function inputFieldDefaultValueChanged(
   change: Change<typeof ChangeType.InputFieldDefaultValueChanged>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -253,6 +258,7 @@ export function inputFieldDescriptionChanged(
   change: Change<typeof ChangeType.InputFieldDescriptionChanged>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   const existingNode = getChangedNodeOfKind(
     change,
@@ -282,6 +288,7 @@ export function inputFieldDescriptionRemoved(
   change: Change<typeof ChangeType.InputFieldDescriptionRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   const existingNode = getDeletedNodeOfKind(
     change,

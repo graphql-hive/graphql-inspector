@@ -130,13 +130,12 @@ describe('repeat directives', () => {
       }
     `;
     const after = /* GraphQL */ `
-      directive @flavor(flavor: String!) repeatable on FIELD_DEFINITION
+      directive @flavor(flavor: String!) repeatable on OBJECT
       type Pancake
         @flavor(flavor: "sweet")
         @flavor(flavor: "bread")
         @flavor(flavor: "chocolate")
-        @flavor(flavor: "strawberry")
-      {
+        @flavor(flavor: "strawberry") {
         radius: Int!
       }
     `;
@@ -146,16 +145,16 @@ describe('repeat directives', () => {
   test('Directives Removed', async () => {
     const before = /* GraphQL */ `
       directive @flavor(flavor: String!) repeatable on OBJECT
-      type Pancake @flavor(flavor: "sweet")
+      type Pancake
+        @flavor(flavor: "sweet")
         @flavor(flavor: "bread")
         @flavor(flavor: "chocolate")
-        @flavor(flavor: "strawberry")
-      {
+        @flavor(flavor: "strawberry") {
         radius: Int!
       }
     `;
     const after = /* GraphQL */ `
-      directive @flavor(flavor: String!) repeatable on FIELD_DEFINITION
+      directive @flavor(flavor: String!) repeatable on OBJECT
       type Pancake @flavor(flavor: "bread") {
         radius: Int!
       }
@@ -166,24 +165,24 @@ describe('repeat directives', () => {
   test('Directive Arguments', async () => {
     const before = /* GraphQL */ `
       directive @flavor(flavor: String) repeatable on OBJECT
-      type Pancake @flavor(flavor: "sweet")
+      type Pancake
+        @flavor(flavor: "sweet")
         @flavor(flavor: "bread")
         @flavor(flavor: "chocolate")
-        @flavor(flavor: "strawberry")
-      {
+        @flavor(flavor: "strawberry") {
         radius: Int!
       }
     `;
     const after = /* GraphQL */ `
       directive @flavor(flavor: String) repeatable on OBJECT
-      type Pancake @flavor
+      type Pancake
+        @flavor
         @flavor(flavor: "bread")
         @flavor(flavor: "banana")
-        @flavor(flavor: "strawberry")
-      {
+        @flavor(flavor: "strawberry") {
         radius: Int!
       }
     `;
     await expectPatchToMatch(before, after);
   });
-})
+});

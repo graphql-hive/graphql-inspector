@@ -11,12 +11,13 @@ import {
   ValueMismatchError,
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
-import type { PatchConfig } from '../types';
+import type { PatchConfig, PatchContext } from '../types';
 
 export function typeAdded(
   change: Change<typeof ChangeType.TypeAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -43,6 +44,7 @@ export function typeRemoved(
   change: Change<typeof ChangeType.TypeRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -78,6 +80,7 @@ export function typeDescriptionAdded(
   change: Change<typeof ChangeType.TypeDescriptionAdded>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -110,6 +113,7 @@ export function typeDescriptionChanged(
   change: Change<typeof ChangeType.TypeDescriptionChanged>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
@@ -153,6 +157,7 @@ export function typeDescriptionRemoved(
   change: Change<typeof ChangeType.TypeDescriptionChanged>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
+  _context: PatchContext,
 ) {
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);

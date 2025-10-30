@@ -1,4 +1,4 @@
-import { NameNode } from 'graphql';
+import { NameNode, print } from 'graphql';
 
 export function keyMap<T>(list: readonly T[], keyFn: (item: T) => string): Record<string, T> {
   return list.reduce((map, item) => {
@@ -96,14 +96,14 @@ export function compareLists<T extends { name: string | NameNode }>(
   }
 
   if (callbacks) {
-    if (callbacks.onAdded) {
-      for (const item of added) {
-        callbacks.onAdded(item);
-      }
-    }
     if (callbacks.onRemoved) {
       for (const item of removed) {
         callbacks.onRemoved(item);
+      }
+    }
+    if (callbacks.onAdded) {
+      for (const item of added) {
+        callbacks.onAdded(item);
       }
     }
     if (callbacks.onMutual) {
@@ -136,6 +136,7 @@ export function compareDirectiveLists<T extends { name: string | NameNode }>(
     onMutual?(t: { newVersion: T; oldVersion: T | null }): void;
   },
 ) {
+  // collect all the usages, in order, by name for the old and new version of the schema
   const oldMap = keyMapList(oldList, ({ name }) => extractName(name));
   const newMap = keyMapList(newList, ({ name }) => extractName(name));
 
@@ -152,7 +153,7 @@ export function compareDirectiveLists<T extends { name: string | NameNode }>(
     } else {
       // if so, then consider this a mutual change, and remove it from the list of newItems to avoid counting it in the future
       const [newItem, ...rest] = newItems;
-      if (rest.length > 1) {
+      if (rest.length > 0) {
         newMap[extractName(oldItem.name)] = rest as [T] & T[];
       } else {
         delete newMap[extractName(oldItem.name)];
@@ -180,14 +181,14 @@ export function compareDirectiveLists<T extends { name: string | NameNode }>(
   }
 
   if (callbacks) {
-    if (callbacks.onAdded) {
-      for (const item of added) {
-        callbacks.onAdded(item);
-      }
-    }
     if (callbacks.onRemoved) {
       for (const item of removed) {
         callbacks.onRemoved(item);
+      }
+    }
+    if (callbacks.onAdded) {
+      for (const item of added) {
+        callbacks.onAdded(item);
       }
     }
     if (callbacks.onMutual) {

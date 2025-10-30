@@ -1,4 +1,4 @@
-import type { SchemaDefinitionNode, SchemaExtensionNode } from 'graphql';
+import type { DirectiveNode, SchemaDefinitionNode, SchemaExtensionNode } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 
 export type AdditionChangeType =
@@ -54,4 +54,12 @@ export type PatchConfig = {
    * Enables debug logging
    */
   debug?: boolean;
+};
+
+export type PatchContext = {
+  /**
+   * tracks which nodes have have their directives removed so that patch can
+   * go back and filter out the null records in the lists.
+   */
+  removedDirectiveNodes: Array<{ directives?: DirectiveNode[] }>;
 };

@@ -99,7 +99,7 @@ import {
   typeRemoved,
 } from './patches/types.js';
 import { unionMemberAdded, unionMemberRemoved } from './patches/unions.js';
-import { PatchConfig, SchemaNode } from './types.js';
+import { PatchConfig, PatchContext, SchemaNode } from './types.js';
 import { debugPrintChange } from './utils.js';
 
 export * as errors from './errors.js';
@@ -227,6 +227,9 @@ export function patchCoordinatesAST(
   patchConfig?: PatchConfig,
 ): DocumentNode {
   const config: PatchConfig = patchConfig ?? {};
+  const context: PatchContext = {
+    removedDirectiveNodes: [],
+  };
 
   for (const change of changes) {
     if (config.debug) {
@@ -235,317 +238,321 @@ export function patchCoordinatesAST(
 
     switch (change.type) {
       case ChangeType.SchemaMutationTypeChanged: {
-        schemaMutationTypeChanged(change, schemaNodes, config);
+        schemaMutationTypeChanged(change, schemaNodes, config, context);
         break;
       }
       case ChangeType.SchemaQueryTypeChanged: {
-        schemaQueryTypeChanged(change, schemaNodes, config);
+        schemaQueryTypeChanged(change, schemaNodes, config, context);
         break;
       }
       case ChangeType.SchemaSubscriptionTypeChanged: {
-        schemaSubscriptionTypeChanged(change, schemaNodes, config);
+        schemaSubscriptionTypeChanged(change, schemaNodes, config, context);
         break;
       }
       case ChangeType.DirectiveAdded: {
-        directiveAdded(change, nodesByCoordinate, config);
+        directiveAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveRemoved: {
-        directiveRemoved(change, nodesByCoordinate, config);
+        directiveRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveArgumentAdded: {
-        directiveArgumentAdded(change, nodesByCoordinate, config);
+        directiveArgumentAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveArgumentRemoved: {
-        directiveArgumentRemoved(change, nodesByCoordinate, config);
+        directiveArgumentRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveLocationAdded: {
-        directiveLocationAdded(change, nodesByCoordinate, config);
+        directiveLocationAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveLocationRemoved: {
-        directiveLocationRemoved(change, nodesByCoordinate, config);
+        directiveLocationRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.EnumValueAdded: {
-        enumValueAdded(change, nodesByCoordinate, config);
+        enumValueAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.EnumValueDeprecationReasonAdded: {
-        enumValueDeprecationReasonAdded(change, nodesByCoordinate, config);
+        enumValueDeprecationReasonAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.EnumValueDeprecationReasonChanged: {
-        enumValueDeprecationReasonChanged(change, nodesByCoordinate, config);
+        enumValueDeprecationReasonChanged(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.FieldAdded: {
-        fieldAdded(change, nodesByCoordinate, config);
+        fieldAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.FieldRemoved: {
-        fieldRemoved(change, nodesByCoordinate, config);
+        fieldRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.FieldTypeChanged: {
-        fieldTypeChanged(change, nodesByCoordinate, config);
+        fieldTypeChanged(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.FieldArgumentAdded: {
-        fieldArgumentAdded(change, nodesByCoordinate, config);
+        fieldArgumentAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.FieldArgumentTypeChanged: {
-        fieldArgumentTypeChanged(change, nodesByCoordinate, config);
+        fieldArgumentTypeChanged(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.FieldArgumentRemoved: {
-        fieldArgumentRemoved(change, nodesByCoordinate, config);
+        fieldArgumentRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.FieldArgumentDescriptionChanged: {
-        fieldArgumentDescriptionChanged(change, nodesByCoordinate, config);
+        fieldArgumentDescriptionChanged(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.FieldArgumentDefaultChanged: {
-        fieldArgumentDefaultChanged(change, nodesByCoordinate, config);
+        fieldArgumentDefaultChanged(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.FieldDeprecationAdded: {
-        fieldDeprecationAdded(change, nodesByCoordinate, config);
+        fieldDeprecationAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.FieldDeprecationRemoved: {
-        fieldDeprecationRemoved(change, nodesByCoordinate, config);
+        fieldDeprecationRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.FieldDeprecationReasonAdded: {
-        fieldDeprecationReasonAdded(change, nodesByCoordinate, config);
+        fieldDeprecationReasonAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.FieldDeprecationReasonChanged: {
-        fieldDeprecationReasonChanged(change, nodesByCoordinate, config);
+        fieldDeprecationReasonChanged(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.FieldDescriptionAdded: {
-        fieldDescriptionAdded(change, nodesByCoordinate, config);
+        fieldDescriptionAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.FieldDescriptionChanged: {
-        fieldDescriptionChanged(change, nodesByCoordinate, config);
+        fieldDescriptionChanged(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.InputFieldAdded: {
-        inputFieldAdded(change, nodesByCoordinate, config);
+        inputFieldAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.InputFieldRemoved: {
-        inputFieldRemoved(change, nodesByCoordinate, config);
+        inputFieldRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.InputFieldDescriptionAdded: {
-        inputFieldDescriptionAdded(change, nodesByCoordinate, config);
+        inputFieldDescriptionAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.InputFieldTypeChanged: {
-        inputFieldTypeChanged(change, nodesByCoordinate, config);
+        inputFieldTypeChanged(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.InputFieldDescriptionChanged: {
-        inputFieldDescriptionChanged(change, nodesByCoordinate, config);
+        inputFieldDescriptionChanged(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.InputFieldDescriptionRemoved: {
-        inputFieldDescriptionRemoved(change, nodesByCoordinate, config);
+        inputFieldDescriptionRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.InputFieldDefaultValueChanged: {
-        inputFieldDefaultValueChanged(change, nodesByCoordinate, config);
+        inputFieldDefaultValueChanged(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.ObjectTypeInterfaceAdded: {
-        objectTypeInterfaceAdded(change, nodesByCoordinate, config);
+        objectTypeInterfaceAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.ObjectTypeInterfaceRemoved: {
-        objectTypeInterfaceRemoved(change, nodesByCoordinate, config);
+        objectTypeInterfaceRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.TypeDescriptionAdded: {
-        typeDescriptionAdded(change, nodesByCoordinate, config);
+        typeDescriptionAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.TypeDescriptionChanged: {
-        typeDescriptionChanged(change, nodesByCoordinate, config);
+        typeDescriptionChanged(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.TypeDescriptionRemoved: {
-        typeDescriptionRemoved(change, nodesByCoordinate, config);
+        typeDescriptionRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.TypeAdded: {
-        typeAdded(change, nodesByCoordinate, config);
+        typeAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.UnionMemberAdded: {
-        unionMemberAdded(change, nodesByCoordinate, config);
+        unionMemberAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.UnionMemberRemoved: {
-        unionMemberRemoved(change, nodesByCoordinate, config);
+        unionMemberRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.TypeRemoved: {
-        typeRemoved(change, nodesByCoordinate, config);
+        typeRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.EnumValueRemoved: {
-        enumValueRemoved(change, nodesByCoordinate, config);
+        enumValueRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.EnumValueDescriptionChanged: {
-        enumValueDescriptionChanged(change, nodesByCoordinate, config);
+        enumValueDescriptionChanged(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.FieldDescriptionRemoved: {
-        fieldDescriptionRemoved(change, nodesByCoordinate, config);
+        fieldDescriptionRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveArgumentDefaultValueChanged: {
-        directiveArgumentDefaultValueChanged(change, nodesByCoordinate, config);
+        directiveArgumentDefaultValueChanged(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveArgumentDescriptionChanged: {
-        directiveArgumentDescriptionChanged(change, nodesByCoordinate, config);
+        directiveArgumentDescriptionChanged(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveArgumentTypeChanged: {
-        directiveArgumentTypeChanged(change, nodesByCoordinate, config);
+        directiveArgumentTypeChanged(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveDescriptionChanged: {
-        directiveDescriptionChanged(change, nodesByCoordinate, config);
+        directiveDescriptionChanged(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveRepeatableAdded: {
-        directiveRepeatableAdded(change, nodesByCoordinate, config);
+        directiveRepeatableAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveRepeatableRemoved: {
-        directiveRepeatableRemoved(change, nodesByCoordinate, config);
+        directiveRepeatableRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageArgumentDefinitionAdded: {
-        directiveUsageArgumentDefinitionAdded(change, nodesByCoordinate, config);
+        directiveUsageArgumentDefinitionAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageArgumentDefinitionRemoved: {
-        directiveUsageArgumentDefinitionRemoved(change, nodesByCoordinate, config);
+        directiveUsageArgumentDefinitionRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageEnumAdded: {
-        directiveUsageEnumAdded(change, nodesByCoordinate, config);
+        directiveUsageEnumAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageEnumRemoved: {
-        directiveUsageEnumRemoved(change, nodesByCoordinate, config);
+        directiveUsageEnumRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageEnumValueAdded: {
-        directiveUsageEnumValueAdded(change, nodesByCoordinate, config);
+        directiveUsageEnumValueAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageEnumValueRemoved: {
-        directiveUsageEnumValueRemoved(change, nodesByCoordinate, config);
+        directiveUsageEnumValueRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageFieldAdded: {
-        directiveUsageFieldAdded(change, nodesByCoordinate, config);
+        directiveUsageFieldAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageFieldDefinitionAdded: {
-        directiveUsageFieldDefinitionAdded(change, nodesByCoordinate, config);
+        directiveUsageFieldDefinitionAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageFieldDefinitionRemoved: {
-        directiveUsageFieldDefinitionRemoved(change, nodesByCoordinate, config);
+        directiveUsageFieldDefinitionRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageFieldRemoved: {
-        directiveUsageFieldRemoved(change, nodesByCoordinate, config);
+        directiveUsageFieldRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageInputFieldDefinitionAdded: {
-        directiveUsageInputFieldDefinitionAdded(change, nodesByCoordinate, config);
+        directiveUsageInputFieldDefinitionAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageInputFieldDefinitionRemoved: {
-        directiveUsageInputFieldDefinitionRemoved(change, nodesByCoordinate, config);
+        directiveUsageInputFieldDefinitionRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageInputObjectAdded: {
-        directiveUsageInputObjectAdded(change, nodesByCoordinate, config);
+        directiveUsageInputObjectAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageInputObjectRemoved: {
-        directiveUsageInputObjectRemoved(change, nodesByCoordinate, config);
+        directiveUsageInputObjectRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageInterfaceAdded: {
-        directiveUsageInterfaceAdded(change, nodesByCoordinate, config);
+        directiveUsageInterfaceAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageInterfaceRemoved: {
-        directiveUsageInterfaceRemoved(change, nodesByCoordinate, config);
+        directiveUsageInterfaceRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageObjectAdded: {
-        directiveUsageObjectAdded(change, nodesByCoordinate, config);
+        directiveUsageObjectAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageObjectRemoved: {
-        directiveUsageObjectRemoved(change, nodesByCoordinate, config);
+        directiveUsageObjectRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageScalarAdded: {
-        directiveUsageScalarAdded(change, nodesByCoordinate, config);
+        directiveUsageScalarAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageScalarRemoved: {
-        directiveUsageScalarRemoved(change, nodesByCoordinate, config);
+        directiveUsageScalarRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageSchemaAdded: {
-        directiveUsageSchemaAdded(change, schemaNodes, nodesByCoordinate, config);
+        directiveUsageSchemaAdded(change, schemaNodes, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageSchemaRemoved: {
-        directiveUsageSchemaRemoved(change, schemaNodes, nodesByCoordinate, config);
+        directiveUsageSchemaRemoved(change, schemaNodes, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageUnionMemberAdded: {
-        directiveUsageUnionMemberAdded(change, nodesByCoordinate, config);
+        directiveUsageUnionMemberAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageUnionMemberRemoved: {
-        directiveUsageUnionMemberRemoved(change, nodesByCoordinate, config);
+        directiveUsageUnionMemberRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageArgumentAdded: {
-        directiveUsageArgumentAdded(change, nodesByCoordinate, config);
+        directiveUsageArgumentAdded(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.DirectiveUsageArgumentRemoved: {
-        directiveUsageArgumentRemoved(change, nodesByCoordinate, config);
+        directiveUsageArgumentRemoved(change, nodesByCoordinate, config, context);
         break;
       }
       default: {
         console.log(`${change.type} is not implemented yet.`);
       }
     }
+  }
+
+  for (const node of context.removedDirectiveNodes) {
+    node.directives = node.directives?.filter(d => d != null);
   }
 
   return {
