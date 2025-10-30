@@ -4,7 +4,7 @@ import { findFirstChangeByPath } from '../../utils/testing.js';
 
 describe('directive-usage', () => {
   describe('repeatable directives', () => {
-    test.only('adding with no args', async () => {
+    test('adding with no args', async () => {
       const a = buildSchema(/* GraphQL */ `
         directive @tag(name: String) repeatable on FIELD_DEFINITION
 
@@ -56,12 +56,12 @@ describe('directive-usage', () => {
         directive @tag(name: String) repeatable on FIELD_DEFINITION
 
         type Query {
-          a: String @tag @tag @tag
+          a: String @tag @tag(name: "second") @tag
         }
       `);
 
       const changes = await diff(a, b);
-      expect(changes).toHaveLength(3);
+      expect(changes).toHaveLength(4);
       expect(changes).toMatchInlineSnapshot(`
         [
           {
@@ -95,6 +95,25 @@ describe('directive-usage', () => {
             },
             "path": "Query.a.@tag",
             "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED",
+          },
+          {
+            "criticality": {
+              "level": "NON_BREAKING",
+            },
+            "message": "Argument 'name' was added to '@tag'",
+            "meta": {
+              "addedArgumentName": "name",
+              "addedArgumentValue": ""second"",
+              "directiveName": "tag",
+              "directiveRepeatedTimes": 2,
+              "oldArgumentValue": null,
+              "parentArgumentName": null,
+              "parentEnumValueName": null,
+              "parentFieldName": "a",
+              "parentTypeName": "Query",
+            },
+            "path": "Query.a.@tag.name",
+            "type": "DIRECTIVE_USAGE_ARGUMENT_ADDED",
           },
           {
             "criticality": {
@@ -133,8 +152,46 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      expect(changes).toHaveLength(1);
-      expect(changes).toMatchInlineSnapshot();
+      expect(changes).toHaveLength(2);
+      expect(changes).toMatchInlineSnapshot(`
+        [
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was added to field 'a'",
+            },
+            "message": "Directive 'tag' was added to field 'Query.a'",
+            "meta": {
+              "addedDirectiveName": "tag",
+              "addedToNewType": false,
+              "directiveRepeatedTimes": 2,
+              "fieldName": "a",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED",
+          },
+          {
+            "criticality": {
+              "level": "NON_BREAKING",
+            },
+            "message": "Argument 'name' was added to '@tag'",
+            "meta": {
+              "addedArgumentName": "name",
+              "addedArgumentValue": ""bar"",
+              "directiveName": "tag",
+              "directiveRepeatedTimes": 2,
+              "oldArgumentValue": null,
+              "parentArgumentName": null,
+              "parentEnumValueName": null,
+              "parentFieldName": "a",
+              "parentTypeName": "Query",
+            },
+            "path": "Query.a.@tag.name",
+            "type": "DIRECTIVE_USAGE_ARGUMENT_ADDED",
+          },
+        ]
+      `);
     });
 
     test('changing arguments of the second usage', async () => {
@@ -155,7 +212,25 @@ describe('directive-usage', () => {
 
       const changes = await diff(a, b);
       expect(changes).toHaveLength(1);
-      expect(changes).toMatchInlineSnapshot();
+      expect(changes).toMatchInlineSnapshot(`
+        [
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was removed from field 'a'",
+            },
+            "message": "Directive 'tag' was removed from field 'Query.a'",
+            "meta": {
+              "directiveRepeatedTimes": 2,
+              "fieldName": "a",
+              "removedDirectiveName": "tag",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_REMOVED",
+          },
+        ]
+      `);
     });
 
     test('removing with different args', async () => {
@@ -176,7 +251,25 @@ describe('directive-usage', () => {
 
       const changes = await diff(a, b);
       expect(changes).toHaveLength(1);
-      expect(changes).toMatchInlineSnapshot();
+      expect(changes).toMatchInlineSnapshot(`
+        [
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was removed from field 'a'",
+            },
+            "message": "Directive 'tag' was removed from field 'Query.a'",
+            "meta": {
+              "directiveRepeatedTimes": 2,
+              "fieldName": "a",
+              "removedDirectiveName": "tag",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_REMOVED",
+          },
+        ]
+      `);
     });
 
     test('removing in from beginning and end', async () => {
@@ -197,7 +290,40 @@ describe('directive-usage', () => {
 
       const changes = await diff(a, b);
       expect(changes).toHaveLength(2);
-      expect(changes).toMatchInlineSnapshot();
+      expect(changes).toMatchInlineSnapshot(`
+        [
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was removed from field 'a'",
+            },
+            "message": "Directive 'tag' was removed from field 'Query.a'",
+            "meta": {
+              "directiveRepeatedTimes": 2,
+              "fieldName": "a",
+              "removedDirectiveName": "tag",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_REMOVED",
+          },
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was removed from field 'a'",
+            },
+            "message": "Directive 'tag' was removed from field 'Query.a'",
+            "meta": {
+              "directiveRepeatedTimes": 3,
+              "fieldName": "a",
+              "removedDirectiveName": "tag",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_REMOVED",
+          },
+        ]
+      `);
     });
 
     test('removing with no args', async () => {
@@ -218,7 +344,25 @@ describe('directive-usage', () => {
 
       const changes = await diff(a, b);
       expect(changes).toHaveLength(1);
-      expect(changes).toMatchInlineSnapshot();
+      expect(changes).toMatchInlineSnapshot(`
+        [
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was removed from field 'a'",
+            },
+            "message": "Directive 'tag' was removed from field 'Query.a'",
+            "meta": {
+              "directiveRepeatedTimes": 2,
+              "fieldName": "a",
+              "removedDirectiveName": "tag",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_REMOVED",
+          },
+        ]
+      `);
     });
   });
 
