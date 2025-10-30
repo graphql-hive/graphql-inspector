@@ -1,5 +1,5 @@
 import { GraphQLUnionType, Kind } from 'graphql';
-import { compareLists } from '../utils/compare.js';
+import { compareDirectiveLists, compareLists } from '../utils/compare.js';
 import {
   directiveUsageAdded,
   directiveUsageChanged,
@@ -25,7 +25,7 @@ export function changesInUnion(
     },
   });
 
-  compareLists(oldUnion?.astNode?.directives || [], newUnion.astNode?.directives || [], {
+  compareDirectiveLists(oldUnion?.astNode?.directives || [], newUnion.astNode?.directives || [], {
     onAdded(directive) {
       addChange(
         directiveUsageAdded(Kind.UNION_TYPE_DEFINITION, directive, newUnion, oldUnion === null),

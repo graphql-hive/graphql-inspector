@@ -23,7 +23,7 @@ import {
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
 import type { PatchConfig } from '../types';
-import { findNamedNode, parentPath } from '../utils.js';
+import { findNamedNode, getDeprecatedDirectiveNode, parentPath } from '../utils.js';
 
 export function enumValueRemoved(
   change: Change<typeof ChangeType.EnumValueRemoved>,
@@ -135,9 +135,9 @@ export function enumValueDeprecationReasonAdded(
   }
 
   const enumValueNode = nodeByPath.get(parentPath(change.path));
-  const deprecation = nodeByPath.get(change.path) as DirectiveNode | undefined;
   if (enumValueNode) {
     if (enumValueNode.kind === Kind.ENUM_VALUE_DEFINITION) {
+      const deprecation = getDeprecatedDirectiveNode(enumValueNode);
       if (deprecation) {
         if (findNamedNode(deprecation.arguments, 'reason')) {
           handleError(
@@ -192,8 +192,10 @@ export function enumValueDeprecationReasonChanged(
     handleError(change, new ChangePathMissingError(change), config);
     return;
   }
-
-  const deprecatedNode = nodeByPath.get(change.path);
+  const enumValueNode = nodeByPath.get(parentPath(change.path)) as
+    | { readonly directives?: readonly DirectiveNode[] | undefined }
+    | undefined;
+  const deprecatedNode = getDeprecatedDirectiveNode(enumValueNode);
   if (deprecatedNode) {
     if (deprecatedNode.kind === Kind.DIRECTIVE) {
       const reasonArgNode = findNamedNode(deprecatedNode.arguments, 'reason');
@@ -256,9 +258,8 @@ export function enumValueDescriptionChanged(
   const enumValueNode = nodeByPath.get(change.path);
   if (enumValueNode) {
     if (enumValueNode.kind === Kind.ENUM_VALUE_DEFINITION) {
-      // eslint-disable-next-line eqeqeq
       const oldValueMatches =
-        change.meta.oldEnumValueDescription == enumValueNode.description?.value;
+        change.meta.oldEnumValueDescription === (enumValueNode.description?.value ?? null);
       if (!oldValueMatches) {
         handleError(
           change,

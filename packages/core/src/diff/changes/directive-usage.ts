@@ -655,6 +655,10 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         fieldName: payload.field.name,
         typeName: payload.type.name,
         addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(
+          payload.argument.astNode?.directives ?? [],
+          directive,
+        ),
       },
     });
   }
@@ -667,6 +671,10 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         inputFieldType: payload.field.type.toString(),
         inputObjectName: payload.type.name,
         addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(
+          payload.field.astNode?.directives ?? [],
+          directive,
+        ),
       },
     });
   }
@@ -680,6 +688,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         inputObjectName: payload.name,
         isAddedInputFieldTypeNullable: kind === Kind.INPUT_VALUE_DEFINITION,
         addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -690,6 +699,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         addedDirectiveName: directive.name.value,
         interfaceName: payload.name,
         addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -700,6 +710,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         objectName: payload.name,
         addedDirectiveName: directive.name.value,
         addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -710,6 +721,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         enumName: payload.name,
         addedDirectiveName: directive.name.value,
         addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -721,6 +733,10 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         fieldName: payload.field.name,
         typeName: payload.parentType.name,
         addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(
+          payload.field.astNode?.directives ?? [],
+          directive,
+        ),
       },
     });
   }
@@ -732,6 +748,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         addedUnionMemberTypeName: payload.name,
         unionName: payload.name,
         addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -743,6 +760,10 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         enumValueName: payload.value.name,
         addedDirectiveName: directive.name.value,
         addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(
+          payload.value.astNode?.directives ?? [],
+          directive,
+        ),
       },
     });
   }
@@ -753,6 +774,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         addedDirectiveName: directive.name.value,
         schemaTypeName: payload.getQueryType()?.name || '',
         addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -763,11 +785,36 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         scalarName: payload.name,
         addedDirectiveName: directive.name.value,
         addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
 
   return {} as any;
+}
+
+/**
+ * Counts the number of times a directive with the same name
+ * exists in the directives array before the passed directive.
+ *
+ * This is important for repeatable directives because it
+ * determines which instance of the directive usage the change applies to.
+ */
+function directiveRepeatTimes(
+  directives: readonly ConstDirectiveNode[],
+  directive: ConstDirectiveNode,
+) {
+  const name = directive.name.value;
+  let repeats = 0;
+  for (const d of directives) {
+    if (d.name.value === name) {
+      repeats += 1;
+    }
+    if (d === directive) {
+      return repeats;
+    }
+  }
+  return 0;
 }
 
 export function directiveUsageRemoved<K extends keyof KindToPayload>(
@@ -783,6 +830,10 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
         argumentName: payload.argument.name,
         fieldName: payload.field.name,
         typeName: payload.type.name,
+        directiveRepeatedTimes: directiveRepeatTimes(
+          payload.argument.astNode?.directives ?? [],
+          directive,
+        ),
       },
     });
   }
@@ -793,6 +844,10 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
         removedDirectiveName: directive.name.value,
         inputFieldName: payload.field.name,
         inputObjectName: payload.type.name,
+        directiveRepeatedTimes: directiveRepeatTimes(
+          payload.field.astNode?.directives ?? [],
+          directive,
+        ),
       },
     });
   }
@@ -805,6 +860,7 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
         removedInputFieldType: payload.name,
         inputObjectName: payload.name,
         isRemovedInputFieldTypeNullable: kind === Kind.INPUT_VALUE_DEFINITION,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -814,6 +870,7 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
       meta: {
         removedDirectiveName: directive.name.value,
         interfaceName: payload.name,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -823,6 +880,7 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
       meta: {
         objectName: payload.name,
         removedDirectiveName: directive.name.value,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -832,6 +890,7 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
       meta: {
         enumName: payload.name,
         removedDirectiveName: directive.name.value,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -842,6 +901,10 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
         removedDirectiveName: directive.name.value,
         fieldName: payload.field.name,
         typeName: payload.parentType.name,
+        directiveRepeatedTimes: directiveRepeatTimes(
+          payload.field.astNode?.directives ?? [],
+          directive,
+        ),
       },
     });
   }
@@ -852,6 +915,7 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
         removedDirectiveName: directive.name.value,
         removedUnionMemberTypeName: payload.name,
         unionName: payload.name,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -862,6 +926,10 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
         enumName: payload.type.name,
         enumValueName: payload.value.name,
         removedDirectiveName: directive.name.value,
+        directiveRepeatedTimes: directiveRepeatTimes(
+          payload.value.astNode?.directives ?? [],
+          directive,
+        ),
       },
     });
   }
@@ -871,6 +939,7 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
       meta: {
         removedDirectiveName: directive.name.value,
         schemaTypeName: payload.getQueryType()?.name || '',
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -880,6 +949,7 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
       meta: {
         scalarName: payload.name,
         removedDirectiveName: directive.name.value,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -964,6 +1034,13 @@ export function directiveUsageChanged(
             parentFieldName: parentField?.name ?? null,
             parentArgumentName: parentArgument?.name ?? null,
             parentEnumValueName: parentEnumValue?.name ?? null,
+            directiveRepeatedTimes:
+              // @todo should this lastly fall back to the GraphQLSchema?
+              directiveRepeatTimes(
+                (parentEnumValue || parentArgument || parentField || parentType)?.astNode
+                  ?.directives ?? [],
+                newDirective,
+              ),
           },
         }),
       );
@@ -982,6 +1059,13 @@ export function directiveUsageChanged(
           parentFieldName: parentField?.name ?? null,
           parentArgumentName: parentArgument?.name ?? null,
           parentEnumValueName: parentEnumValue?.name ?? null,
+          directiveRepeatedTimes:
+            // @todo should this lastly fall back to the GraphQLSchema?
+            directiveRepeatTimes(
+              (parentEnumValue || parentArgument || parentField || parentType)?.astNode
+                ?.directives ?? [],
+              newDirective,
+            ),
         },
       });
     },
@@ -997,6 +1081,13 @@ export function directiveUsageChanged(
             parentFieldName: parentField?.name ?? null,
             parentArgumentName: parentArgument?.name ?? null,
             parentEnumValueName: parentEnumValue?.name ?? null,
+            directiveRepeatedTimes:
+              // @todo should this lastly fall back to the GraphQLSchema?
+              directiveRepeatTimes(
+                (parentEnumValue || parentArgument || parentField || parentType)?.astNode
+                  ?.directives ?? [],
+                newDirective,
+              ),
           },
         }),
       );

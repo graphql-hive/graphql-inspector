@@ -45,6 +45,25 @@ export type DirectiveUsageRemovedChange =
   | typeof ChangeType.DirectiveUsageSchemaRemoved
   | typeof ChangeType.DirectiveUsageScalarRemoved;
 
+/**
+ * Tried to find the correct instance of the directive if it's repeated.
+ * @note Should this should compare the arguments also to find the exact match if possible?
+ */
+function findNthDirective(directives: readonly DirectiveNode[], name: string, n: number) {
+  let lastDirective: DirectiveNode | undefined;
+  let count = 0;
+  for (const d of directives) {
+    if (d.name.value === name) {
+      lastDirective = d;
+      count += 1;
+      if (count === n) {
+        break;
+      }
+    }
+  }
+  return lastDirective;
+}
+
 function directiveUsageDefinitionAdded(
   change: Change<DirectiveUsageAddedChange>,
   nodeByPath: Map<string, ASTNode>,
@@ -59,30 +78,41 @@ function directiveUsageDefinitionAdded(
     return;
   }
 
-  const directiveNode = nodeByPath.get(change.path);
   const parentNode = nodeByPath.get(parentPath(change.path)) as
     | { kind: Kind; directives?: DirectiveNode[] }
     | undefined;
-  if (directiveNode) {
+  if (
+    change.meta.addedDirectiveName === 'deprecated' &&
+    parentNode &&
+    (parentNode.kind === Kind.FIELD_DEFINITION || parentNode.kind === Kind.ENUM_VALUE_DEFINITION)
+  ) {
+    return; // ignore because deprecated is handled by its own change... consider adjusting this.
+  }
+  const definition = nodeByPath.get(`@${change.meta.addedDirectiveName}`);
+  let repeatable = false;
+  if (!definition) {
+    console.warn(`Directive "@${change.meta.addedDirectiveName}" is missing a definition.`);
+  }
+  if (definition?.kind === Kind.DIRECTIVE_DEFINITION) {
+    repeatable = definition.repeatable;
+  }
+  const directiveNode = findNthDirective(
+    parentNode?.directives ?? [],
+    change.meta.addedDirectiveName,
+    change.meta.directiveRepeatedTimes,
+  );
+  if (!repeatable && directiveNode) {
     handleError(
       change,
       new AddedCoordinateAlreadyExistsError(Kind.DIRECTIVE, change.meta.addedDirectiveName),
       config,
     );
   } else if (parentNode) {
-    if (
-      change.meta.addedDirectiveName === 'deprecated' &&
-      (parentNode.kind === Kind.FIELD_DEFINITION || parentNode.kind === Kind.ENUM_VALUE_DEFINITION)
-    ) {
-      return; // ignore because deprecated is handled by its own change... consider adjusting this.
-    }
-
     const newDirective: DirectiveNode = {
       kind: Kind.DIRECTIVE,
       name: nameNode(change.meta.addedDirectiveName),
     };
     parentNode.directives = [...(parentNode.directives ?? []), newDirective];
-    nodeByPath.set(change.path, newDirective);
   } else {
     handleError(
       change,
@@ -101,11 +131,34 @@ function schemaDirectiveUsageDefinitionAdded(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  // @todo handle repeat directives
+  if (!change.path) {
+    handleError(
+      change,
+      new ChangedCoordinateNotFoundError(Kind.DIRECTIVE, change.meta.addedDirectiveName),
+      config,
+    );
+    return;
+  }
+  if (change.meta.addedDirectiveName === 'deprecated') {
+    return; // ignore because deprecated is handled by its own change... consider adjusting this.
+  }
+  const definition = nodeByPath.get(`@${change.meta.addedDirectiveName}`);
+  let repeatable = false;
+  if (!definition) {
+    console.warn(`Directive "@${change.meta.addedDirectiveName}" is missing a definition.`);
+  }
+  if (definition?.kind === Kind.DIRECTIVE_DEFINITION) {
+    repeatable = definition.repeatable;
+  }
+
   const directiveAlreadyExists = schemaNodes.some(schemaNode =>
-    findNamedNode(schemaNode.directives, change.meta.addedDirectiveName),
+    findNthDirective(
+      schemaNode.directives ?? [],
+      change.meta.addedDirectiveName,
+      change.meta.directiveRepeatedTimes,
+    ),
   );
-  if (directiveAlreadyExists) {
+  if (!repeatable && directiveAlreadyExists) {
     handleError(
       change,
       new AddedAttributeAlreadyExistsError(
@@ -124,26 +177,28 @@ function schemaDirectiveUsageDefinitionAdded(
       ...(schemaNodes[0].directives ?? []),
       directiveNode,
     ];
-    nodeByPath.set(`.@${change.meta.addedDirectiveName}`, directiveNode);
   }
 }
 
 function schemaDirectiveUsageDefinitionRemoved(
   change: Change<DirectiveUsageRemovedChange>,
   schemaNodes: SchemaNode[],
-  nodeByPath: Map<string, ASTNode>,
+  _nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
   let deleted = false;
-  // @todo handle repeated directives
   for (const node of schemaNodes) {
-    const directiveNode = findNamedNode(node.directives, change.meta.removedDirectiveName);
+    const directiveNode = findNthDirective(
+      node?.directives ?? [],
+      change.meta.removedDirectiveName,
+      change.meta.directiveRepeatedTimes,
+    );
     if (directiveNode) {
       (node.directives as DirectiveNode[] | undefined) = node.directives?.filter(
         d => d.name.value !== change.meta.removedDirectiveName,
       );
       // nodeByPath.delete(change.path)
-      nodeByPath.delete(`.@${change.meta.removedDirectiveName}`);
+      // nodeByPath.delete(`.@${change.meta.removedDirectiveName}`);
       deleted = true;
       break;
     }
@@ -171,10 +226,14 @@ function directiveUsageDefinitionRemoved(
     return;
   }
 
-  const directiveNode = nodeByPath.get(change.path);
   const parentNode = nodeByPath.get(parentPath(change.path)) as
     | { kind: Kind; directives?: DirectiveNode[] }
     | undefined;
+  const directiveNode = findNthDirective(
+    parentNode?.directives ?? [],
+    change.meta.removedDirectiveName,
+    change.meta.directiveRepeatedTimes,
+  );
   if (!parentNode) {
     handleError(
       change,
@@ -199,7 +258,6 @@ function directiveUsageDefinitionRemoved(
     parentNode.directives = parentNode.directives?.filter(
       d => d.name.value !== change.meta.removedDirectiveName,
     );
-    nodeByPath.delete(change.path);
   }
 }
 
@@ -406,7 +464,15 @@ export function directiveUsageArgumentAdded(
     handleError(change, new ChangePathMissingError(change), config);
     return;
   }
-  const directiveNode = nodeByPath.get(parentPath(change.path));
+  // Must use double parentPath b/c the path is referencing the argument
+  const parentNode = nodeByPath.get(parentPath(parentPath(change.path))) as
+    | { kind: Kind; directives?: DirectiveNode[] }
+    | undefined;
+  const directiveNode = findNthDirective(
+    parentNode?.directives ?? [],
+    change.meta.directiveName,
+    change.meta.directiveRepeatedTimes,
+  );
   if (!directiveNode) {
     handleError(
       change,
@@ -459,7 +525,21 @@ export function directiveUsageArgumentRemoved(
     handleError(change, new ChangePathMissingError(change), config);
     return;
   }
-  const directiveNode = nodeByPath.get(parentPath(change.path));
+  const parentNode = nodeByPath.get(parentPath(change.path)) as
+    | { kind: Kind; directives?: DirectiveNode[] }
+    | undefined;
+  // if (
+  //   change.meta.directiveName === 'deprecated' &&
+  //   parentNode && (parentNode.kind === Kind.FIELD_DEFINITION || parentNode.kind === Kind.ENUM_VALUE_DEFINITION)
+  // ) {
+  //   return; // ignore because deprecated is handled by its own change... consider adjusting this.
+  // }
+
+  const directiveNode = findNthDirective(
+    parentNode?.directives ?? [],
+    change.meta.directiveName,
+    change.meta.directiveRepeatedTimes,
+  );
   if (!directiveNode) {
     handleError(
       change,

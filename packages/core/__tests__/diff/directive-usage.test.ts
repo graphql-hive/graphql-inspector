@@ -3,6 +3,225 @@ import { CriticalityLevel, diff } from '../../src/index.js';
 import { findFirstChangeByPath } from '../../utils/testing.js';
 
 describe('directive-usage', () => {
+  describe('repeatable directives', () => {
+    test.only('adding with no args', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag @tag
+        }
+      `);
+
+      const changes = await diff(a, b);
+      expect(changes).toHaveLength(1);
+      expect(changes).toMatchInlineSnapshot(`
+        [
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was added to field 'a'",
+            },
+            "message": "Directive 'tag' was added to field 'Query.a'",
+            "meta": {
+              "addedDirectiveName": "tag",
+              "addedToNewType": false,
+              "directiveRepeatedTimes": 2,
+              "fieldName": "a",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED",
+          },
+        ]
+      `);
+    });
+
+    test('adding multiple times', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag @tag @tag
+        }
+      `);
+
+      const changes = await diff(a, b);
+      expect(changes).toHaveLength(3);
+      expect(changes).toMatchInlineSnapshot(`
+        [
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was added to field 'a'",
+            },
+            "message": "Directive 'tag' was added to field 'Query.a'",
+            "meta": {
+              "addedDirectiveName": "tag",
+              "addedToNewType": false,
+              "directiveRepeatedTimes": 1,
+              "fieldName": "a",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED",
+          },
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was added to field 'a'",
+            },
+            "message": "Directive 'tag' was added to field 'Query.a'",
+            "meta": {
+              "addedDirectiveName": "tag",
+              "addedToNewType": false,
+              "directiveRepeatedTimes": 2,
+              "fieldName": "a",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED",
+          },
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was added to field 'a'",
+            },
+            "message": "Directive 'tag' was added to field 'Query.a'",
+            "meta": {
+              "addedDirectiveName": "tag",
+              "addedToNewType": false,
+              "directiveRepeatedTimes": 3,
+              "fieldName": "a",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED",
+          },
+        ]
+      `);
+    });
+
+    test('adding with different args', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag(name: "foo")
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag(name: "foo") @tag(name: "bar")
+        }
+      `);
+
+      const changes = await diff(a, b);
+      expect(changes).toHaveLength(1);
+      expect(changes).toMatchInlineSnapshot();
+    });
+
+    test('changing arguments of the second usage', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag(name: "foo") @tag(name: "foo2")
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag(name: "foo") @tag(name: "bar")
+        }
+      `);
+
+      const changes = await diff(a, b);
+      expect(changes).toHaveLength(1);
+      expect(changes).toMatchInlineSnapshot();
+    });
+
+    test('removing with different args', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag(name: "foo") @tag(name: "bar")
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag(name: "foo")
+        }
+      `);
+
+      const changes = await diff(a, b);
+      expect(changes).toHaveLength(1);
+      expect(changes).toMatchInlineSnapshot();
+    });
+
+    test('removing in from beginning and end', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag(name: "start") @tag(name: "mid") @tag(name: "end")
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag(name: "mid")
+        }
+      `);
+
+      const changes = await diff(a, b);
+      expect(changes).toHaveLength(2);
+      expect(changes).toMatchInlineSnapshot();
+    });
+
+    test('removing with no args', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag @tag
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag
+        }
+      `);
+
+      const changes = await diff(a, b);
+      expect(changes).toHaveLength(1);
+      expect(changes).toMatchInlineSnapshot();
+    });
+  });
+
   describe('field-level directives', () => {
     test('added directive', async () => {
       const a = buildSchema(/* GraphQL */ `

@@ -1,5 +1,5 @@
 import { GraphQLObjectType, Kind } from 'graphql';
-import { compareLists } from '../utils/compare.js';
+import { compareDirectiveLists, compareLists } from '../utils/compare.js';
 import {
   directiveUsageAdded,
   directiveUsageChanged,
@@ -43,7 +43,7 @@ export function changesInObject(
     },
   });
 
-  compareLists(oldType?.astNode?.directives || [], newType.astNode?.directives || [], {
+  compareDirectiveLists(oldType?.astNode?.directives || [], newType.astNode?.directives || [], {
     onAdded(directive) {
       addChange(directiveUsageAdded(Kind.OBJECT, directive, newType, oldType === null));
       directiveUsageChanged(null, directive, addChange, newType);

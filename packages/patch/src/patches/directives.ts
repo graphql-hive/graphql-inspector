@@ -414,3 +414,77 @@ export function directiveArgumentTypeChanged(
     );
   }
 }
+
+export function directiveRepeatableAdded(
+  change: Change<typeof ChangeType.DirectiveRepeatableAdded>,
+  nodeByPath: Map<string, ASTNode>,
+  config: PatchConfig,
+) {
+  if (!change.path) {
+    handleError(change, new ChangePathMissingError(change), config);
+    return;
+  }
+
+  const directiveNode = nodeByPath.get(change.path);
+  if (!directiveNode) {
+    handleError(
+      change,
+      new ChangedAncestorCoordinateNotFoundError(Kind.DIRECTIVE_DEFINITION, 'description'),
+      config,
+    );
+  } else if (directiveNode.kind === Kind.DIRECTIVE_DEFINITION) {
+    // eslint-disable-next-line eqeqeq
+    if (directiveNode.repeatable !== false) {
+      handleError(
+        change,
+        new ValueMismatchError(Kind.BOOLEAN, String(directiveNode.repeatable), 'false'),
+        config,
+      );
+    }
+
+    (directiveNode.repeatable as boolean) = true;
+  } else {
+    handleError(
+      change,
+      new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, directiveNode.kind),
+      config,
+    );
+  }
+}
+
+export function directiveRepeatableRemoved(
+  change: Change<typeof ChangeType.DirectiveRepeatableRemoved>,
+  nodeByPath: Map<string, ASTNode>,
+  config: PatchConfig,
+) {
+  if (!change.path) {
+    handleError(change, new ChangePathMissingError(change), config);
+    return;
+  }
+
+  const directiveNode = nodeByPath.get(change.path);
+  if (!directiveNode) {
+    handleError(
+      change,
+      new ChangedAncestorCoordinateNotFoundError(Kind.DIRECTIVE_DEFINITION, 'description'),
+      config,
+    );
+  } else if (directiveNode.kind === Kind.DIRECTIVE_DEFINITION) {
+    // eslint-disable-next-line eqeqeq
+    if (directiveNode.repeatable !== true) {
+      handleError(
+        change,
+        new ValueMismatchError(Kind.BOOLEAN, String(directiveNode.repeatable), 'true'),
+        config,
+      );
+    }
+
+    (directiveNode.repeatable as boolean) = false;
+  } else {
+    handleError(
+      change,
+      new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, directiveNode.kind),
+      config,
+    );
+  }
+}

@@ -1,5 +1,5 @@
 import { GraphQLInterfaceType, Kind } from 'graphql';
-import { compareLists } from '../utils/compare.js';
+import { compareDirectiveLists, compareLists } from '../utils/compare.js';
 import {
   directiveUsageAdded,
   directiveUsageChanged,
@@ -42,23 +42,27 @@ export function changesInInterface(
       changesInField(newInterface, field.oldVersion, field.newVersion, addChange);
     },
   });
-  compareLists(oldInterface?.astNode?.directives || [], newInterface.astNode?.directives || [], {
-    onAdded(directive) {
-      addChange(
-        directiveUsageAdded(
-          Kind.INTERFACE_TYPE_DEFINITION,
-          directive,
-          newInterface,
-          oldInterface === null,
-        ),
-      );
-      directiveUsageChanged(null, directive, addChange, newInterface);
+  compareDirectiveLists(
+    oldInterface?.astNode?.directives || [],
+    newInterface.astNode?.directives || [],
+    {
+      onAdded(directive) {
+        addChange(
+          directiveUsageAdded(
+            Kind.INTERFACE_TYPE_DEFINITION,
+            directive,
+            newInterface,
+            oldInterface === null,
+          ),
+        );
+        directiveUsageChanged(null, directive, addChange, newInterface);
+      },
+      onMutual(directive) {
+        directiveUsageChanged(directive.oldVersion, directive.newVersion, addChange, newInterface);
+      },
+      onRemoved(directive) {
+        addChange(directiveUsageRemoved(Kind.INTERFACE_TYPE_DEFINITION, directive, oldInterface!));
+      },
     },
-    onMutual(directive) {
-      directiveUsageChanged(directive.oldVersion, directive.newVersion, addChange, newInterface);
-    },
-    onRemoved(directive) {
-      addChange(directiveUsageRemoved(Kind.INTERFACE_TYPE_DEFINITION, directive, oldInterface!));
-    },
-  });
+  );
 }

@@ -119,3 +119,98 @@ export function compareLists<T extends { name: string | NameNode }>(
     mutual,
   };
 }
+
+/**
+ * This is special because directives can be repeated and a name alone is not enough
+ * to identify whether or not an instance was changed, added, or removed.
+ * The best option is to assume the order is the same, and treat the changes as they come.
+ * So `type T @foo` to `type T @foo(f: 'bar') @foo` would be adding an argument `f: 'bar'` and
+ * then adding a new directive `@foo`. Rather than adding `@foo(f: 'bar')`
+ */
+export function compareDirectiveLists<T extends { name: string | NameNode }>(
+  oldList: readonly T[],
+  newList: readonly T[],
+  callbacks?: {
+    onAdded?(t: T): void;
+    onRemoved?(t: T): void;
+    onMutual?(t: { newVersion: T; oldVersion: T | null }): void;
+  },
+) {
+  const oldMap = keyMapList(oldList, ({ name }) => extractName(name));
+  const newMap = keyMapList(newList, ({ name }) => extractName(name));
+
+  const added: T[] = [];
+  const removed: T[] = [];
+  const mutual: Array<{ newVersion: T; oldVersion: T }> = [];
+
+  for (const oldItem of oldList) {
+    // check if the oldItem exists in the new schema
+    const newItems = newMap[extractName(oldItem.name)] ?? null;
+    // if not, then it's been removed
+    if (newItems === null) {
+      removed.push(oldItem);
+    } else {
+      // if so, then consider this a mutual change, and remove it from the list of newItems to avoid counting it in the future
+      const [newItem, ...rest] = newItems;
+      if (rest.length > 1) {
+        newMap[extractName(oldItem.name)] = rest as [T] & T[];
+      } else {
+        delete newMap[extractName(oldItem.name)];
+      }
+
+      mutual.push({
+        newVersion: newItem,
+        oldVersion: oldItem ?? null,
+      });
+    }
+  }
+
+  for (const newItem of newList) {
+    const existingItems = oldMap[extractName(newItem.name)] ?? null;
+    if (existingItems === null) {
+      added.push(newItem);
+    } else {
+      const [_, ...rest] = existingItems;
+      if (rest.length > 0) {
+        oldMap[extractName(newItem.name)] = rest as [T] & T[];
+      } else {
+        delete oldMap[extractName(newItem.name)];
+      }
+    }
+  }
+
+  if (callbacks) {
+    if (callbacks.onAdded) {
+      for (const item of added) {
+        callbacks.onAdded(item);
+      }
+    }
+    if (callbacks.onRemoved) {
+      for (const item of removed) {
+        callbacks.onRemoved(item);
+      }
+    }
+    if (callbacks.onMutual) {
+      for (const item of mutual) {
+        callbacks.onMutual(item);
+      }
+    }
+  }
+
+  return {
+    added,
+    removed,
+    mutual,
+  };
+}
+
+export function keyMapList<T>(
+  list: readonly T[],
+  keyFn: (item: T) => string,
+): Record<string, [T] & T[]> {
+  return list.reduce((map, item) => {
+    const key = keyFn(item);
+    map[key] = [...(map[key] ?? []), item];
+    return map;
+  }, Object.create(null));
+}

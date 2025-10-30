@@ -1,5 +1,11 @@
 import { GraphQLInputField, GraphQLInputObjectType, Kind } from 'graphql';
-import { compareLists, diffArrays, isNotEqual, isVoid } from '../utils/compare.js';
+import {
+  compareDirectiveLists,
+  compareLists,
+  diffArrays,
+  isNotEqual,
+  isVoid,
+} from '../utils/compare.js';
 import {
   directiveUsageAdded,
   directiveUsageChanged,
@@ -37,7 +43,7 @@ export function changesInInputObject(
     },
   });
 
-  compareLists(oldInput?.astNode?.directives || [], newInput.astNode?.directives || [], {
+  compareDirectiveLists(oldInput?.astNode?.directives || [], newInput.astNode?.directives || [], {
     onAdded(directive) {
       addChange(
         directiveUsageAdded(
@@ -91,7 +97,7 @@ function changesInInputField(
   }
 
   if (newField.astNode?.directives) {
-    compareLists(oldField?.astNode?.directives || [], newField.astNode.directives || [], {
+    compareDirectiveLists(oldField?.astNode?.directives || [], newField.astNode.directives || [], {
       onAdded(directive) {
         addChange(
           directiveUsageAdded(

@@ -136,6 +136,9 @@ export function getChangedNodeOfKind<K extends Kind>(
   kind: K,
   config: PatchConfig,
 ): ASTKindToNode[K] | void {
+  if (kind === Kind.DIRECTIVE) {
+    throw new Error('Directives cannot be found using this method.');
+  }
   if (assertChangeHasPath(change, config)) {
     const existing = nodeByPath.get(change.path);
     if (!existing) {

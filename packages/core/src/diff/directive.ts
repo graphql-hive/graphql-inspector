@@ -9,6 +9,8 @@ import {
   directiveDescriptionChanged,
   directiveLocationAdded,
   directiveLocationRemoved,
+  directiveRepeatableAdded,
+  directiveRepeatableRemoved,
 } from './changes/directive.js';
 import { AddChange } from './schema.js';
 
@@ -19,6 +21,16 @@ export function changesInDirective(
 ) {
   if (isNotEqual(oldDirective?.description, newDirective.description)) {
     addChange(directiveDescriptionChanged(oldDirective, newDirective));
+  }
+
+  // repeatable removed
+  if (!newDirective.isRepeatable && oldDirective?.isRepeatable) {
+    addChange(directiveRepeatableRemoved(newDirective));
+  }
+
+  // repeatable added
+  if (newDirective.isRepeatable && !oldDirective?.isRepeatable) {
+    addChange(directiveRepeatableAdded(newDirective));
   }
 
   const locations = {

@@ -328,4 +328,58 @@ describe('directive', () => {
       `Default value for argument 'name' on directive 'e' changed from '"Eee"' to 'undefined'`,
     );
   });
+
+  describe('repeatable', async () => {
+    test('added', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @a on FIELD
+
+        type Dummy {
+          field: String
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @a repeatable on FIELD
+
+        type Dummy {
+          field: String
+        }
+      `);
+
+      const changes = await diff(a, b);
+      const change = findFirstChangeByPath(changes, '@a');
+
+      expect(changes).toHaveLength(1);
+
+      expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      expect(change.type).toEqual('DIRECTIVE_REPEATABLE_ADDED');
+      expect(change.message).toEqual("Directive 'a' added repeatable.");
+    });
+
+    test('removed', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @a repeatable on FIELD
+
+        type Dummy {
+          field: String
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @a on FIELD
+
+        type Dummy {
+          field: String
+        }
+      `);
+
+      const changes = await diff(a, b);
+      const change = findFirstChangeByPath(changes, '@a');
+
+      expect(changes).toHaveLength(1);
+
+      expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
+      expect(change.type).toEqual('DIRECTIVE_REPEATABLE_REMOVED');
+      expect(change.message).toEqual("Directive 'a' removed repeatable.");
+    });
+  });
 });

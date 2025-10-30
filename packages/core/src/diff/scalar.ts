@@ -1,5 +1,5 @@
 import { GraphQLScalarType, Kind } from 'graphql';
-import { compareLists } from '../utils/compare.js';
+import { compareDirectiveLists } from '../utils/compare.js';
 import {
   directiveUsageAdded,
   directiveUsageChanged,
@@ -12,7 +12,7 @@ export function changesInScalar(
   newScalar: GraphQLScalarType,
   addChange: AddChange,
 ) {
-  compareLists(oldScalar?.astNode?.directives || [], newScalar.astNode?.directives || [], {
+  compareDirectiveLists(oldScalar?.astNode?.directives || [], newScalar.astNode?.directives || [], {
     onAdded(directive) {
       addChange(
         directiveUsageAdded(Kind.SCALAR_TYPE_DEFINITION, directive, newScalar, oldScalar === null),

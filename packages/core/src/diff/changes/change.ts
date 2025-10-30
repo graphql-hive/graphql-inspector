@@ -37,6 +37,8 @@ export const ChangeType = {
   DirectiveArgumentDescriptionChanged: 'DIRECTIVE_ARGUMENT_DESCRIPTION_CHANGED',
   DirectiveArgumentDefaultValueChanged: 'DIRECTIVE_ARGUMENT_DEFAULT_VALUE_CHANGED',
   DirectiveArgumentTypeChanged: 'DIRECTIVE_ARGUMENT_TYPE_CHANGED',
+  DirectiveRepeatableAdded: 'DIRECTIVE_REPEATABLE_ADDED',
+  DirectiveRepeatableRemoved: 'DIRECTIVE_REPEATABLE_REMOVED',
   // Enum
   EnumValueRemoved: 'ENUM_VALUE_REMOVED',
   EnumValueAdded: 'ENUM_VALUE_ADDED',
@@ -173,6 +175,20 @@ export type DirectiveDescriptionChangedChange = {
     directiveName: string;
     oldDirectiveDescription: string | null;
     newDirectiveDescription: string | null;
+  };
+};
+
+export type DirectiveRepeatableAddedChange = {
+  type: typeof ChangeType.DirectiveRepeatableAdded;
+  meta: {
+    directiveName: string;
+  };
+};
+
+export type DirectiveRepeatableRemovedChange = {
+  type: typeof ChangeType.DirectiveRepeatableRemoved;
+  meta: {
+    directiveName: string;
   };
 };
 
@@ -415,6 +431,7 @@ export type DirectiveUsageUnionMemberAddedChange = {
     addedUnionMemberTypeName: string;
     addedDirectiveName: string;
     addedToNewType: boolean;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -424,6 +441,7 @@ export type DirectiveUsageUnionMemberRemovedChange = {
     unionName: string;
     removedUnionMemberTypeName: string;
     removedDirectiveName: string;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -659,6 +677,7 @@ export type DirectiveUsageEnumAddedChange = {
     enumName: string;
     addedDirectiveName: string;
     addedToNewType: boolean;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -667,6 +686,7 @@ export type DirectiveUsageEnumRemovedChange = {
   meta: {
     enumName: string;
     removedDirectiveName: string;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -677,6 +697,7 @@ export type DirectiveUsageEnumValueAddedChange = {
     enumValueName: string;
     addedDirectiveName: string;
     addedToNewType: boolean;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -686,6 +707,7 @@ export type DirectiveUsageEnumValueRemovedChange = {
     enumName: string;
     enumValueName: string;
     removedDirectiveName: string;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -697,6 +719,7 @@ export type DirectiveUsageInputObjectRemovedChange = {
     isRemovedInputFieldTypeNullable: boolean;
     removedInputFieldType: string;
     removedDirectiveName: string;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -709,6 +732,7 @@ export type DirectiveUsageInputObjectAddedChange = {
     addedInputFieldType: string;
     addedDirectiveName: string;
     addedToNewType: boolean;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -720,6 +744,7 @@ export type DirectiveUsageInputFieldDefinitionAddedChange = {
     inputFieldType: string;
     addedDirectiveName: string;
     addedToNewType: boolean;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -729,6 +754,7 @@ export type DirectiveUsageInputFieldDefinitionRemovedChange = {
     inputObjectName: string;
     inputFieldName: string;
     removedDirectiveName: string;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -738,6 +764,7 @@ export type DirectiveUsageFieldAddedChange = {
     typeName: string;
     fieldName: string;
     addedDirectiveName: string;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -747,6 +774,7 @@ export type DirectiveUsageFieldRemovedChange = {
     typeName: string;
     fieldName: string;
     removedDirectiveName: string;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -756,6 +784,7 @@ export type DirectiveUsageScalarAddedChange = {
     scalarName: string;
     addedDirectiveName: string;
     addedToNewType: boolean;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -764,6 +793,7 @@ export type DirectiveUsageScalarRemovedChange = {
   meta: {
     scalarName: string;
     removedDirectiveName: string;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -773,6 +803,7 @@ export type DirectiveUsageObjectAddedChange = {
     objectName: string;
     addedDirectiveName: string;
     addedToNewType: boolean;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -781,6 +812,7 @@ export type DirectiveUsageObjectRemovedChange = {
   meta: {
     objectName: string;
     removedDirectiveName: string;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -790,6 +822,7 @@ export type DirectiveUsageInterfaceAddedChange = {
     interfaceName: string;
     addedDirectiveName: string;
     addedToNewType: boolean;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -799,6 +832,7 @@ export type DirectiveUsageSchemaAddedChange = {
     addedDirectiveName: string;
     schemaTypeName: string;
     addedToNewType: boolean;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -807,6 +841,7 @@ export type DirectiveUsageSchemaRemovedChange = {
   meta: {
     removedDirectiveName: string;
     schemaTypeName: string;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -817,6 +852,7 @@ export type DirectiveUsageFieldDefinitionAddedChange = {
     fieldName: string;
     addedDirectiveName: string;
     addedToNewType: boolean;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -826,6 +862,7 @@ export type DirectiveUsageFieldDefinitionRemovedChange = {
     typeName: string;
     fieldName: string;
     removedDirectiveName: string;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -836,6 +873,7 @@ export type DirectiveUsageArgumentDefinitionRemovedChange = {
     fieldName: string;
     argumentName: string;
     removedDirectiveName: string;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -844,6 +882,7 @@ export type DirectiveUsageInterfaceRemovedChange = {
   meta: {
     interfaceName: string;
     removedDirectiveName: string;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -855,6 +894,7 @@ export type DirectiveUsageArgumentDefinitionAddedChange = {
     argumentName: string;
     addedDirectiveName: string;
     addedToNewType: boolean;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -875,6 +915,7 @@ export type DirectiveUsageArgumentAddedChange = {
     parentArgumentName: string | null;
     /** The nearest ancestor that is an enum value. If the directive is used on an enum value rather than a field, then populate this. */
     parentEnumValueName: string | null;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -892,6 +933,7 @@ export type DirectiveUsageArgumentRemovedChange = {
     parentArgumentName: string | null;
     /** The nearest ancestor that is an enum value. If the directive is used on an enum value rather than a field, then populate this. */
     parentEnumValueName: string | null;
+    directiveRepeatedTimes: number;
   };
 };
 
@@ -931,6 +973,8 @@ type Changes = {
   [ChangeType.DirectiveArgumentDefaultValueChanged]: DirectiveArgumentDefaultValueChangedChange;
   [ChangeType.DirectiveArgumentTypeChanged]: DirectiveArgumentTypeChangedChange;
   [ChangeType.DirectiveDescriptionChanged]: DirectiveDescriptionChangedChange;
+  [ChangeType.DirectiveRepeatableAdded]: DirectiveRepeatableAddedChange;
+  [ChangeType.DirectiveRepeatableRemoved]: DirectiveRepeatableRemovedChange;
   [ChangeType.FieldArgumentDescriptionChanged]: FieldArgumentDescriptionChangedChange;
   [ChangeType.FieldArgumentDefaultChanged]: FieldArgumentDefaultChangedChange;
   [ChangeType.FieldArgumentTypeChanged]: FieldArgumentTypeChangedChange;

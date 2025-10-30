@@ -83,19 +83,20 @@ export function fieldRemoved(
       ),
       config,
     );
+    return;
+  }
+
+  const beforeLength = typeNode.fields?.length ?? 0;
+  typeNode.fields = typeNode.fields?.filter(f => f.name.value !== change.meta.removedFieldName);
+  if (beforeLength === (typeNode.fields?.length ?? 0)) {
+    handleError(
+      change,
+      new DeletedAttributeNotFoundError(typeNode?.kind, 'fields', change.meta.removedFieldName),
+      config,
+    );
   } else {
-    const beforeLength = typeNode.fields?.length ?? 0;
-    typeNode.fields = typeNode.fields?.filter(f => f.name.value !== change.meta.removedFieldName);
-    if (beforeLength === (typeNode.fields?.length ?? 0)) {
-      handleError(
-        change,
-        new DeletedAttributeNotFoundError(typeNode?.kind, 'fields', change.meta.removedFieldName),
-        config,
-      );
-    } else {
-      // delete the reference to the removed field.
-      nodeByPath.delete(change.path);
-    }
+    // delete the reference to the removed field.
+    nodeByPath.delete(change.path);
   }
 }
 
@@ -306,7 +307,11 @@ export function fieldDeprecationReasonChanged(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const deprecationNode = getChangedNodeOfKind(change, nodeByPath, Kind.DIRECTIVE, config);
+  assertChangeHasPath(change, config);
+  const parentNode = nodeByPath.get(parentPath(change.path!)) as
+    | { kind: Kind; directives?: DirectiveNode[] }
+    | undefined;
+  const deprecationNode = getDeprecatedDirectiveNode(parentNode);
   if (deprecationNode) {
     const reasonArgument = findNamedNode(deprecationNode.arguments, 'reason');
     if (reasonArgument) {
@@ -342,7 +347,11 @@ export function fieldDeprecationReasonAdded(
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
 ) {
-  const deprecationNode = getChangedNodeOfKind(change, nodeByPath, Kind.DIRECTIVE, config);
+  assertChangeHasPath(change, config);
+  const parentNode = nodeByPath.get(parentPath(change.path!)) as
+    | { kind: Kind; directives?: DirectiveNode[] }
+    | undefined;
+  const deprecationNode = getDeprecatedDirectiveNode(parentNode);
   if (deprecationNode) {
     const reasonArgument = findNamedNode(deprecationNode.arguments, 'reason');
     if (reasonArgument) {
@@ -361,7 +370,6 @@ export function fieldDeprecationReasonAdded(
         ...(deprecationNode.arguments ?? []),
         node,
       ];
-      nodeByPath.set(`${change.path}.reason`, node);
     }
   }
 }
@@ -411,7 +419,6 @@ export function fieldDeprecationAdded(
           ...(fieldNode.directives ?? []),
           directiveNode,
         ];
-        nodeByPath.set(change.path, directiveNode);
       }
     }
   }

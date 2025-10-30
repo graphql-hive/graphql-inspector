@@ -15,6 +15,8 @@ import {
   DirectiveLocationAddedChange,
   DirectiveLocationRemovedChange,
   DirectiveRemovedChange,
+  DirectiveRepeatableAddedChange,
+  DirectiveRepeatableRemovedChange,
 } from './change.js';
 
 function buildDirectiveRemovedMessage(args: DirectiveRemovedChange['meta']): string {
@@ -107,6 +109,60 @@ export function directiveDescriptionChanged(
       directiveName: newDirective.name,
       oldDirectiveDescription: oldDirective?.description ?? null,
       newDirectiveDescription: newDirective.description ?? null,
+    },
+  });
+}
+
+function buildDirectiveRepeatableAddedMessage(args: DirectiveRepeatableAddedChange['meta']) {
+  return `Directive '${args.directiveName}' added repeatable.`;
+}
+
+function directiveRepeatableAddedFromMeta(
+  args: DirectiveRepeatableAddedChange,
+): Change<typeof ChangeType.DirectiveRepeatableAdded> {
+  return {
+    criticality: {
+      level: CriticalityLevel.NonBreaking,
+    },
+    type: ChangeType.DirectiveRepeatableAdded,
+    message: buildDirectiveRepeatableAddedMessage(args.meta),
+    path: `@${args.meta.directiveName}`,
+    meta: args.meta,
+  } as const;
+}
+
+export function directiveRepeatableAdded(directive: GraphQLDirective) {
+  return directiveRepeatableAddedFromMeta({
+    type: ChangeType.DirectiveRepeatableAdded,
+    meta: {
+      directiveName: directive.name,
+    },
+  });
+}
+
+function buildDirectiveRepeatableRemovedMessage(args: DirectiveRepeatableAddedChange['meta']) {
+  return `Directive '${args.directiveName}' removed repeatable.`;
+}
+
+function directiveRepeatableRemovedFromMeta(
+  args: DirectiveRepeatableRemovedChange,
+): Change<typeof ChangeType.DirectiveRepeatableRemoved> {
+  return {
+    criticality: {
+      level: CriticalityLevel.Dangerous,
+    },
+    type: ChangeType.DirectiveRepeatableRemoved,
+    message: buildDirectiveRepeatableRemovedMessage(args.meta),
+    path: `@${args.meta.directiveName}`,
+    meta: args.meta,
+  } as const;
+}
+
+export function directiveRepeatableRemoved(directive: GraphQLDirective) {
+  return directiveRepeatableRemovedFromMeta({
+    type: ChangeType.DirectiveRepeatableRemoved,
+    meta: {
+      directiveName: directive.name,
     },
   });
 }

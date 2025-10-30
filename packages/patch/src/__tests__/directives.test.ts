@@ -97,4 +97,26 @@ describe('directives', async () => {
     `;
     await expectPatchToMatch(before, after);
   });
+
+  test('directiveRepeatableAdded', async () => {
+    const before = /* GraphQL */ `
+      scalar Food
+      directive @tasty(scale: Int!) on FIELD_DEFINITION
+    `;
+    const after = /* GraphQL */ `
+      scalar Food
+      directive @tasty(scale: Int!) repeatable on FIELD_DEFINITION
+    `;
+    await expectPatchToMatch(before, after);
+  });
+
+  test('directiveRepeatableRemoved', async () => {
+    const before = /* GraphQL */ `
+      directive @tasty(scale: Int!) repeatable on FIELD_DEFINITION
+    `;
+    const after = /* GraphQL */ `
+      directive @tasty(scale: Int!) on FIELD_DEFINITION
+    `;
+    await expectPatchToMatch(before, after);
+  });
 });

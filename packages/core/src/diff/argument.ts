@@ -5,7 +5,7 @@ import {
   GraphQLObjectType,
   Kind,
 } from 'graphql';
-import { compareLists, diffArrays, isNotEqual } from '../utils/compare.js';
+import { compareDirectiveLists, compareLists, diffArrays, isNotEqual } from '../utils/compare.js';
 import {
   fieldArgumentDefaultChanged,
   fieldArgumentDescriptionChanged,
@@ -45,7 +45,7 @@ export function changesInArgument(
   }
 
   if (newArg.astNode?.directives) {
-    compareLists(oldArg?.astNode?.directives || [], newArg.astNode.directives || [], {
+    compareDirectiveLists(oldArg?.astNode?.directives || [], newArg.astNode.directives || [], {
       onAdded(directive) {
         addChange(
           directiveUsageAdded(

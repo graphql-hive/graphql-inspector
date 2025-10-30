@@ -1,5 +1,5 @@
 import { GraphQLField, GraphQLInterfaceType, GraphQLObjectType, Kind } from 'graphql';
-import { compareLists, isNotEqual, isVoid } from '../utils/compare.js';
+import { compareDirectiveLists, compareLists, isNotEqual, isVoid } from '../utils/compare.js';
 import { isDeprecated } from '../utils/is-deprecated.js';
 import { changesInArgument } from './argument.js';
 import {
@@ -80,7 +80,7 @@ export function changesInField(
     },
   });
 
-  compareLists(oldField?.astNode?.directives || [], newField.astNode?.directives || [], {
+  compareDirectiveLists(oldField?.astNode?.directives || [], newField.astNode?.directives || [], {
     onAdded(directive) {
       addChange(
         directiveUsageAdded(

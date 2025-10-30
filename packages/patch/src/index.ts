@@ -49,6 +49,8 @@ import {
   directiveLocationAdded,
   directiveLocationRemoved,
   directiveRemoved,
+  directiveRepeatableAdded,
+  directiveRepeatableRemoved,
 } from './patches/directives.js';
 import {
   enumValueAdded,
@@ -124,7 +126,7 @@ export function groupByCoordinateAST(ast: DocumentNode): [SchemaNode[], Map<stri
   const nodesByCoordinate = new Map<string, ASTNode>();
   const pathArray: string[] = [];
   visit(ast, {
-    enter(node) {
+    enter(node, key) {
       switch (node.kind) {
         case Kind.ARGUMENT:
         case Kind.ENUM_TYPE_DEFINITION:
@@ -161,12 +163,13 @@ export function groupByCoordinateAST(ast: DocumentNode): [SchemaNode[], Map<stri
            */
           const isRoot = pathArray.length === 0;
           if (isRoot) {
-            pathArray.push(`.@${node.name.value}`);
+            pathArray.push(`.@${node.name.value}[${key}]`);
           } else {
-            pathArray.push(`@${node.name.value}`);
+            pathArray.push(`@${node.name.value}[${key}]`);
           }
-          const path = pathArray.join('.');
-          nodesByCoordinate.set(path, node);
+          // const path = pathArray.join('.');
+          // nodesByCoordinate.set(path, node);
+          // @note skip setting the node for directives because repeat directives screw this up.
           break;
         }
         case Kind.DOCUMENT: {
@@ -174,7 +177,9 @@ export function groupByCoordinateAST(ast: DocumentNode): [SchemaNode[], Map<stri
         }
         case Kind.SCHEMA_EXTENSION:
         case Kind.SCHEMA_DEFINITION: {
+          // @todo There can be only one. Replace `schemaNodes` with using `nodesByCoordinate.get('')`.
           schemaNodes.push(node);
+          nodesByCoordinate.set('', node);
           break;
         }
         // default: {
@@ -423,6 +428,14 @@ export function patchCoordinatesAST(
       }
       case ChangeType.DirectiveDescriptionChanged: {
         directiveDescriptionChanged(change, nodesByCoordinate, config);
+        break;
+      }
+      case ChangeType.DirectiveRepeatableAdded: {
+        directiveRepeatableAdded(change, nodesByCoordinate, config);
+        break;
+      }
+      case ChangeType.DirectiveRepeatableRemoved: {
+        directiveRepeatableRemoved(change, nodesByCoordinate, config);
         break;
       }
       case ChangeType.DirectiveUsageArgumentDefinitionAdded: {

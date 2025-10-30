@@ -10,7 +10,7 @@ import {
   isUnionType,
   Kind,
 } from 'graphql';
-import { compareLists, isNotEqual, isVoid } from '../utils/compare.js';
+import { compareDirectiveLists, compareLists, isNotEqual, isVoid } from '../utils/compare.js';
 import { isPrimitive } from '../utils/graphql.js';
 import { Change } from './changes/change.js';
 import {
@@ -81,7 +81,7 @@ export function diffSchema(oldSchema: GraphQLSchema, newSchema: GraphQLSchema): 
     },
   });
 
-  compareLists(oldSchema.astNode?.directives || [], newSchema.astNode?.directives || [], {
+  compareDirectiveLists(oldSchema.astNode?.directives || [], newSchema.astNode?.directives || [], {
     onAdded(directive) {
       addChange(directiveUsageAdded(Kind.SCHEMA_DEFINITION, directive, newSchema, false));
       directiveUsageChanged(null, directive, addChange);
