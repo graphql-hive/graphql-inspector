@@ -1,6 +1,6 @@
 import { expectPatchToMatch } from './utils.js';
 
-describe('directives', async () => {
+describe('directives', () => {
   test('directiveAdded', async () => {
     const before = /* GraphQL */ `
       scalar Food
@@ -120,3 +120,70 @@ describe('directives', async () => {
     await expectPatchToMatch(before, after);
   });
 });
+
+describe('repeat directives', () => {
+  test('Directives Added', async () => {
+    const before = /* GraphQL */ `
+      directive @flavor(flavor: String!) repeatable on OBJECT
+      type Pancake @flavor(flavor: "bread") {
+        radius: Int!
+      }
+    `;
+    const after = /* GraphQL */ `
+      directive @flavor(flavor: String!) repeatable on FIELD_DEFINITION
+      type Pancake
+        @flavor(flavor: "sweet")
+        @flavor(flavor: "bread")
+        @flavor(flavor: "chocolate")
+        @flavor(flavor: "strawberry")
+      {
+        radius: Int!
+      }
+    `;
+    await expectPatchToMatch(before, after);
+  });
+
+  test('Directives Removed', async () => {
+    const before = /* GraphQL */ `
+      directive @flavor(flavor: String!) repeatable on OBJECT
+      type Pancake @flavor(flavor: "sweet")
+        @flavor(flavor: "bread")
+        @flavor(flavor: "chocolate")
+        @flavor(flavor: "strawberry")
+      {
+        radius: Int!
+      }
+    `;
+    const after = /* GraphQL */ `
+      directive @flavor(flavor: String!) repeatable on FIELD_DEFINITION
+      type Pancake @flavor(flavor: "bread") {
+        radius: Int!
+      }
+    `;
+    await expectPatchToMatch(before, after);
+  });
+
+  test('Directive Arguments', async () => {
+    const before = /* GraphQL */ `
+      directive @flavor(flavor: String) repeatable on OBJECT
+      type Pancake @flavor(flavor: "sweet")
+        @flavor(flavor: "bread")
+        @flavor(flavor: "chocolate")
+        @flavor(flavor: "strawberry")
+      {
+        radius: Int!
+      }
+    `;
+    const after = /* GraphQL */ `
+      directive @flavor(flavor: String) repeatable on OBJECT
+      type Pancake @flavor
+        @flavor(flavor: "bread")
+        @flavor(flavor: "banana")
+        @flavor(flavor: "strawberry")
+      {
+        radius: Int!
+      }
+    `;
+    await expectPatchToMatch(before, after);
+  });
+})

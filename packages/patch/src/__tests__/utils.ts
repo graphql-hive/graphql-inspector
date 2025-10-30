@@ -16,6 +16,6 @@ export async function expectPatchToMatch(before: string, after: string): Promise
     throwOnError: true,
     debug: process.env.DEBUG === 'true',
   });
-  expect(printSortedSchema(schemaB)).toBe(printSortedSchema(patched));
+  expect(printSortedSchema(patched)).toBe(printSortedSchema(schemaB));
   return changes;
 }
