@@ -33,6 +33,5 @@ expect(printSortedSchema(schemaB)).toBe(printSortedSchema(patched));
 
 ## Remaining Work
 
-- [] Support repeat directives
-- [] Support extensions
+- [] Support type extensions
 - [] Fully support schema operation types
