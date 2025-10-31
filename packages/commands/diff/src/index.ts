@@ -33,7 +33,7 @@ export async function handler(input: {
     : failOnBreakingChanges;
 
   let showNestedAdditions = false;
-  const rules = [...input.rules ?? []]
+  const rules = [...(input.rules ?? [])]
     .filter(isString)
     .map((name): Rule | undefined => {
       if (name === 'showNestedAdditions') {
