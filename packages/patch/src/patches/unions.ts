@@ -3,6 +3,7 @@ import { Change, ChangeType } from '@graphql-inspector/core';
 import {
   AddedAttributeAlreadyExistsError,
   ChangedAncestorCoordinateNotFoundError,
+  ChangePathMissingError,
   DeletedAncestorCoordinateNotFoundError,
   DeletedAttributeNotFoundError,
   handleError,
@@ -17,8 +18,11 @@ export function unionMemberAdded(
   config: PatchConfig,
   _context: PatchContext,
 ) {
-  const changedPath = change.path!;
-  const union = nodeByPath.get(parentPath(changedPath)) as
+  if (!change.path) {
+    handleError(change, new ChangePathMissingError(change), config);
+    return;
+  }
+  const union = nodeByPath.get(parentPath(change.path)) as
     | (ASTNode & { types?: NamedTypeNode[] })
     | undefined;
   if (union) {
@@ -50,8 +54,11 @@ export function unionMemberRemoved(
   config: PatchConfig,
   _context: PatchContext,
 ) {
-  const changedPath = change.path!;
-  const union = nodeByPath.get(parentPath(changedPath)) as
+  if (!change.path) {
+    handleError(change, new ChangePathMissingError(change), config);
+    return;
+  }
+  const union = nodeByPath.get(parentPath(change.path)) as
     | (ASTNode & { types?: NamedTypeNode[] })
     | undefined;
   if (union) {
