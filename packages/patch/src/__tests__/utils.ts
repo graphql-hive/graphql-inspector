@@ -1,4 +1,4 @@
-import { buildSchema, GraphQLSchema, lexicographicSortSchema, parse, print } from 'graphql';
+import { buildSchema, type GraphQLSchema, lexicographicSortSchema } from 'graphql';
 import { Change, diff } from '@graphql-inspector/core';
 import { printSchemaWithDirectives } from '@graphql-tools/utils';
 import { patchSchema } from '../index.js';

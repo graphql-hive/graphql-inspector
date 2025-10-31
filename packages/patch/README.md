@@ -5,12 +5,15 @@ This package applies a list of changes (output from `@graphql-inspector/core`'s 
 ## Usage
 
 ```typescript
+import { buildSchema } from "graphql";
+import { diff } from "@graphql-inspector/core";
+import { patchSchema } from "@graphql-inspector/patch";
+
 const schemaA = buildSchema(before, { assumeValid: true, assumeValidSDL: true });
 const schemaB = buildSchema(after, { assumeValid: true, assumeValidSDL: true });
 
 const changes = await diff(schemaA, schemaB);
 const patched = patchSchema(schemaA, changes);
-expect(printSortedSchema(schemaB)).toBe(printSortedSchema(patched));
 ```
 
 ## Configuration
