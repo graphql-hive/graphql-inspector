@@ -1,9 +1,4 @@
-import {
-  ASTKindToNode,
-  ASTNode,
-  Kind,
-  NameNode,
-} from 'graphql';
+import { ASTKindToNode, ASTNode, Kind, NameNode } from 'graphql';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {

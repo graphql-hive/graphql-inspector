@@ -25,45 +25,48 @@ export function objectTypeInterfaceAdded(
   }
 
   const typeNode = nodeByPath.get(change.path);
-  if (typeNode) {
-    if (
-      typeNode.kind === Kind.OBJECT_TYPE_DEFINITION ||
-      typeNode.kind === Kind.INTERFACE_TYPE_DEFINITION
-    ) {
-      const existing = findNamedNode(typeNode.interfaces, change.meta.addedInterfaceName);
-      if (existing) {
-        handleError(
-          change,
-          new AddedAttributeAlreadyExistsError(
-            typeNode.kind,
-            'interfaces',
-            change.meta.addedInterfaceName,
-          ),
-          config,
-        );
-      } else {
-        (typeNode.interfaces as NamedTypeNode[] | undefined) = [
-          ...(typeNode.interfaces ?? []),
-          namedTypeNode(change.meta.addedInterfaceName),
-        ];
-      }
-    } else {
-      handleError(
-        change,
-        new ChangedCoordinateKindMismatchError(
-          Kind.OBJECT_TYPE_DEFINITION, // or Kind.INTERFACE_TYPE_DEFINITION
-          typeNode.kind,
-        ),
-        config,
-      );
-    }
-  } else {
+  if (!typeNode) {
     handleError(
       change,
       new ChangedAncestorCoordinateNotFoundError(Kind.OBJECT_TYPE_DEFINITION, 'interfaces'),
       config,
     );
+    return;
   }
+
+  if (
+    typeNode.kind !== Kind.OBJECT_TYPE_DEFINITION &&
+    typeNode.kind !== Kind.INTERFACE_TYPE_DEFINITION
+  ) {
+    handleError(
+      change,
+      new ChangedCoordinateKindMismatchError(
+        Kind.OBJECT_TYPE_DEFINITION, // or Kind.INTERFACE_TYPE_DEFINITION
+        typeNode.kind,
+      ),
+      config,
+    );
+    return;
+  }
+
+  const existing = findNamedNode(typeNode.interfaces, change.meta.addedInterfaceName);
+  if (existing) {
+    handleError(
+      change,
+      new AddedAttributeAlreadyExistsError(
+        typeNode.kind,
+        'interfaces',
+        change.meta.addedInterfaceName,
+      ),
+      config,
+    );
+    return;
+  }
+
+  (typeNode.interfaces as NamedTypeNode[] | undefined) = [
+    ...(typeNode.interfaces ?? []),
+    namedTypeNode(change.meta.addedInterfaceName),
+  ];
 }
 
 export function objectTypeInterfaceRemoved(
@@ -78,35 +81,7 @@ export function objectTypeInterfaceRemoved(
   }
 
   const typeNode = nodeByPath.get(change.path);
-  if (typeNode) {
-    if (
-      typeNode.kind === Kind.OBJECT_TYPE_DEFINITION ||
-      typeNode.kind === Kind.INTERFACE_TYPE_DEFINITION
-    ) {
-      const existing = findNamedNode(typeNode.interfaces, change.meta.removedInterfaceName);
-      if (existing) {
-        (typeNode.interfaces as NamedTypeNode[] | undefined) = typeNode.interfaces?.filter(
-          i => i.name.value !== change.meta.removedInterfaceName,
-        );
-      } else {
-        // @note this error isnt the best designed for this application
-        handleError(
-          change,
-          new DeletedCoordinateNotFound(
-            Kind.INTERFACE_TYPE_DEFINITION,
-            change.meta.removedInterfaceName,
-          ),
-          config,
-        );
-      }
-    } else {
-      handleError(
-        change,
-        new ChangedCoordinateKindMismatchError(Kind.OBJECT_TYPE_DEFINITION, typeNode.kind),
-        config,
-      );
-    }
-  } else {
+  if (!typeNode) {
     handleError(
       change,
       new DeletedAncestorCoordinateNotFoundError(
@@ -116,5 +91,35 @@ export function objectTypeInterfaceRemoved(
       ),
       config,
     );
+    return;
   }
+
+  if (
+    typeNode.kind !== Kind.OBJECT_TYPE_DEFINITION &&
+    typeNode.kind !== Kind.INTERFACE_TYPE_DEFINITION
+  ) {
+    handleError(
+      change,
+      new ChangedCoordinateKindMismatchError(Kind.OBJECT_TYPE_DEFINITION, typeNode.kind),
+      config,
+    );
+    return;
+  }
+
+  const existing = findNamedNode(typeNode.interfaces, change.meta.removedInterfaceName);
+  if (!existing) {
+    handleError(
+      change,
+      new DeletedCoordinateNotFound(
+        Kind.INTERFACE_TYPE_DEFINITION,
+        change.meta.removedInterfaceName,
+      ),
+      config,
+    );
+    return;
+  }
+
+  (typeNode.interfaces as NamedTypeNode[] | undefined) = typeNode.interfaces?.filter(
+    i => i.name.value !== change.meta.removedInterfaceName,
+  );
 }

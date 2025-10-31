@@ -1,9 +1,4 @@
-import {
-  ASTNode,
-  EnumValueDefinitionNode,
-  Kind,
-  StringValueNode,
-} from 'graphql';
+import { ASTNode, EnumValueDefinitionNode, Kind, StringValueNode } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
   AddedAttributeAlreadyExistsError,

@@ -52,11 +52,7 @@ import {
   directiveRepeatableAdded,
   directiveRepeatableRemoved,
 } from './patches/directives.js';
-import {
-  enumValueAdded,
-  enumValueDescriptionChanged,
-  enumValueRemoved,
-} from './patches/enum.js';
+import { enumValueAdded, enumValueDescriptionChanged, enumValueRemoved } from './patches/enum.js';
 import {
   fieldAdded,
   fieldArgumentAdded,
