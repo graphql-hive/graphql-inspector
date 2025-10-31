@@ -82,6 +82,11 @@ describe('enum', () => {
     expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
     expect(change.criticality.reason).toBeDefined();
     expect(change.message).toEqual(`Enum value 'C' was added to enum 'enumA'`);
+    expect(change.meta).toMatchObject({
+      addedEnumValueName: 'C',
+      enumName: 'enumA',
+      addedToNewType: false,
+    });
   });
 
   test('value removed', async () => {
@@ -113,6 +118,10 @@ describe('enum', () => {
     expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
     expect(change.criticality.reason).toBeDefined();
     expect(change.message).toEqual(`Enum value 'B' was removed from enum 'enumA'`);
+    expect(change.meta).toMatchObject({
+      removedEnumValueName: 'B',
+      enumName: 'enumA',
+    });
   });
 
   test('description changed', async () => {
