@@ -1,4 +1,4 @@
-import { expectPatchToMatch } from './utils.js';
+import { expectDiffAndPatchToMatch } from './utils.js';
 
 describe('inputs', () => {
   test('inputFieldAdded', async () => {
@@ -13,7 +13,7 @@ describe('inputs', () => {
         other: String
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('inputFieldAdded to new input', async () => {
@@ -30,7 +30,7 @@ describe('inputs', () => {
         foo(foo: FooInput): Foo
       }
     `;
-    const changes = await expectPatchToMatch(before, after);
+    const changes = await expectDiffAndPatchToMatch(before, after);
   });
 
   test('inputFieldRemoved', async () => {
@@ -45,7 +45,7 @@ describe('inputs', () => {
         id: ID!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('inputFieldDescriptionAdded', async () => {
@@ -62,7 +62,7 @@ describe('inputs', () => {
         id: ID!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('inputFieldTypeChanged', async () => {
@@ -76,7 +76,7 @@ describe('inputs', () => {
         id: ID
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('inputFieldDescriptionRemoved', async () => {
@@ -93,6 +93,6 @@ describe('inputs', () => {
         id: ID!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 });

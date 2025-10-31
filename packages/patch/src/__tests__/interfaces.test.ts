@@ -1,4 +1,4 @@
-import { expectPatchToMatch } from './utils.js';
+import { expectDiffAndPatchToMatch } from './utils.js';
 
 describe('interfaces', () => {
   test('objectTypeInterfaceAdded', async () => {
@@ -18,7 +18,7 @@ describe('interfaces', () => {
         id: ID!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('objectTypeInterfaceRemoved', async () => {
@@ -39,7 +39,7 @@ describe('interfaces', () => {
         id: ID!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('fieldAdded', async () => {
@@ -62,7 +62,7 @@ describe('interfaces', () => {
         name: String
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('fieldRemoved', async () => {
@@ -85,7 +85,7 @@ describe('interfaces', () => {
         id: ID!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageAdded', async () => {
@@ -108,7 +108,7 @@ describe('interfaces', () => {
         id: ID!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageRemoved', async () => {
@@ -131,6 +131,6 @@ describe('interfaces', () => {
         id: ID!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 });

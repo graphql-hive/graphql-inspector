@@ -1,4 +1,4 @@
-import { expectPatchToMatch } from './utils.js';
+import { expectDiffAndPatchToMatch } from './utils.js';
 
 describe('enumValue', () => {
   test('enumValueRemoved', async () => {
@@ -15,7 +15,7 @@ describe('enumValue', () => {
         ERROR
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('enumValueAdded', async () => {
@@ -32,7 +32,7 @@ describe('enumValue', () => {
         SUPER_BROKE
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('enumValueDeprecationReasonAdded', async () => {
@@ -50,7 +50,7 @@ describe('enumValue', () => {
         SUPER_BROKE @deprecated(reason: "Error is enough")
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('enumValueDescriptionChanged: Added', async () => {
@@ -69,7 +69,7 @@ describe('enumValue', () => {
         ERROR
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('enumValueDescriptionChanged: Changed', async () => {
@@ -91,7 +91,7 @@ describe('enumValue', () => {
         ERROR
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('enumValueDescriptionChanged: Removed', async () => {
@@ -110,6 +110,6 @@ describe('enumValue', () => {
         ERROR
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 });

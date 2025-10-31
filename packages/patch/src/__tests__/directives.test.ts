@@ -1,4 +1,4 @@
-import { expectPatchToMatch } from './utils.js';
+import { expectDiffAndPatchToMatch } from './utils.js';
 
 describe('directives', () => {
   test('directiveAdded', async () => {
@@ -9,7 +9,7 @@ describe('directives', () => {
       scalar Food
       directive @tasty on FIELD_DEFINITION
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveRemoved', async () => {
@@ -20,7 +20,7 @@ describe('directives', () => {
     const after = /* GraphQL */ `
       scalar Food
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveArgumentAdded', async () => {
@@ -32,7 +32,7 @@ describe('directives', () => {
       scalar Food
       directive @tasty(reason: String) on FIELD_DEFINITION
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveArgumentRemoved', async () => {
@@ -44,7 +44,7 @@ describe('directives', () => {
       scalar Food
       directive @tasty on FIELD_DEFINITION
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveLocationAdded', async () => {
@@ -56,7 +56,7 @@ describe('directives', () => {
       scalar Food
       directive @tasty(reason: String) on FIELD_DEFINITION | OBJECT
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveArgumentDefaultValueChanged', async () => {
@@ -68,7 +68,7 @@ describe('directives', () => {
       scalar Food
       directive @tasty(reason: String = "It tastes good.") on FIELD_DEFINITION
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveDescriptionChanged', async () => {
@@ -83,7 +83,7 @@ describe('directives', () => {
       """
       directive @tasty(reason: String) on FIELD_DEFINITION
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveArgumentTypeChanged', async () => {
@@ -95,7 +95,7 @@ describe('directives', () => {
       scalar Food
       directive @tasty(scale: Int!) on FIELD_DEFINITION
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveRepeatableAdded', async () => {
@@ -107,7 +107,7 @@ describe('directives', () => {
       scalar Food
       directive @tasty(scale: Int!) repeatable on FIELD_DEFINITION
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveRepeatableRemoved', async () => {
@@ -117,7 +117,7 @@ describe('directives', () => {
     const after = /* GraphQL */ `
       directive @tasty(scale: Int!) on FIELD_DEFINITION
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 });
 
@@ -139,7 +139,7 @@ describe('repeat directives', () => {
         radius: Int!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('Directives Removed', async () => {
@@ -159,7 +159,7 @@ describe('repeat directives', () => {
         radius: Int!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('Directive Arguments', async () => {
@@ -183,6 +183,6 @@ describe('repeat directives', () => {
         radius: Int!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 });

@@ -1,4 +1,4 @@
-import { expectPatchToMatch } from './utils.js';
+import { expectDiffAndPatchToMatch } from './utils.js';
 
 describe('union', () => {
   test('unionMemberAdded', async () => {
@@ -20,7 +20,7 @@ describe('union', () => {
       }
       union U = A | B
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('unionMemberRemoved', async () => {
@@ -42,6 +42,6 @@ describe('union', () => {
       }
       union U = A
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 });

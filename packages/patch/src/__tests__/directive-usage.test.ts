@@ -1,4 +1,4 @@
-import { expectPatchToMatch } from './utils.js';
+import { expectDiffAndPatchToMatch } from './utils.js';
 
 const baseSchema = /* GraphQL */ `
   schema {
@@ -56,7 +56,7 @@ describe('directiveUsages: added', () => {
         old: String @deprecated(reason: "No good")
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageArgumentDefinitionAdded', async () => {
@@ -102,7 +102,7 @@ describe('directiveUsages: added', () => {
         foodName: String!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageInputFieldDefinitionAdded', async () => {
@@ -148,7 +148,7 @@ describe('directiveUsages: added', () => {
         foodName: String! @meta(name: "owner", value: "kitchen")
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageInputObjectAdded', async () => {
@@ -194,7 +194,7 @@ describe('directiveUsages: added', () => {
         foodName: String!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageInterfaceAdded', async () => {
@@ -240,7 +240,7 @@ describe('directiveUsages: added', () => {
         foodName: String!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageObjectAdded', async () => {
@@ -286,7 +286,7 @@ describe('directiveUsages: added', () => {
         foodName: String!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageEnumAdded', async () => {
@@ -332,7 +332,7 @@ describe('directiveUsages: added', () => {
         foodName: String!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageFieldDefinitionAdded', async () => {
@@ -378,7 +378,7 @@ describe('directiveUsages: added', () => {
         foodName: String!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageUnionMemberAdded', async () => {
@@ -424,7 +424,7 @@ describe('directiveUsages: added', () => {
         foodName: String!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageEnumValueAdded', async () => {
@@ -470,7 +470,7 @@ describe('directiveUsages: added', () => {
         foodName: String!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageSchemaAdded', async () => {
@@ -516,7 +516,7 @@ describe('directiveUsages: added', () => {
         foodName: String!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageScalarAdded', async () => {
@@ -562,7 +562,7 @@ describe('directiveUsages: added', () => {
         foodName: String!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageFieldAdded', async () => {
@@ -608,7 +608,7 @@ describe('directiveUsages: added', () => {
         foodName: String!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 });
 
@@ -656,7 +656,7 @@ describe('directiveUsages: removed', () => {
       }
     `;
     const after = baseSchema;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageInputFieldDefinitionRemoved', async () => {
@@ -702,7 +702,7 @@ describe('directiveUsages: removed', () => {
       }
     `;
     const after = baseSchema;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageInputObjectRemoved', async () => {
@@ -748,7 +748,7 @@ describe('directiveUsages: removed', () => {
       }
     `;
     const after = baseSchema;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageInterfaceRemoved', async () => {
@@ -794,7 +794,7 @@ describe('directiveUsages: removed', () => {
       }
     `;
     const after = baseSchema;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageObjectRemoved', async () => {
@@ -840,7 +840,7 @@ describe('directiveUsages: removed', () => {
       }
     `;
     const after = baseSchema;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageEnumRemoved', async () => {
@@ -886,7 +886,7 @@ describe('directiveUsages: removed', () => {
       }
     `;
     const after = baseSchema;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageFieldDefinitionRemoved', async () => {
@@ -932,7 +932,7 @@ describe('directiveUsages: removed', () => {
       }
     `;
     const after = baseSchema;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageUnionMemberRemoved', async () => {
@@ -978,7 +978,7 @@ describe('directiveUsages: removed', () => {
       }
     `;
     const after = baseSchema;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageEnumValueRemoved', async () => {
@@ -1024,7 +1024,7 @@ describe('directiveUsages: removed', () => {
       }
     `;
     const after = baseSchema;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageSchemaRemoved', async () => {
@@ -1070,7 +1070,7 @@ describe('directiveUsages: removed', () => {
       }
     `;
     const after = baseSchema;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('directiveUsageScalarRemoved', async () => {
@@ -1116,7 +1116,7 @@ describe('directiveUsages: removed', () => {
       }
     `;
     const after = baseSchema;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('schemaDirectiveUsageDefinitionAdded', async () => {
@@ -1162,7 +1162,7 @@ describe('directiveUsages: removed', () => {
         foodName: String!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('schemaDirectiveUsageDefinitionRemoved', async () => {
@@ -1208,6 +1208,6 @@ describe('directiveUsages: removed', () => {
       }
     `;
     const after = baseSchema;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 });

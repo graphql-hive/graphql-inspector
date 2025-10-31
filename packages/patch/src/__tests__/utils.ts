@@ -7,7 +7,7 @@ function printSortedSchema(schema: GraphQLSchema) {
   return printSchemaWithDirectives(lexicographicSortSchema(schema));
 }
 
-export async function expectPatchToMatch(before: string, after: string): Promise<Change<any>[]> {
+export async function expectDiffAndPatchToMatch(before: string, after: string): Promise<Change<any>[]> {
   const schemaA = buildSchema(before, { assumeValid: true, assumeValidSDL: true });
   const schemaB = buildSchema(after, { assumeValid: true, assumeValidSDL: true });
 

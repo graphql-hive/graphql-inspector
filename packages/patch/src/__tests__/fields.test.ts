@@ -1,4 +1,4 @@
-import { expectPatchToMatch } from './utils.js';
+import { expectDiffAndPatchToMatch } from './utils.js';
 
 describe('fields', () => {
   test('fieldTypeChanged', async () => {
@@ -12,7 +12,7 @@ describe('fields', () => {
         id: String!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('fieldRemoved', async () => {
@@ -27,7 +27,7 @@ describe('fields', () => {
         id: ID!
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('fieldAdded', async () => {
@@ -42,7 +42,7 @@ describe('fields', () => {
         name: String
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('fieldAdded to new type', async () => {
@@ -56,7 +56,7 @@ describe('fields', () => {
         name: String
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('fieldArgumentAdded', async () => {
@@ -72,7 +72,7 @@ describe('fields', () => {
         chat(firstMessage: String): ChatSession
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('fieldArgumentTypeChanged', async () => {
@@ -88,7 +88,7 @@ describe('fields', () => {
         chat(id: ID!): ChatSession
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('fieldArgumentDescriptionChanged', async () => {
@@ -112,7 +112,7 @@ describe('fields', () => {
         ): ChatSession
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('fieldDeprecationReasonAdded', async () => {
@@ -128,7 +128,7 @@ describe('fields', () => {
         chat: ChatSession @deprecated(reason: "Use Query.initiateChat")
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('fieldDeprecationAdded', async () => {
@@ -144,7 +144,7 @@ describe('fields', () => {
         chat: ChatSession @deprecated
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('fieldDeprecationAdded: with reason', async () => {
@@ -160,7 +160,7 @@ describe('fields', () => {
         chat: ChatSession @deprecated(reason: "Because no one chats anymore")
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('fieldDeprecationRemoved', async () => {
@@ -176,7 +176,7 @@ describe('fields', () => {
         chat: ChatSession
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('fieldDescriptionAdded', async () => {
@@ -195,7 +195,7 @@ describe('fields', () => {
         chat: ChatSession
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('fieldDescriptionChanged', async () => {
@@ -217,7 +217,7 @@ describe('fields', () => {
         chat: ChatSession
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('fieldDescriptionRemoved', async () => {
@@ -236,6 +236,6 @@ describe('fields', () => {
         chat: ChatSession
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 });

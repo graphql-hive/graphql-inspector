@@ -1,4 +1,4 @@
-import { expectPatchToMatch } from './utils.js';
+import { expectDiffAndPatchToMatch } from './utils.js';
 
 describe('enum', () => {
   test('typeRemoved', async () => {
@@ -11,7 +11,7 @@ describe('enum', () => {
     const after = /* GraphQL */ `
       scalar Foo
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('typeAdded', async () => {
@@ -28,7 +28,7 @@ describe('enum', () => {
         SUPER_BROKE
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('typeAdded Mutation', async () => {
@@ -46,7 +46,7 @@ describe('enum', () => {
         dooFoo: String
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('typeDescriptionChanged: Added', async () => {
@@ -63,7 +63,7 @@ describe('enum', () => {
         OK
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('typeDescriptionChanged: Changed', async () => {
@@ -83,7 +83,7 @@ describe('enum', () => {
         OK
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 
   test('typeDescriptionChanged: Removed', async () => {
@@ -100,6 +100,6 @@ describe('enum', () => {
         OK
       }
     `;
-    await expectPatchToMatch(before, after);
+    await expectDiffAndPatchToMatch(before, after);
   });
 });
