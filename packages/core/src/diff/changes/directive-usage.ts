@@ -1012,7 +1012,6 @@ export function directiveUsageArgumentRemovedFromMeta(
   };
 }
 
-// @question should this be separate change events for every case for safety?
 export function directiveUsageChanged(
   oldDirective: ConstDirectiveNode | null,
   newDirective: ConstDirectiveNode,

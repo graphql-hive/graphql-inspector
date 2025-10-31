@@ -56,13 +56,12 @@ export function buildInputFieldAddedMessage(args: InputFieldAddedChange['meta'])
 export function inputFieldAddedFromMeta(args: InputFieldAddedChange) {
   return {
     type: ChangeType.InputFieldAdded,
-    criticality: args.meta.addedToNewType
-      ? {
-          level: CriticalityLevel.NonBreaking,
-        }
-      : args.meta.isAddedInputFieldTypeNullable || args.meta.addedFieldDefault !== undefined
+    criticality:
+      args.meta.addedToNewType ||
+      args.meta.isAddedInputFieldTypeNullable ||
+      args.meta.addedFieldDefault !== undefined
         ? {
-            level: CriticalityLevel.Dangerous,
+            level: CriticalityLevel.NonBreaking,
           }
         : {
             level: CriticalityLevel.Breaking,
