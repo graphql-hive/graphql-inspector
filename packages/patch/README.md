@@ -22,7 +22,7 @@ const patched = patchSchema(schemaA, changes);
 
 `throwOnError?: boolean`
 
-> By default does not require the value at time of change to match what's currently in the schema. Enable this if you need to be extra cautious when detecting conflicts.
+> The changes output from `diff` include the values, such as default argument values of the old schema. E.g. changing `foo(arg: String = "bar")` to `foo(arg: String = "foo")` would track that the previous default value was `"bar"`. By enabling this option, `patch` can throw an error when patching a schema where the value doesn't match what is expected. E.g. where `foo.arg`'s default value is _NOT_ `"bar"`. This will avoid overwriting conflicting changes. This is recommended if using an automated process for patching schema.
 
 `requireOldValueMatch?: boolean`
 
