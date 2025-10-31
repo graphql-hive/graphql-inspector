@@ -32,20 +32,27 @@ export async function handler(input: {
     ? resolveCompletionHandler(input.onComplete)
     : failOnBreakingChanges;
 
-  const rules = input.rules
-    ? input.rules
-        .filter(isString)
-        .map((name): Rule => {
-          const rule = resolveRule(name);
+  let showNestedAdditions = false;
+  const rules = [...input.rules ?? []]
+    .filter(isString)
+    .map((name): Rule | undefined => {
+      if (name === 'showNestedAdditions') {
+        showNestedAdditions = true;
+        return;
+      }
 
-          if (!rule) {
-            throw new Error(`Rule '${name}' does not exist!\n`);
-          }
+      const rule = resolveRule(name);
 
-          return rule;
-        })
-        .filter(f => f)
-    : [];
+      if (!rule) {
+        throw new Error(`Rule '${name}' does not exist!\n`);
+      }
+
+      return rule;
+    })
+    .filter((f): f is NonNullable<typeof f> => !!f);
+  if (!showNestedAdditions) {
+    rules.push(DiffRule.ignoreNestedAdditions);
+  }
 
   const changes = await diffSchema(input.oldSchema, input.newSchema, rules, {
     checkUsage: input.onUsage ? resolveUsageHandler(input.onUsage) : undefined,
