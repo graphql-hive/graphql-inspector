@@ -54,8 +54,6 @@ import {
 } from './patches/directives.js';
 import {
   enumValueAdded,
-  enumValueDeprecationReasonAdded,
-  enumValueDeprecationReasonChanged,
   enumValueDescriptionChanged,
   enumValueRemoved,
 } from './patches/enum.js';
@@ -66,10 +64,6 @@ import {
   fieldArgumentDescriptionChanged,
   fieldArgumentRemoved,
   fieldArgumentTypeChanged,
-  fieldDeprecationAdded,
-  fieldDeprecationReasonAdded,
-  fieldDeprecationReasonChanged,
-  fieldDeprecationRemoved,
   fieldDescriptionAdded,
   fieldDescriptionChanged,
   fieldDescriptionRemoved,
@@ -277,14 +271,6 @@ export function patchCoordinatesAST(
         enumValueAdded(change, nodesByCoordinate, config, context);
         break;
       }
-      case ChangeType.EnumValueDeprecationReasonAdded: {
-        enumValueDeprecationReasonAdded(change, nodesByCoordinate, config, context);
-        break;
-      }
-      case ChangeType.EnumValueDeprecationReasonChanged: {
-        enumValueDeprecationReasonChanged(change, nodesByCoordinate, config, context);
-        break;
-      }
       case ChangeType.FieldAdded: {
         fieldAdded(change, nodesByCoordinate, config, context);
         break;
@@ -315,22 +301,6 @@ export function patchCoordinatesAST(
       }
       case ChangeType.FieldArgumentDefaultChanged: {
         fieldArgumentDefaultChanged(change, nodesByCoordinate, config, context);
-        break;
-      }
-      case ChangeType.FieldDeprecationAdded: {
-        fieldDeprecationAdded(change, nodesByCoordinate, config, context);
-        break;
-      }
-      case ChangeType.FieldDeprecationRemoved: {
-        fieldDeprecationRemoved(change, nodesByCoordinate, config, context);
-        break;
-      }
-      case ChangeType.FieldDeprecationReasonAdded: {
-        fieldDeprecationReasonAdded(change, nodesByCoordinate, config, context);
-        break;
-      }
-      case ChangeType.FieldDeprecationReasonChanged: {
-        fieldDeprecationReasonChanged(change, nodesByCoordinate, config, context);
         break;
       }
       case ChangeType.FieldDescriptionAdded: {

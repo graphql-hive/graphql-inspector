@@ -84,13 +84,6 @@ function directiveUsageDefinitionAdded(
   const parentNode = nodeByPath.get(parentPath(change.path)) as
     | { kind: Kind; directives?: DirectiveNode[] }
     | undefined;
-  if (
-    change.meta.addedDirectiveName === 'deprecated' &&
-    parentNode &&
-    (parentNode.kind === Kind.FIELD_DEFINITION || parentNode.kind === Kind.ENUM_VALUE_DEFINITION)
-  ) {
-    return; // ignore because deprecated is handled by its own change... consider adjusting this.
-  }
   const definition = nodeByPath.get(`@${change.meta.addedDirectiveName}`);
   let repeatable = false;
   if (!definition) {
@@ -142,9 +135,6 @@ function schemaDirectiveUsageDefinitionAdded(
       config,
     );
     return;
-  }
-  if (change.meta.addedDirectiveName === 'deprecated') {
-    return; // ignore because deprecated is handled by its own change... consider adjusting this.
   }
   const definition = nodeByPath.get(`@${change.meta.addedDirectiveName}`);
   let repeatable = false;
@@ -501,11 +491,6 @@ export function directiveUsageArgumentAdded(
   config: PatchConfig,
   _context: PatchContext,
 ) {
-  // ignore because deprecated is handled by its own change... consider adjusting this.
-  if (change.meta.directiveName === 'deprecated') {
-    return;
-  }
-
   if (!change.path) {
     handleError(change, new ChangePathMissingError(change), config);
     return;
@@ -574,11 +559,6 @@ export function directiveUsageArgumentRemoved(
   const parentNode = nodeByPath.get(parentPath(parentPath(change.path))) as
     | { kind: Kind; directives?: DirectiveNode[] }
     | undefined;
-
-  // ignore because deprecated is handled by its own change... consider adjusting this.
-  if (change.meta.directiveName === 'deprecated') {
-    return;
-  }
 
   const directiveNode = findNthDirective(
     parentNode?.directives ?? [],

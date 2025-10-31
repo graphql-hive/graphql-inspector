@@ -1,10 +1,7 @@
 import {
-  ArgumentNode,
   ASTNode,
   ConstValueNode,
-  DirectiveNode,
   FieldDefinitionNode,
-  GraphQLDeprecatedDirective,
   InputValueDefinitionNode,
   Kind,
   parseConstValue,
@@ -15,11 +12,9 @@ import {
 } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
-  AddedAttributeAlreadyExistsError,
   AddedAttributeCoordinateNotFoundError,
   AddedCoordinateAlreadyExistsError,
   ChangedCoordinateKindMismatchError,
-  ChangedCoordinateNotFoundError,
   ChangePathMissingError,
   DeletedAncestorCoordinateNotFoundError,
   DeletedAttributeNotFoundError,
@@ -32,12 +27,8 @@ import type { PatchConfig, PatchContext } from '../types';
 import {
   assertChangeHasPath,
   assertValueMatch,
-  DEPRECATION_REASON_DEFAULT,
-  findNamedNode,
   getChangedNodeOfKind,
   getDeletedNodeOfKind,
-  getDeletedParentNodeOfKind,
-  getDeprecatedDirectiveNode,
   parentPath,
 } from '../utils.js';
 
@@ -306,159 +297,6 @@ export function fieldArgumentRemoved(
         new ChangedCoordinateKindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind),
         config,
       );
-    }
-  }
-}
-
-export function fieldDeprecationReasonChanged(
-  change: Change<typeof ChangeType.FieldDeprecationReasonChanged>,
-  nodeByPath: Map<string, ASTNode>,
-  config: PatchConfig,
-  _context: PatchContext,
-) {
-  assertChangeHasPath(change, config);
-  const parentNode = nodeByPath.get(parentPath(change.path!)) as
-    | { kind: Kind; directives?: DirectiveNode[] }
-    | undefined;
-  const deprecationNode = getDeprecatedDirectiveNode(parentNode);
-  if (deprecationNode) {
-    const reasonArgument = findNamedNode(deprecationNode.arguments, 'reason');
-    if (reasonArgument) {
-      if (print(reasonArgument.value) !== change.meta.oldDeprecationReason) {
-        handleError(
-          change,
-          new ValueMismatchError(
-            Kind.ARGUMENT,
-            print(reasonArgument.value),
-            change.meta.oldDeprecationReason,
-          ),
-          config,
-        );
-      }
-
-      const node = {
-        kind: Kind.ARGUMENT,
-        name: nameNode('reason'),
-        value: stringNode(change.meta.newDeprecationReason),
-      } as ArgumentNode;
-      (deprecationNode.arguments as ArgumentNode[] | undefined) = [
-        ...(deprecationNode.arguments ?? []),
-        node,
-      ];
-    } else {
-      handleError(change, new ChangedCoordinateNotFoundError(Kind.ARGUMENT, 'reason'), config);
-    }
-  }
-}
-
-export function fieldDeprecationReasonAdded(
-  change: Change<typeof ChangeType.FieldDeprecationReasonAdded>,
-  nodeByPath: Map<string, ASTNode>,
-  config: PatchConfig,
-  _context: PatchContext,
-) {
-  assertChangeHasPath(change, config);
-  const parentNode = nodeByPath.get(parentPath(change.path!)) as
-    | { kind: Kind; directives?: DirectiveNode[] }
-    | undefined;
-  const deprecationNode = getDeprecatedDirectiveNode(parentNode);
-  if (deprecationNode) {
-    const reasonArgument = findNamedNode(deprecationNode.arguments, 'reason');
-    if (reasonArgument) {
-      handleError(
-        change,
-        new AddedAttributeAlreadyExistsError(Kind.DIRECTIVE, 'arguments', 'reason'),
-        config,
-      );
-    } else {
-      const node = {
-        kind: Kind.ARGUMENT,
-        name: nameNode('reason'),
-        value: stringNode(change.meta.addedDeprecationReason),
-      } as ArgumentNode;
-      (deprecationNode.arguments as ArgumentNode[] | undefined) = [
-        ...(deprecationNode.arguments ?? []),
-        node,
-      ];
-    }
-  }
-}
-
-export function fieldDeprecationAdded(
-  change: Change<typeof ChangeType.FieldDeprecationAdded>,
-  nodeByPath: Map<string, ASTNode>,
-  config: PatchConfig,
-  _context: PatchContext,
-) {
-  if (assertChangeHasPath(change, config)) {
-    const fieldNode = nodeByPath.get(parentPath(change.path));
-    if (fieldNode) {
-      if (fieldNode.kind !== Kind.FIELD_DEFINITION) {
-        handleError(
-          change,
-          new ChangedCoordinateKindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind),
-          config,
-        );
-        return;
-      }
-      const hasExistingDeprecationDirective = getDeprecatedDirectiveNode(fieldNode);
-      if (hasExistingDeprecationDirective) {
-        handleError(
-          change,
-          new AddedCoordinateAlreadyExistsError(Kind.DIRECTIVE, '@deprecated'),
-          config,
-        );
-      } else {
-        const directiveNode = {
-          kind: Kind.DIRECTIVE,
-          name: nameNode(GraphQLDeprecatedDirective.name),
-          ...(change.meta.deprecationReason &&
-          change.meta.deprecationReason !== DEPRECATION_REASON_DEFAULT
-            ? {
-                arguments: [
-                  {
-                    kind: Kind.ARGUMENT,
-                    name: nameNode('reason'),
-                    value: stringNode(change.meta.deprecationReason),
-                  },
-                ],
-              }
-            : {}),
-        } as DirectiveNode;
-
-        (fieldNode.directives as DirectiveNode[] | undefined) = [
-          ...(fieldNode.directives ?? []),
-          directiveNode,
-        ];
-      }
-    }
-  }
-}
-
-export function fieldDeprecationRemoved(
-  change: Change<typeof ChangeType.FieldDeprecationRemoved>,
-  nodeByPath: Map<string, ASTNode>,
-  config: PatchConfig,
-  _context: PatchContext,
-) {
-  if (assertChangeHasPath(change, config)) {
-    const fieldNode = getDeletedParentNodeOfKind(
-      change,
-      nodeByPath,
-      Kind.FIELD_DEFINITION,
-      'directives',
-      config,
-    );
-    if (fieldNode) {
-      const hasExistingDeprecationDirective = getDeprecatedDirectiveNode(fieldNode);
-      if (hasExistingDeprecationDirective) {
-        (fieldNode.directives as DirectiveNode[] | undefined) = fieldNode.directives?.filter(
-          d => d.name.value !== GraphQLDeprecatedDirective.name,
-        );
-        nodeByPath.delete(change.path);
-      } else {
-        handleError(change, new DeletedCoordinateNotFound(Kind.DIRECTIVE, '@deprecated'), config);
-      }
     }
   }
 }

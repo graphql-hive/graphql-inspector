@@ -1,8 +1,6 @@
 import {
   ASTKindToNode,
   ASTNode,
-  DirectiveNode,
-  GraphQLDeprecatedDirective,
   Kind,
   NameNode,
 } from 'graphql';
@@ -19,12 +17,6 @@ import {
   ValueMismatchError,
 } from './errors.js';
 import { AdditionChangeType, PatchConfig } from './types.js';
-
-export function getDeprecatedDirectiveNode(
-  definitionNode: Maybe<{ readonly directives?: ReadonlyArray<DirectiveNode> }>,
-): Maybe<DirectiveNode> {
-  return findNamedNode(definitionNode?.directives, GraphQLDeprecatedDirective.name);
-}
 
 export function findNamedNode<T extends { readonly name: NameNode }>(
   nodes: Maybe<ReadonlyArray<T>>,

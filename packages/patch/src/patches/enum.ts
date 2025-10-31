@@ -1,20 +1,14 @@
 import {
-  ArgumentNode,
   ASTNode,
-  DirectiveNode,
   EnumValueDefinitionNode,
   Kind,
-  print,
   StringValueNode,
 } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
   AddedAttributeAlreadyExistsError,
-  AddedAttributeCoordinateNotFoundError,
-  AddedCoordinateAlreadyExistsError,
   ChangedAncestorCoordinateNotFoundError,
   ChangedCoordinateKindMismatchError,
-  ChangedCoordinateNotFoundError,
   ChangePathMissingError,
   DeletedAttributeNotFoundError,
   DeletedCoordinateNotFound,
@@ -23,7 +17,7 @@ import {
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
 import type { PatchConfig, PatchContext } from '../types';
-import { findNamedNode, getDeprecatedDirectiveNode, parentPath } from '../utils.js';
+import { parentPath } from '../utils.js';
 
 export function enumValueRemoved(
   change: Change<typeof ChangeType.EnumValueRemoved>,
@@ -121,129 +115,6 @@ export function enumValueAdded(
     handleError(
       change,
       new ChangedCoordinateKindMismatchError(Kind.ENUM_TYPE_DEFINITION, enumNode.kind),
-      config,
-    );
-  }
-}
-
-export function enumValueDeprecationReasonAdded(
-  change: Change<typeof ChangeType.EnumValueDeprecationReasonAdded>,
-  nodeByPath: Map<string, ASTNode>,
-  config: PatchConfig,
-  _context: PatchContext,
-) {
-  if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
-    return;
-  }
-
-  const enumValueNode = nodeByPath.get(parentPath(change.path));
-  if (enumValueNode) {
-    if (enumValueNode.kind === Kind.ENUM_VALUE_DEFINITION) {
-      const deprecation = getDeprecatedDirectiveNode(enumValueNode);
-      if (deprecation) {
-        if (findNamedNode(deprecation.arguments, 'reason')) {
-          handleError(
-            change,
-            new AddedCoordinateAlreadyExistsError(Kind.ENUM_VALUE_DEFINITION, 'reason'),
-            config,
-          );
-        }
-        const argNode: ArgumentNode = {
-          kind: Kind.ARGUMENT,
-          name: nameNode('reason'),
-          value: stringNode(change.meta.addedValueDeprecationReason),
-        };
-        (deprecation.arguments as ArgumentNode[] | undefined) = [
-          ...(deprecation.arguments ?? []),
-          argNode,
-        ];
-        nodeByPath.set(`${change.path}.reason`, argNode);
-      } else {
-        handleError(
-          change,
-          new ChangedAncestorCoordinateNotFoundError(Kind.DIRECTIVE, 'arguments'),
-          config,
-        );
-      }
-    } else {
-      handleError(
-        change,
-        new ChangedCoordinateKindMismatchError(Kind.ENUM_VALUE_DEFINITION, enumValueNode.kind),
-        config,
-      );
-    }
-  } else {
-    handleError(
-      change,
-      new AddedAttributeCoordinateNotFoundError(
-        change.meta.enumValueName,
-        'directives',
-        '@deprecated',
-      ),
-      config,
-    );
-  }
-}
-
-export function enumValueDeprecationReasonChanged(
-  change: Change<typeof ChangeType.EnumValueDeprecationReasonChanged>,
-  nodeByPath: Map<string, ASTNode>,
-  config: PatchConfig,
-  _context: PatchContext,
-) {
-  if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
-    return;
-  }
-  const enumValueNode = nodeByPath.get(parentPath(change.path)) as
-    | { readonly directives?: readonly DirectiveNode[] | undefined }
-    | undefined;
-  const deprecatedNode = getDeprecatedDirectiveNode(enumValueNode);
-  if (deprecatedNode) {
-    if (deprecatedNode.kind === Kind.DIRECTIVE) {
-      const reasonArgNode = findNamedNode(deprecatedNode.arguments, 'reason');
-      if (reasonArgNode) {
-        if (reasonArgNode.kind === Kind.ARGUMENT) {
-          const oldValueMatches =
-            reasonArgNode.value &&
-            print(reasonArgNode.value) === change.meta.oldEnumValueDeprecationReason;
-
-          if (!oldValueMatches) {
-            handleError(
-              change,
-              new ValueMismatchError(
-                Kind.ARGUMENT,
-                change.meta.oldEnumValueDeprecationReason,
-                reasonArgNode.value && print(reasonArgNode.value),
-              ),
-              config,
-            );
-          }
-          (reasonArgNode.value as StringValueNode | undefined) = stringNode(
-            change.meta.newEnumValueDeprecationReason,
-          );
-        } else {
-          handleError(
-            change,
-            new ChangedCoordinateKindMismatchError(Kind.ARGUMENT, reasonArgNode.kind),
-            config,
-          );
-        }
-      } else {
-        handleError(change, new ChangedCoordinateNotFoundError(Kind.ARGUMENT, 'reason'), config);
-      }
-    } else {
-      handleError(
-        change,
-        new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE, deprecatedNode.kind),
-        config,
-      );
-    }
-  } else {
-    handleError(
-      change,
-      new ChangedAncestorCoordinateNotFoundError(Kind.DIRECTIVE, 'arguments'),
       config,
     );
   }
