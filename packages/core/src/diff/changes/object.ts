@@ -17,7 +17,7 @@ export function objectTypeInterfaceAddedFromMeta(args: ObjectTypeInterfaceAddedC
     criticality: {
       level: args.meta.addedToNewType ? CriticalityLevel.NonBreaking : CriticalityLevel.Dangerous,
       reason:
-        'Adding an interface to an object type may break existing clients that were not programming defensively against a new possible type.',
+        'Adding an interface to an object type may break existing clients that are consuming a field returning the interface type that are not programming defensively against this new possible type.',
     },
     message: buildObjectTypeInterfaceAddedMessage(args.meta),
     meta: args.meta,
