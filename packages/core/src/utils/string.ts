@@ -80,3 +80,7 @@ export function safeString(obj: unknown) {
     .replace(/\[Object: null prototype\] /g, '')
     .replace(/(^')|('$)/g, '');
 }
+
+export function fmt(reason: string): string {
+  return reason.replace(/'/g, "\\'");
+}
