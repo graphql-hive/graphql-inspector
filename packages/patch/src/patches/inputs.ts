@@ -59,42 +59,45 @@ export function inputFieldAdded(
         config,
       );
     }
-  } else {
-    const typeNode = nodeByPath.get(parentPath(change.path)) as ASTNode & {
-      fields?: InputValueDefinitionNode[];
-    };
-    if (!typeNode) {
-      handleError(
-        change,
-        new AddedAttributeCoordinateNotFoundError(
-          change.meta.inputName,
-          'fields',
-          change.meta.addedInputFieldName,
-        ),
-        config,
-      );
-    } else if (typeNode.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION) {
-      const node: InputValueDefinitionNode = {
-        kind: Kind.INPUT_VALUE_DEFINITION,
-        name: nameNode(change.meta.addedInputFieldName),
-        type: parseType(change.meta.addedInputFieldType),
-        // description: change.meta.addedInputFieldDescription
-        //   ? stringNode(change.meta.addedInputFieldDescription)
-        //   : undefined,
-      };
-
-      typeNode.fields = [...(typeNode.fields ?? []), node];
-
-      // add new field to the node set
-      nodeByPath.set(change.path, node);
-    } else {
-      handleError(
-        change,
-        new ChangedCoordinateKindMismatchError(Kind.INPUT_OBJECT_TYPE_DEFINITION, typeNode.kind),
-        config,
-      );
-    }
+    return;
   }
+  const typeNode = nodeByPath.get(parentPath(change.path)) as ASTNode & {
+    fields?: InputValueDefinitionNode[];
+  };
+  if (!typeNode) {
+    handleError(
+      change,
+      new AddedAttributeCoordinateNotFoundError(
+        change.meta.inputName,
+        'fields',
+        change.meta.addedInputFieldName,
+      ),
+      config,
+    );
+    return;
+  }
+  if (typeNode.kind !== Kind.INPUT_OBJECT_TYPE_DEFINITION) {
+    handleError(
+      change,
+      new ChangedCoordinateKindMismatchError(Kind.INPUT_OBJECT_TYPE_DEFINITION, typeNode.kind),
+      config,
+    );
+    return;
+  }
+
+  const node: InputValueDefinitionNode = {
+    kind: Kind.INPUT_VALUE_DEFINITION,
+    name: nameNode(change.meta.addedInputFieldName),
+    type: parseType(change.meta.addedInputFieldType),
+    // description: change.meta.addedInputFieldDescription
+    //   ? stringNode(change.meta.addedInputFieldDescription)
+    //   : undefined,
+  };
+
+  typeNode.fields = [...(typeNode.fields ?? []), node];
+
+  // add new field to the node set
+  nodeByPath.set(change.path, node);
 }
 
 export function inputFieldRemoved(
@@ -109,33 +112,7 @@ export function inputFieldRemoved(
   }
 
   const existingNode = nodeByPath.get(change.path);
-  if (existingNode) {
-    const typeNode = nodeByPath.get(parentPath(change.path)) as ASTNode & {
-      fields?: InputValueDefinitionNode[];
-    };
-    if (!typeNode) {
-      handleError(
-        change,
-        new DeletedAncestorCoordinateNotFoundError(
-          Kind.INPUT_OBJECT_TYPE_DEFINITION,
-          'fields',
-          change.meta.removedFieldName,
-        ),
-        config,
-      );
-    } else if (typeNode.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION) {
-      typeNode.fields = typeNode.fields?.filter(f => f.name.value !== change.meta.removedFieldName);
-
-      // add new field to the node set
-      nodeByPath.delete(change.path);
-    } else {
-      handleError(
-        change,
-        new ChangedCoordinateKindMismatchError(Kind.INPUT_OBJECT_TYPE_DEFINITION, typeNode.kind),
-        config,
-      );
-    }
-  } else {
+  if (!existingNode) {
     handleError(
       change,
       new DeletedCoordinateNotFound(
@@ -144,7 +121,38 @@ export function inputFieldRemoved(
       ),
       config,
     );
+    return;
   }
+
+  const typeNode = nodeByPath.get(parentPath(change.path)) as ASTNode & {
+    fields?: InputValueDefinitionNode[];
+  };
+  if (!typeNode) {
+    handleError(
+      change,
+      new DeletedAncestorCoordinateNotFoundError(
+        Kind.INPUT_OBJECT_TYPE_DEFINITION,
+        'fields',
+        change.meta.removedFieldName,
+      ),
+      config,
+    );
+    return;
+  }
+  
+  if (typeNode.kind !== Kind.INPUT_OBJECT_TYPE_DEFINITION) {
+    handleError(
+      change,
+      new ChangedCoordinateKindMismatchError(Kind.INPUT_OBJECT_TYPE_DEFINITION, typeNode.kind),
+      config,
+    );
+    return;
+  }
+
+  typeNode.fields = typeNode.fields?.filter(f => f.name.value !== change.meta.removedFieldName);
+
+  // add new field to the node set
+  nodeByPath.delete(change.path);
 }
 
 export function inputFieldDescriptionAdded(
@@ -158,19 +166,7 @@ export function inputFieldDescriptionAdded(
     return;
   }
   const existingNode = nodeByPath.get(change.path);
-  if (existingNode) {
-    if (existingNode.kind === Kind.INPUT_VALUE_DEFINITION) {
-      (existingNode.description as StringValueNode | undefined) = stringNode(
-        change.meta.addedInputFieldDescription,
-      );
-    } else {
-      handleError(
-        change,
-        new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, existingNode.kind),
-        config,
-      );
-    }
-  } else {
+  if (!existingNode) {
     handleError(
       change,
       new DeletedAncestorCoordinateNotFoundError(
@@ -180,7 +176,20 @@ export function inputFieldDescriptionAdded(
       ),
       config,
     );
+    return;
   }
+  if (existingNode.kind !== Kind.INPUT_VALUE_DEFINITION) {
+    handleError(
+      change,
+      new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, existingNode.kind),
+      config,
+    );
+    return;
+  }
+
+  (existingNode.description as StringValueNode | undefined) = stringNode(
+    change.meta.addedInputFieldDescription,
+  );
 }
 
 export function inputFieldTypeChanged(
@@ -219,39 +228,41 @@ export function inputFieldDefaultValueChanged(
     return;
   }
   const existingNode = nodeByPath.get(change.path);
-  if (existingNode) {
-    if (existingNode.kind === Kind.INPUT_VALUE_DEFINITION) {
-      const oldValueMatches =
-        (existingNode.defaultValue && print(existingNode.defaultValue)) ===
-        change.meta.oldDefaultValue;
-      if (!oldValueMatches) {
-        handleError(
-          change,
-          new ValueMismatchError(
-            existingNode.defaultValue?.kind ?? Kind.INPUT_VALUE_DEFINITION,
-            change.meta.oldDefaultValue,
-            existingNode.defaultValue && print(existingNode.defaultValue),
-          ),
-          config,
-        );
-      }
-      (existingNode.defaultValue as ConstValueNode | undefined) = change.meta.newDefaultValue
-        ? parseConstValue(change.meta.newDefaultValue)
-        : undefined;
-    } else {
-      handleError(
-        change,
-        new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, existingNode.kind),
-        config,
-      );
-    }
-  } else {
+  if (!existingNode) {
     handleError(
       change,
       new ChangedAncestorCoordinateNotFoundError(Kind.INPUT_VALUE_DEFINITION, 'defaultValue'),
       config,
     );
+    return;
   }
+
+  if (existingNode.kind !== Kind.INPUT_VALUE_DEFINITION) {
+    handleError(
+      change,
+      new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, existingNode.kind),
+      config,
+    );
+    return;
+  }
+
+  const oldValueMatches =
+    (existingNode.defaultValue && print(existingNode.defaultValue)) ===
+    change.meta.oldDefaultValue;
+  if (!oldValueMatches) {
+    handleError(
+      change,
+      new ValueMismatchError(
+        existingNode.defaultValue?.kind ?? Kind.INPUT_VALUE_DEFINITION,
+        change.meta.oldDefaultValue,
+        existingNode.defaultValue && print(existingNode.defaultValue),
+      ),
+      config,
+    );
+  }
+  (existingNode.defaultValue as ConstValueNode | undefined) = change.meta.newDefaultValue
+    ? parseConstValue(change.meta.newDefaultValue)
+    : undefined;
 }
 
 export function inputFieldDescriptionChanged(
@@ -266,22 +277,23 @@ export function inputFieldDescriptionChanged(
     Kind.INPUT_VALUE_DEFINITION,
     config,
   );
-  if (existingNode) {
-    if (existingNode.description?.value !== change.meta.oldInputFieldDescription) {
-      handleError(
-        change,
-        new ValueMismatchError(
-          Kind.STRING,
-          change.meta.oldInputFieldDescription,
-          existingNode.description?.value,
-        ),
-        config,
-      );
-    }
-    (existingNode.description as StringValueNode | undefined) = stringNode(
-      change.meta.newInputFieldDescription,
+  if (!existingNode) {
+    return;
+  }
+  if (existingNode.description?.value !== change.meta.oldInputFieldDescription) {
+    handleError(
+      change,
+      new ValueMismatchError(
+        Kind.STRING,
+        change.meta.oldInputFieldDescription,
+        existingNode.description?.value,
+      ),
+      config,
     );
   }
+  (existingNode.description as StringValueNode | undefined) = stringNode(
+    change.meta.newInputFieldDescription,
+  );
 }
 
 export function inputFieldDescriptionRemoved(
@@ -296,14 +308,16 @@ export function inputFieldDescriptionRemoved(
     Kind.INPUT_VALUE_DEFINITION,
     config,
   );
-  if (existingNode) {
-    if (existingNode.description === undefined) {
-      console.warn(`Cannot remove a description at ${change.path} because no description is set.`);
-    } else if (existingNode.description.value !== change.meta.removedDescription) {
-      console.warn(
-        `Description at ${change.path} does not match expected description, but proceeding with description removal anyways.`,
-      );
-    }
-    (existingNode.description as StringValueNode | undefined) = undefined;
+  if (!existingNode) {
+    return;
   }
+
+  if (existingNode.description === undefined) {
+    console.warn(`Cannot remove a description at ${change.path} because no description is set.`);
+  } else if (existingNode.description.value !== change.meta.removedDescription) {
+    console.warn(
+      `Description at ${change.path} does not match expected description, but proceeding with description removal anyways.`,
+    );
+  }
+  (existingNode.description as StringValueNode | undefined) = undefined;
 }
