@@ -88,19 +88,6 @@ export function debugPrintChange(change: Change<any>, nodeByPath: Map<string, AS
   }
 }
 
-export const DEPRECATION_REASON_DEFAULT = 'No longer supported';
-
-export function assertChangeHasPath<C extends Change<any>>(
-  change: C,
-  config: PatchConfig,
-): change is typeof change & { path: string } {
-  if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
-    return false;
-  }
-  return true;
-}
-
 export function assertValueMatch(
   change: Change<any>,
   expectedKind: Kind,
@@ -126,21 +113,25 @@ export function getChangedNodeOfKind<K extends Kind>(
   if (kind === Kind.DIRECTIVE) {
     throw new Error('Directives cannot be found using this method.');
   }
-  if (assertChangeHasPath(change, config)) {
-    const existing = nodeByPath.get(change.path);
-    if (!existing) {
-      handleError(
-        change,
-        // @todo improve the error by providing the name or value somehow.
-        new ChangedCoordinateNotFoundError(kind, undefined),
-        config,
-      );
-    } else if (existing.kind === kind) {
-      return existing as ASTKindToNode[K];
-    } else {
-      handleError(change, new ChangedCoordinateKindMismatchError(kind, existing.kind), config);
-    }
+  if (!change.path) {
+    handleError(change, new ChangePathMissingError(change), config);
+    return;
   }
+
+  const existing = nodeByPath.get(change.path);
+  if (!existing) {
+    handleError(
+      change,
+      // @todo improve the error by providing the name or value somehow.
+      new ChangedCoordinateNotFoundError(kind, undefined),
+      config,
+    );
+    return;
+  }
+  if (existing.kind !== kind) {
+    handleError(change, new ChangedCoordinateKindMismatchError(kind, existing.kind), config);
+  }
+  return existing as ASTKindToNode[K];
 }
 
 export function getDeletedNodeOfKind<K extends Kind>(
@@ -149,21 +140,25 @@ export function getDeletedNodeOfKind<K extends Kind>(
   kind: K,
   config: PatchConfig,
 ): ASTKindToNode[K] | void {
-  if (assertChangeHasPath(change, config)) {
-    const existing = nodeByPath.get(change.path);
-    if (!existing) {
-      handleError(
-        change,
-        // @todo improve the error by providing the name or value somehow.
-        new DeletedCoordinateNotFound(kind, undefined),
-        config,
-      );
-    } else if (existing.kind === kind) {
-      return existing as ASTKindToNode[K];
-    } else {
-      handleError(change, new ChangedCoordinateKindMismatchError(kind, existing.kind), config);
-    }
+  if (!change.path) {
+    handleError(change, new ChangePathMissingError(change), config);
+    return;
   }
+  const existing = nodeByPath.get(change.path);
+  if (!existing) {
+    handleError(
+      change,
+      // @todo improve the error by providing the name or value somehow.
+      new DeletedCoordinateNotFound(kind, undefined),
+      config,
+    );
+    return;
+  }
+  if (existing.kind !== kind) {
+    handleError(change, new ChangedCoordinateKindMismatchError(kind, existing.kind), config);
+    return;
+  }
+  return existing as ASTKindToNode[K];
 }
 
 export function getDeletedParentNodeOfKind<K extends Kind>(
@@ -173,19 +168,23 @@ export function getDeletedParentNodeOfKind<K extends Kind>(
   attribute: NodeAttribute,
   config: PatchConfig,
 ): ASTKindToNode[K] | void {
-  if (assertChangeHasPath(change, config)) {
-    const existing = nodeByPath.get(parentPath(change.path));
-    if (!existing) {
-      handleError(
-        change,
-        // @todo improve the error by providing the name or value somehow.
-        new DeletedAncestorCoordinateNotFoundError(kind, attribute, undefined),
-        config,
-      );
-    } else if (existing.kind === kind) {
-      return existing as ASTKindToNode[K];
-    } else {
-      handleError(change, new ChangedCoordinateKindMismatchError(kind, existing.kind), config);
-    }
+  if (!change.path) {
+    handleError(change, new ChangePathMissingError(change), config);
+    return;
   }
+  const existing = nodeByPath.get(parentPath(change.path));
+  if (!existing) {
+    handleError(
+      change,
+      // @todo improve the error by providing the name or value somehow.
+      new DeletedAncestorCoordinateNotFoundError(kind, attribute, undefined),
+      config,
+    );
+    return;
+  }
+  if (existing.kind !== kind) {
+    handleError(change, new ChangedCoordinateKindMismatchError(kind, existing.kind), config);
+    return;
+  }
+  return existing as ASTKindToNode[K];
 }
