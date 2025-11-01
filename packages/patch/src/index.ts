@@ -96,6 +96,7 @@ export * as errors from './errors.js';
 
 /**
  * Wraps converting a schema to AST safely, patching, then rebuilding the schema from AST.
+ * The schema is not validated in this function. That it is the responsibility of the caller.
  */
 export function patchSchema(
   schema: GraphQLSchema,
