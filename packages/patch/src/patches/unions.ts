@@ -25,27 +25,29 @@ export function unionMemberAdded(
   const union = nodeByPath.get(parentPath(change.path)) as
     | (ASTNode & { types?: NamedTypeNode[] })
     | undefined;
-  if (union) {
-    if (findNamedNode(union.types, change.meta.addedUnionMemberTypeName)) {
-      handleError(
-        change,
-        new AddedAttributeAlreadyExistsError(
-          Kind.UNION_TYPE_DEFINITION,
-          'types',
-          change.meta.addedUnionMemberTypeName,
-        ),
-        config,
-      );
-    } else {
-      union.types = [...(union.types ?? []), namedTypeNode(change.meta.addedUnionMemberTypeName)];
-    }
-  } else {
+  if (!union) {
     handleError(
       change,
       new ChangedAncestorCoordinateNotFoundError(Kind.UNION_TYPE_DEFINITION, 'types'),
       config,
     );
+    return;
   }
+
+  if (findNamedNode(union.types, change.meta.addedUnionMemberTypeName)) {
+    handleError(
+      change,
+      new AddedAttributeAlreadyExistsError(
+        Kind.UNION_TYPE_DEFINITION,
+        'types',
+        change.meta.addedUnionMemberTypeName,
+      ),
+      config,
+    );
+    return;
+  }
+
+  union.types = [...(union.types ?? []), namedTypeNode(change.meta.addedUnionMemberTypeName)];
 }
 
 export function unionMemberRemoved(
@@ -61,23 +63,7 @@ export function unionMemberRemoved(
   const union = nodeByPath.get(parentPath(change.path)) as
     | (ASTNode & { types?: NamedTypeNode[] })
     | undefined;
-  if (union) {
-    if (findNamedNode(union.types, change.meta.removedUnionMemberTypeName)) {
-      union.types = union.types!.filter(
-        t => t.name.value !== change.meta.removedUnionMemberTypeName,
-      );
-    } else {
-      handleError(
-        change,
-        new DeletedAttributeNotFoundError(
-          Kind.UNION_TYPE_DEFINITION,
-          'types',
-          change.meta.removedUnionMemberTypeName,
-        ),
-        config,
-      );
-    }
-  } else {
+  if (!union) {
     handleError(
       change,
       new DeletedAncestorCoordinateNotFoundError(
@@ -87,5 +73,21 @@ export function unionMemberRemoved(
       ),
       config,
     );
+    return;
   }
+
+  if (!findNamedNode(union.types, change.meta.removedUnionMemberTypeName)) {
+    handleError(
+      change,
+      new DeletedAttributeNotFoundError(
+        Kind.UNION_TYPE_DEFINITION,
+        'types',
+        change.meta.removedUnionMemberTypeName,
+      ),
+      config,
+    );
+    return;
+  }
+
+  union.types = union.types!.filter(t => t.name.value !== change.meta.removedUnionMemberTypeName);
 }

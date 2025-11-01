@@ -139,7 +139,7 @@ export function inputFieldRemoved(
     );
     return;
   }
-  
+
   if (typeNode.kind !== Kind.INPUT_OBJECT_TYPE_DEFINITION) {
     handleError(
       change,
@@ -247,8 +247,7 @@ export function inputFieldDefaultValueChanged(
   }
 
   const oldValueMatches =
-    (existingNode.defaultValue && print(existingNode.defaultValue)) ===
-    change.meta.oldDefaultValue;
+    (existingNode.defaultValue && print(existingNode.defaultValue)) === change.meta.oldDefaultValue;
   if (!oldValueMatches) {
     handleError(
       change,

@@ -31,13 +31,13 @@ export function typeAdded(
       new AddedCoordinateAlreadyExistsError(existing.kind, change.meta.addedTypeName),
       config,
     );
-  } else {
-    const node: TypeDefinitionNode = {
-      name: nameNode(change.meta.addedTypeName),
-      kind: change.meta.addedTypeKind as TypeDefinitionNode['kind'],
-    };
-    nodeByPath.set(change.path, node);
+    return;
   }
+  const node: TypeDefinitionNode = {
+    name: nameNode(change.meta.addedTypeName),
+    kind: change.meta.addedTypeKind as TypeDefinitionNode['kind'],
+  };
+  nodeByPath.set(change.path, node);
 }
 
 export function typeRemoved(
@@ -52,27 +52,29 @@ export function typeRemoved(
   }
 
   const removedNode = nodeByPath.get(change.path);
-  if (removedNode) {
-    if (isTypeDefinitionNode(removedNode)) {
-      // delete the reference to the removed field.
-      for (const key of nodeByPath.keys()) {
-        if (key.startsWith(change.path)) {
-          nodeByPath.delete(key);
-        }
-      }
-    } else {
-      handleError(
-        change,
-        new DeletedCoordinateNotFound(removedNode.kind, change.meta.removedTypeName),
-        config,
-      );
-    }
-  } else {
+  if (!removedNode) {
     handleError(
       change,
       new DeletedCoordinateNotFound(Kind.OBJECT_TYPE_DEFINITION, change.meta.removedTypeName),
       config,
     );
+    return;
+  }
+
+  if (!isTypeDefinitionNode(removedNode)) {
+    handleError(
+      change,
+      new DeletedCoordinateNotFound(removedNode.kind, change.meta.removedTypeName),
+      config,
+    );
+    return;
+  }
+
+  // delete the reference to the removed field.
+  for (const key of nodeByPath.keys()) {
+    if (key.startsWith(change.path)) {
+      nodeByPath.delete(key);
+    }
   }
 }
 
@@ -88,25 +90,26 @@ export function typeDescriptionAdded(
   }
 
   const typeNode = nodeByPath.get(change.path);
-  if (typeNode) {
-    if (isTypeDefinitionNode(typeNode)) {
-      (typeNode.description as StringValueNode | undefined) = change.meta.addedTypeDescription
-        ? stringNode(change.meta.addedTypeDescription)
-        : undefined;
-    } else {
-      handleError(
-        change,
-        new ChangedCoordinateKindMismatchError(Kind.OBJECT_TYPE_DEFINITION, typeNode.kind),
-        config,
-      );
-    }
-  } else {
+  if (!typeNode) {
     handleError(
       change,
       new ChangedAncestorCoordinateNotFoundError(Kind.OBJECT_TYPE_DEFINITION, 'description'),
       config,
     );
+    return;
   }
+  if (!isTypeDefinitionNode(typeNode)) {
+    handleError(
+      change,
+      new ChangedCoordinateKindMismatchError(Kind.OBJECT_TYPE_DEFINITION, typeNode.kind),
+      config,
+    );
+    return;
+  }
+
+  (typeNode.description as StringValueNode | undefined) = change.meta.addedTypeDescription
+    ? stringNode(change.meta.addedTypeDescription)
+    : undefined;
 }
 
 export function typeDescriptionChanged(
@@ -121,36 +124,37 @@ export function typeDescriptionChanged(
   }
 
   const typeNode = nodeByPath.get(change.path);
-  if (typeNode) {
-    if (isTypeDefinitionNode(typeNode)) {
-      if (typeNode.description?.value !== change.meta.oldTypeDescription) {
-        handleError(
-          change,
-          new ValueMismatchError(
-            Kind.STRING,
-            change.meta.oldTypeDescription,
-            typeNode.description?.value,
-          ),
-          config,
-        );
-      }
-      (typeNode.description as StringValueNode | undefined) = stringNode(
-        change.meta.newTypeDescription,
-      );
-    } else {
-      handleError(
-        change,
-        new ChangedCoordinateKindMismatchError(Kind.OBJECT_TYPE_DEFINITION, typeNode.kind),
-        config,
-      );
-    }
-  } else {
+  if (!typeNode) {
     handleError(
       change,
       new ChangedAncestorCoordinateNotFoundError(Kind.OBJECT_TYPE_DEFINITION, 'description'),
       config,
     );
+    return;
   }
+
+  if (!isTypeDefinitionNode(typeNode)) {
+    handleError(
+      change,
+      new ChangedCoordinateKindMismatchError(Kind.OBJECT_TYPE_DEFINITION, typeNode.kind),
+      config,
+    );
+    return;
+  }
+  if (typeNode.description?.value !== change.meta.oldTypeDescription) {
+    handleError(
+      change,
+      new ValueMismatchError(
+        Kind.STRING,
+        change.meta.oldTypeDescription,
+        typeNode.description?.value,
+      ),
+      config,
+    );
+  }
+  (typeNode.description as StringValueNode | undefined) = stringNode(
+    change.meta.newTypeDescription,
+  );
 }
 
 export function typeDescriptionRemoved(
@@ -165,28 +169,7 @@ export function typeDescriptionRemoved(
   }
 
   const typeNode = nodeByPath.get(change.path);
-  if (typeNode) {
-    if (isTypeDefinitionNode(typeNode)) {
-      if (typeNode.description?.value !== change.meta.oldTypeDescription) {
-        handleError(
-          change,
-          new ValueMismatchError(
-            Kind.STRING,
-            change.meta.oldTypeDescription,
-            typeNode.description?.value,
-          ),
-          config,
-        );
-      }
-      (typeNode.description as StringValueNode | undefined) = undefined;
-    } else {
-      handleError(
-        change,
-        new ChangedCoordinateKindMismatchError(Kind.OBJECT_TYPE_DEFINITION, typeNode.kind),
-        config,
-      );
-    }
-  } else {
+  if (!typeNode) {
     handleError(
       change,
       new DeletedAncestorCoordinateNotFoundError(
@@ -196,5 +179,28 @@ export function typeDescriptionRemoved(
       ),
       config,
     );
+    return;
   }
+
+  if (!isTypeDefinitionNode(typeNode)) {
+    handleError(
+      change,
+      new ChangedCoordinateKindMismatchError(Kind.OBJECT_TYPE_DEFINITION, typeNode.kind),
+      config,
+    );
+    return;
+  }
+
+  if (typeNode.description?.value !== change.meta.oldTypeDescription) {
+    handleError(
+      change,
+      new ValueMismatchError(
+        Kind.STRING,
+        change.meta.oldTypeDescription,
+        typeNode.description?.value,
+      ),
+      config,
+    );
+  }
+  (typeNode.description as StringValueNode | undefined) = undefined;
 }
