@@ -34,13 +34,19 @@ export function enumValueRemoved(
       new DeletedCoordinateNotFound(Kind.ENUM_TYPE_DEFINITION, change.meta.removedEnumValueName),
       config,
     );
-  } else if (enumNode.kind !== Kind.ENUM_TYPE_DEFINITION) {
+    return;
+  }
+
+  if (enumNode.kind !== Kind.ENUM_TYPE_DEFINITION) {
     handleError(
       change,
       new ChangedCoordinateKindMismatchError(Kind.ENUM_TYPE_DEFINITION, enumNode.kind),
       config,
     );
-  } else if (enumNode.values === undefined || enumNode.values.length === 0) {
+    return;
+  }
+
+  if (enumNode.values === undefined || enumNode.values.length === 0) {
     handleError(
       change,
       new DeletedAttributeNotFoundError(
@@ -50,26 +56,26 @@ export function enumValueRemoved(
       ),
       config,
     );
-  } else {
-    const beforeLength = enumNode.values.length;
-    enumNode.values = enumNode.values.filter(
-      f => f.name.value !== change.meta.removedEnumValueName,
-    );
-    if (beforeLength === enumNode.values.length) {
-      handleError(
-        change,
-        new DeletedAttributeNotFoundError(
-          Kind.ENUM_TYPE_DEFINITION,
-          'values',
-          change.meta.removedEnumValueName,
-        ),
-        config,
-      );
-    } else {
-      // delete the reference to the removed field.
-      nodeByPath.delete(change.path);
-    }
+    return;
   }
+
+  const beforeLength = enumNode.values.length;
+  enumNode.values = enumNode.values.filter(f => f.name.value !== change.meta.removedEnumValueName);
+  if (beforeLength === enumNode.values.length) {
+    handleError(
+      change,
+      new DeletedAttributeNotFoundError(
+        Kind.ENUM_TYPE_DEFINITION,
+        'values',
+        change.meta.removedEnumValueName,
+      ),
+      config,
+    );
+    return;
+  }
+
+  // delete the reference to the removed field.
+  nodeByPath.delete(change.path);
 }
 
 export function enumValueAdded(
@@ -85,7 +91,10 @@ export function enumValueAdded(
   const changedNode = nodeByPath.get(enumValuePath);
   if (!enumNode) {
     handleError(change, new ChangedAncestorCoordinateNotFoundError(Kind.ENUM, 'values'), config);
-  } else if (changedNode) {
+    return;
+  }
+
+  if (changedNode) {
     handleError(
       change,
       new AddedAttributeAlreadyExistsError(
@@ -95,24 +104,28 @@ export function enumValueAdded(
       ),
       config,
     );
-  } else if (enumNode.kind === Kind.ENUM_TYPE_DEFINITION) {
-    const c = change as Change<typeof ChangeType.EnumValueAdded>;
-    const node: EnumValueDefinitionNode = {
-      kind: Kind.ENUM_VALUE_DEFINITION,
-      name: nameNode(c.meta.addedEnumValueName),
-      description: c.meta.addedDirectiveDescription
-        ? stringNode(c.meta.addedDirectiveDescription)
-        : undefined,
-    };
-    (enumNode.values as EnumValueDefinitionNode[]) = [...(enumNode.values ?? []), node];
-    nodeByPath.set(enumValuePath, node);
-  } else {
+    return;
+  }
+
+  if (enumNode.kind !== Kind.ENUM_TYPE_DEFINITION) {
     handleError(
       change,
       new ChangedCoordinateKindMismatchError(Kind.ENUM_TYPE_DEFINITION, enumNode.kind),
       config,
     );
+    return;
   }
+
+  const c = change as Change<typeof ChangeType.EnumValueAdded>;
+  const node: EnumValueDefinitionNode = {
+    kind: Kind.ENUM_VALUE_DEFINITION,
+    name: nameNode(c.meta.addedEnumValueName),
+    description: c.meta.addedDirectiveDescription
+      ? stringNode(c.meta.addedDirectiveDescription)
+      : undefined,
+  };
+  (enumNode.values as EnumValueDefinitionNode[]) = [...(enumNode.values ?? []), node];
+  nodeByPath.set(enumValuePath, node);
 }
 
 export function enumValueDescriptionChanged(
@@ -127,37 +140,38 @@ export function enumValueDescriptionChanged(
   }
 
   const enumValueNode = nodeByPath.get(change.path);
-  if (enumValueNode) {
-    if (enumValueNode.kind === Kind.ENUM_VALUE_DEFINITION) {
-      const oldValueMatches =
-        change.meta.oldEnumValueDescription === (enumValueNode.description?.value ?? null);
-      if (!oldValueMatches) {
-        handleError(
-          change,
-          new ValueMismatchError(
-            Kind.ENUM_TYPE_DEFINITION,
-            change.meta.oldEnumValueDescription,
-            enumValueNode.description?.value,
-          ),
-          config,
-        );
-      }
-      (enumValueNode.description as StringValueNode | undefined) = change.meta
-        .newEnumValueDescription
-        ? stringNode(change.meta.newEnumValueDescription)
-        : undefined;
-    } else {
-      handleError(
-        change,
-        new ChangedCoordinateKindMismatchError(Kind.ENUM_VALUE_DEFINITION, enumValueNode.kind),
-        config,
-      );
-    }
-  } else {
+  if (!enumValueNode) {
     handleError(
       change,
       new ChangedAncestorCoordinateNotFoundError(Kind.ENUM_VALUE_DEFINITION, 'values'),
       config,
     );
+    return;
   }
+
+  if (enumValueNode.kind !== Kind.ENUM_VALUE_DEFINITION) {
+    handleError(
+      change,
+      new ChangedCoordinateKindMismatchError(Kind.ENUM_VALUE_DEFINITION, enumValueNode.kind),
+      config,
+    );
+    return;
+  }
+
+  const oldValueMatches =
+    change.meta.oldEnumValueDescription === (enumValueNode.description?.value ?? null);
+  if (!oldValueMatches) {
+    handleError(
+      change,
+      new ValueMismatchError(
+        Kind.ENUM_TYPE_DEFINITION,
+        change.meta.oldEnumValueDescription,
+        enumValueNode.description?.value,
+      ),
+      config,
+    );
+  }
+  (enumValueNode.description as StringValueNode | undefined) = change.meta.newEnumValueDescription
+    ? stringNode(change.meta.newEnumValueDescription)
+    : undefined;
 }

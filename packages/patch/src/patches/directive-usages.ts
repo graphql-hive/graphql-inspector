@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/no-negated-condition */
 import { ArgumentNode, ASTNode, DirectiveNode, Kind, parseValue, print, ValueNode } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
@@ -84,6 +83,18 @@ function directiveUsageDefinitionAdded(
   const parentNode = nodeByPath.get(parentPath(change.path)) as
     | { kind: Kind; directives?: DirectiveNode[] }
     | undefined;
+  if (!parentNode) {
+    handleError(
+      change,
+      new ChangedAncestorCoordinateNotFoundError(
+        Kind.OBJECT_TYPE_DEFINITION, // or interface...
+        'directives',
+      ),
+      config,
+    );
+    return;
+  }
+
   const definition = nodeByPath.get(`@${change.meta.addedDirectiveName}`);
   let repeatable = false;
   if (!definition) {
@@ -103,22 +114,14 @@ function directiveUsageDefinitionAdded(
       new AddedCoordinateAlreadyExistsError(Kind.DIRECTIVE, change.meta.addedDirectiveName),
       config,
     );
-  } else if (parentNode) {
-    const newDirective: DirectiveNode = {
-      kind: Kind.DIRECTIVE,
-      name: nameNode(change.meta.addedDirectiveName),
-    };
-    parentNode.directives = [...(parentNode.directives ?? []), newDirective];
-  } else {
-    handleError(
-      change,
-      new ChangedAncestorCoordinateNotFoundError(
-        Kind.OBJECT_TYPE_DEFINITION, // or interface...
-        'directives',
-      ),
-      config,
-    );
+    return;
   }
+
+  const newDirective: DirectiveNode = {
+    kind: Kind.DIRECTIVE,
+    name: nameNode(change.meta.addedDirectiveName),
+  };
+  parentNode.directives = [...(parentNode.directives ?? []), newDirective];
 }
 
 function schemaDirectiveUsageDefinitionAdded(
@@ -162,16 +165,17 @@ function schemaDirectiveUsageDefinitionAdded(
       ),
       config,
     );
-  } else {
-    const directiveNode: DirectiveNode = {
-      kind: Kind.DIRECTIVE,
-      name: nameNode(change.meta.addedDirectiveName),
-    };
-    (schemaNodes[0].directives as DirectiveNode[] | undefined) = [
-      ...(schemaNodes[0].directives ?? []),
-      directiveNode,
-    ];
+    return;
   }
+
+  const directiveNode: DirectiveNode = {
+    kind: Kind.DIRECTIVE,
+    name: nameNode(change.meta.addedDirectiveName),
+  };
+  (schemaNodes[0].directives as DirectiveNode[] | undefined) = [
+    ...(schemaNodes[0].directives ?? []),
+    directiveNode,
+  ];
 }
 
 function schemaDirectiveUsageDefinitionRemoved(
@@ -192,8 +196,6 @@ function schemaDirectiveUsageDefinitionRemoved(
       (node.directives as DirectiveNode[] | undefined) = node.directives?.filter(
         d => d.name.value !== change.meta.removedDirectiveName,
       );
-      // nodeByPath.delete(change.path)
-      // nodeByPath.delete(`.@${change.meta.removedDirectiveName}`);
       deleted = true;
       break;
     }
@@ -225,11 +227,6 @@ function directiveUsageDefinitionRemoved(
   const parentNode = nodeByPath.get(parentPath(change.path)) as
     | { kind: Kind; directives?: DirectiveNode[] }
     | undefined;
-  const directiveNode = findNthDirective(
-    parentNode?.directives ?? [],
-    change.meta.removedDirectiveName,
-    change.meta.directiveRepeatedTimes,
-  );
   if (!parentNode) {
     handleError(
       change,
@@ -240,7 +237,15 @@ function directiveUsageDefinitionRemoved(
       ),
       config,
     );
-  } else if (!directiveNode) {
+    return;
+  }
+
+  const directiveNode = findNthDirective(
+    parentNode?.directives ?? [],
+    change.meta.removedDirectiveName,
+    change.meta.directiveRepeatedTimes,
+  );
+  if (!directiveNode) {
     handleError(
       change,
       new DeletedAttributeNotFoundError(
@@ -250,21 +255,18 @@ function directiveUsageDefinitionRemoved(
       ),
       config,
     );
-  } else {
-    // null the value out for filtering later. The index is important so it can't be removed.
-    // @note the nullish check is critical here even though the types dont show it
-    const removedIndex = (parentNode.directives ?? []).findIndex(d => d === directiveNode);
-    const directiveList = [...(parentNode.directives ?? [])];
-    if (removedIndex !== -1) {
-      (directiveList[removedIndex] as any) = undefined;
-    }
-    parentNode.directives = directiveList;
-    context.removedDirectiveNodes.push(parentNode);
-    // parentNode.directives = parentNode.direct
-    // ives?.filter(
-    //   d => d.name.value !== change.meta.removedDirectiveName,
-    // );
+    return;
   }
+  // null the value out for filtering later. The index is important so that changes reference
+  // the correct DirectiveNode.
+  // @note the nullish check is critical here even though the types dont show it
+  const removedIndex = (parentNode.directives ?? []).findIndex(d => d === directiveNode);
+  const directiveList = [...(parentNode.directives ?? [])];
+  if (removedIndex !== -1) {
+    (directiveList[removedIndex] as any) = undefined;
+  }
+  parentNode.directives = directiveList;
+  context.removedDirectiveNodes.push(parentNode);
 }
 
 export function directiveUsageArgumentDefinitionAdded(
@@ -514,35 +516,39 @@ export function directiveUsageArgumentAdded(
       ),
       config,
     );
-  } else if (directiveNode.kind === Kind.DIRECTIVE) {
-    const existing = findNamedNode(directiveNode.arguments, change.meta.addedArgumentName);
-    // "ArgumentAdded" but argument already exists.
-    if (existing) {
-      handleError(
-        change,
-        new ValueMismatchError(directiveNode.kind, null, print(existing.value)),
-        config,
-      );
-      (existing.value as ValueNode) = parseValue(change.meta.addedArgumentValue);
-    } else {
-      const argNode: ArgumentNode = {
-        kind: Kind.ARGUMENT,
-        name: nameNode(change.meta.addedArgumentName),
-        value: parseValue(change.meta.addedArgumentValue),
-      };
-      (directiveNode.arguments as ArgumentNode[] | undefined) = [
-        ...(directiveNode.arguments ?? []),
-        argNode,
-      ];
-      nodeByPath.set(change.path, argNode);
-    }
-  } else {
+    return;
+  }
+  if (directiveNode.kind !== Kind.DIRECTIVE) {
     handleError(
       change,
       new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE, directiveNode.kind),
       config,
     );
+    return;
   }
+
+  const existing = findNamedNode(directiveNode.arguments, change.meta.addedArgumentName);
+  // "ArgumentAdded" but argument already exists.
+  if (existing) {
+    handleError(
+      change,
+      new ValueMismatchError(directiveNode.kind, null, print(existing.value)),
+      config,
+    );
+    (existing.value as ValueNode) = parseValue(change.meta.addedArgumentValue);
+    return;
+  }
+
+  const argNode: ArgumentNode = {
+    kind: Kind.ARGUMENT,
+    name: nameNode(change.meta.addedArgumentName),
+    value: parseValue(change.meta.addedArgumentValue),
+  };
+  (directiveNode.arguments as ArgumentNode[] | undefined) = [
+    ...(directiveNode.arguments ?? []),
+    argNode,
+  ];
+  nodeByPath.set(change.path, argNode);
 }
 
 export function directiveUsageArgumentRemoved(
@@ -575,29 +581,31 @@ export function directiveUsageArgumentRemoved(
       ),
       config,
     );
-  } else if (directiveNode.kind === Kind.DIRECTIVE) {
-    const existing = findNamedNode(directiveNode.arguments, change.meta.removedArgumentName);
-    if (existing) {
-      (directiveNode.arguments as ArgumentNode[] | undefined) = (
-        directiveNode.arguments as ArgumentNode[] | undefined
-      )?.filter(a => a.name.value !== change.meta.removedArgumentName);
-      nodeByPath.delete(change.path);
-    } else {
-      handleError(
-        change,
-        new DeletedAttributeNotFoundError(
-          directiveNode.kind,
-          'arguments',
-          change.meta.removedArgumentName,
-        ),
-        config,
-      );
-    }
-  } else {
+    return;
+  }
+  if (directiveNode.kind !== Kind.DIRECTIVE) {
     handleError(
       change,
       new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE, directiveNode.kind),
       config,
     );
+    return;
   }
+
+  const existing = findNamedNode(directiveNode.arguments, change.meta.removedArgumentName);
+  if (!existing) {
+    handleError(
+      change,
+      new DeletedAttributeNotFoundError(
+        directiveNode.kind,
+        'arguments',
+        change.meta.removedArgumentName,
+      ),
+      config,
+    );
+  }
+
+  (directiveNode.arguments as ArgumentNode[] | undefined) = (
+    directiveNode.arguments as ArgumentNode[] | undefined
+  )?.filter(a => a.name.value !== change.meta.removedArgumentName);
 }

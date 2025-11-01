@@ -51,18 +51,18 @@ export function directiveAdded(
       new AddedCoordinateAlreadyExistsError(changedNode.kind, change.meta.addedDirectiveName),
       config,
     );
-  } else {
-    const node: DirectiveDefinitionNode = {
-      kind: Kind.DIRECTIVE_DEFINITION,
-      name: nameNode(change.meta.addedDirectiveName),
-      repeatable: change.meta.addedDirectiveRepeatable,
-      locations: change.meta.addedDirectiveLocations.map(l => nameNode(l)),
-      description: change.meta.addedDirectiveDescription
-        ? stringNode(change.meta.addedDirectiveDescription)
-        : undefined,
-    };
-    nodeByPath.set(change.path, node);
+    return;
   }
+  const node: DirectiveDefinitionNode = {
+    kind: Kind.DIRECTIVE_DEFINITION,
+    name: nameNode(change.meta.addedDirectiveName),
+    repeatable: change.meta.addedDirectiveRepeatable,
+    locations: change.meta.addedDirectiveLocations.map(l => nameNode(l)),
+    description: change.meta.addedDirectiveDescription
+      ? stringNode(change.meta.addedDirectiveDescription)
+      : undefined,
+  };
+  nodeByPath.set(change.path, node);
 }
 
 export function directiveRemoved(
@@ -99,40 +99,44 @@ export function directiveArgumentAdded(
       ),
       config,
     );
-  } else if (directiveNode.kind === Kind.DIRECTIVE_DEFINITION) {
-    const existingArg = findNamedNode(
-      directiveNode.arguments,
-      change.meta.addedDirectiveArgumentName,
-    );
-    if (existingArg) {
-      handleError(
-        change,
-        new AddedAttributeAlreadyExistsError(
-          existingArg.kind,
-          'arguments',
-          change.meta.addedDirectiveArgumentName,
-        ),
-        config,
-      );
-    } else {
-      const node: InputValueDefinitionNode = {
-        kind: Kind.INPUT_VALUE_DEFINITION,
-        name: nameNode(change.meta.addedDirectiveArgumentName),
-        type: parseType(change.meta.addedDirectiveArgumentType),
-      };
-      (directiveNode.arguments as InputValueDefinitionNode[] | undefined) = [
-        ...(directiveNode.arguments ?? []),
-        node,
-      ];
-      nodeByPath.set(`${change.path}.${change.meta.addedDirectiveArgumentName}`, node);
-    }
-  } else {
+    return;
+  }
+  if (directiveNode.kind !== Kind.DIRECTIVE_DEFINITION) {
     handleError(
       change,
       new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, directiveNode.kind),
       config,
     );
+    return;
   }
+
+  const existingArg = findNamedNode(
+    directiveNode.arguments,
+    change.meta.addedDirectiveArgumentName,
+  );
+  if (existingArg) {
+    handleError(
+      change,
+      new AddedAttributeAlreadyExistsError(
+        existingArg.kind,
+        'arguments',
+        change.meta.addedDirectiveArgumentName,
+      ),
+      config,
+    );
+    return;
+  }
+
+  const node: InputValueDefinitionNode = {
+    kind: Kind.INPUT_VALUE_DEFINITION,
+    name: nameNode(change.meta.addedDirectiveArgumentName),
+    type: parseType(change.meta.addedDirectiveArgumentType),
+  };
+  (directiveNode.arguments as InputValueDefinitionNode[] | undefined) = [
+    ...(directiveNode.arguments ?? []),
+    node,
+  ];
+  nodeByPath.set(`${change.path}.${change.meta.addedDirectiveArgumentName}`, node);
 }
 
 export function directiveArgumentRemoved(
@@ -170,38 +174,41 @@ export function directiveLocationAdded(
   }
 
   const changedNode = nodeByPath.get(change.path);
-  if (changedNode) {
-    if (changedNode.kind === Kind.DIRECTIVE_DEFINITION) {
-      if (changedNode.locations.some(l => l.value === change.meta.addedDirectiveLocation)) {
-        handleError(
-          change,
-          new AddedAttributeAlreadyExistsError(
-            Kind.DIRECTIVE_DEFINITION,
-            'locations',
-            change.meta.addedDirectiveLocation,
-          ),
-          config,
-        );
-      } else {
-        (changedNode.locations as NameNode[]) = [
-          ...changedNode.locations,
-          nameNode(change.meta.addedDirectiveLocation),
-        ];
-      }
-    } else {
-      handleError(
-        change,
-        new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, changedNode.kind),
-        config,
-      );
-    }
-  } else {
+  if (!changedNode) {
     handleError(
       change,
       new ChangedAncestorCoordinateNotFoundError(Kind.DIRECTIVE_DEFINITION, 'locations'),
       config,
     );
+    return;
   }
+
+  if (changedNode.kind !== Kind.DIRECTIVE_DEFINITION) {
+    handleError(
+      change,
+      new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, changedNode.kind),
+      config,
+    );
+    return;
+  }
+
+  if (changedNode.locations.some(l => l.value === change.meta.addedDirectiveLocation)) {
+    handleError(
+      change,
+      new AddedAttributeAlreadyExistsError(
+        Kind.DIRECTIVE_DEFINITION,
+        'locations',
+        change.meta.addedDirectiveLocation,
+      ),
+      config,
+    );
+    return;
+  }
+
+  (changedNode.locations as NameNode[]) = [
+    ...changedNode.locations,
+    nameNode(change.meta.addedDirectiveLocation),
+  ];
 }
 
 export function directiveLocationRemoved(
@@ -216,36 +223,38 @@ export function directiveLocationRemoved(
   }
 
   const changedNode = nodeByPath.get(change.path);
-  if (changedNode) {
-    if (changedNode.kind === Kind.DIRECTIVE_DEFINITION) {
-      const existing = changedNode.locations.findIndex(
-        l => l.value === change.meta.removedDirectiveLocation,
-      );
-      if (existing >= 0) {
-        (changedNode.locations as NameNode[]) = changedNode.locations.toSpliced(existing, 1);
-      } else {
-        handleError(
-          change,
-          new DeletedAttributeNotFoundError(
-            changedNode.kind,
-            'locations',
-            change.meta.removedDirectiveLocation,
-          ),
-          config,
-        );
-      }
-    } else {
-      handleError(
-        change,
-        new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, changedNode.kind),
-        config,
-      );
-    }
-  } else {
+  if (!changedNode) {
     handleError(
       change,
       new DeletedAncestorCoordinateNotFoundError(
         Kind.DIRECTIVE_DEFINITION,
+        'locations',
+        change.meta.removedDirectiveLocation,
+      ),
+      config,
+    );
+    return;
+  }
+
+  if (changedNode.kind !== Kind.DIRECTIVE_DEFINITION) {
+    handleError(
+      change,
+      new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, changedNode.kind),
+      config,
+    );
+    return;
+  }
+
+  const existing = changedNode.locations.findIndex(
+    l => l.value === change.meta.removedDirectiveLocation,
+  );
+  if (existing >= 0) {
+    (changedNode.locations as NameNode[]) = changedNode.locations.toSpliced(existing, 1);
+  } else {
+    handleError(
+      change,
+      new DeletedAttributeNotFoundError(
+        changedNode.kind,
         'locations',
         change.meta.removedDirectiveLocation,
       ),
@@ -272,30 +281,32 @@ export function directiveDescriptionChanged(
       new ChangedAncestorCoordinateNotFoundError(Kind.DIRECTIVE_DEFINITION, 'description'),
       config,
     );
-  } else if (directiveNode.kind === Kind.DIRECTIVE_DEFINITION) {
-    // eslint-disable-next-line eqeqeq
-    if (directiveNode.description?.value !== change.meta.oldDirectiveDescription) {
-      handleError(
-        change,
-        new ValueMismatchError(
-          Kind.STRING,
-          change.meta.oldDirectiveDescription,
-          directiveNode.description?.value,
-        ),
-        config,
-      );
-    }
-
-    (directiveNode.description as StringValueNode | undefined) = change.meta.newDirectiveDescription
-      ? stringNode(change.meta.newDirectiveDescription)
-      : undefined;
-  } else {
+    return;
+  }
+  if (directiveNode.kind !== Kind.DIRECTIVE_DEFINITION) {
     handleError(
       change,
       new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, directiveNode.kind),
       config,
     );
+    return;
   }
+
+  if (directiveNode.description?.value !== change.meta.oldDirectiveDescription) {
+    handleError(
+      change,
+      new ValueMismatchError(
+        Kind.STRING,
+        change.meta.oldDirectiveDescription,
+        directiveNode.description?.value,
+      ),
+      config,
+    );
+  }
+
+  (directiveNode.description as StringValueNode | undefined) = change.meta.newDirectiveDescription
+    ? stringNode(change.meta.newDirectiveDescription)
+    : undefined;
 }
 
 export function directiveArgumentDefaultValueChanged(
@@ -316,30 +327,34 @@ export function directiveArgumentDefaultValueChanged(
       new ChangedAncestorCoordinateNotFoundError(Kind.ARGUMENT, 'defaultValue'),
       config,
     );
-  } else if (argumentNode.kind === Kind.INPUT_VALUE_DEFINITION) {
-    if (
-      (argumentNode.defaultValue && print(argumentNode.defaultValue)) ===
-      change.meta.oldDirectiveArgumentDefaultValue
-    ) {
-      (argumentNode.defaultValue as ValueNode | undefined) = change.meta
-        .newDirectiveArgumentDefaultValue
-        ? parseConstValue(change.meta.newDirectiveArgumentDefaultValue)
-        : undefined;
-    } else {
-      handleError(
-        change,
-        new ValueMismatchError(
-          Kind.INPUT_VALUE_DEFINITION,
-          change.meta.oldDirectiveArgumentDefaultValue,
-          argumentNode.defaultValue && print(argumentNode.defaultValue),
-        ),
-        config,
-      );
-    }
-  } else {
+    return;
+  }
+
+  if (argumentNode.kind !== Kind.INPUT_VALUE_DEFINITION) {
     handleError(
       change,
       new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, argumentNode.kind),
+      config,
+    );
+    return;
+  }
+
+  if (
+    (argumentNode.defaultValue && print(argumentNode.defaultValue)) ===
+    change.meta.oldDirectiveArgumentDefaultValue
+  ) {
+    (argumentNode.defaultValue as ValueNode | undefined) = change.meta
+      .newDirectiveArgumentDefaultValue
+      ? parseConstValue(change.meta.newDirectiveArgumentDefaultValue)
+      : undefined;
+  } else {
+    handleError(
+      change,
+      new ValueMismatchError(
+        Kind.INPUT_VALUE_DEFINITION,
+        change.meta.oldDirectiveArgumentDefaultValue,
+        argumentNode.defaultValue && print(argumentNode.defaultValue),
+      ),
       config,
     );
   }
@@ -363,30 +378,33 @@ export function directiveArgumentDescriptionChanged(
       new ChangedAncestorCoordinateNotFoundError(Kind.INPUT_VALUE_DEFINITION, 'description'),
       config,
     );
-  } else if (argumentNode.kind === Kind.INPUT_VALUE_DEFINITION) {
-    // eslint-disable-next-line eqeqeq
-    if (argumentNode.description?.value != change.meta.oldDirectiveArgumentDescription) {
-      handleError(
-        change,
-        new ValueMismatchError(
-          Kind.STRING,
-          change.meta.oldDirectiveArgumentDescription ?? undefined,
-          argumentNode.description?.value,
-        ),
-        config,
-      );
-    }
-    (argumentNode.description as StringValueNode | undefined) = change.meta
-      .newDirectiveArgumentDescription
-      ? stringNode(change.meta.newDirectiveArgumentDescription)
-      : undefined;
-  } else {
+    return;
+  }
+
+  if (argumentNode.kind !== Kind.INPUT_VALUE_DEFINITION) {
     handleError(
       change,
       new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, argumentNode.kind),
       config,
     );
+    return;
   }
+
+  if ((argumentNode.description?.value ?? null) !== change.meta.oldDirectiveArgumentDescription) {
+    handleError(
+      change,
+      new ValueMismatchError(
+        Kind.STRING,
+        change.meta.oldDirectiveArgumentDescription ?? undefined,
+        argumentNode.description?.value,
+      ),
+      config,
+    );
+  }
+  (argumentNode.description as StringValueNode | undefined) = change.meta
+    .newDirectiveArgumentDescription
+    ? stringNode(change.meta.newDirectiveArgumentDescription)
+    : undefined;
 }
 
 export function directiveArgumentTypeChanged(
@@ -403,26 +421,29 @@ export function directiveArgumentTypeChanged(
   const argumentNode = nodeByPath.get(change.path);
   if (!argumentNode) {
     handleError(change, new ChangedAncestorCoordinateNotFoundError(Kind.ARGUMENT, 'type'), config);
-  } else if (argumentNode.kind === Kind.INPUT_VALUE_DEFINITION) {
-    if (print(argumentNode.type) !== change.meta.oldDirectiveArgumentType) {
-      handleError(
-        change,
-        new ValueMismatchError(
-          Kind.STRING,
-          change.meta.oldDirectiveArgumentType,
-          print(argumentNode.type),
-        ),
-        config,
-      );
-    }
-    (argumentNode.type as TypeNode | undefined) = parseType(change.meta.newDirectiveArgumentType);
-  } else {
+    return;
+  }
+  if (argumentNode.kind !== Kind.INPUT_VALUE_DEFINITION) {
     handleError(
       change,
       new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, argumentNode.kind),
       config,
     );
+    return;
   }
+
+  if (print(argumentNode.type) !== change.meta.oldDirectiveArgumentType) {
+    handleError(
+      change,
+      new ValueMismatchError(
+        Kind.STRING,
+        change.meta.oldDirectiveArgumentType,
+        print(argumentNode.type),
+      ),
+      config,
+    );
+  }
+  (argumentNode.type as TypeNode | undefined) = parseType(change.meta.newDirectiveArgumentType);
 }
 
 export function directiveRepeatableAdded(
@@ -443,24 +464,26 @@ export function directiveRepeatableAdded(
       new ChangedAncestorCoordinateNotFoundError(Kind.DIRECTIVE_DEFINITION, 'description'),
       config,
     );
-  } else if (directiveNode.kind === Kind.DIRECTIVE_DEFINITION) {
-    // eslint-disable-next-line eqeqeq
-    if (directiveNode.repeatable !== false) {
-      handleError(
-        change,
-        new ValueMismatchError(Kind.BOOLEAN, String(directiveNode.repeatable), 'false'),
-        config,
-      );
-    }
-
-    (directiveNode.repeatable as boolean) = true;
-  } else {
+    return;
+  }
+  if (directiveNode.kind !== Kind.DIRECTIVE_DEFINITION) {
     handleError(
       change,
       new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, directiveNode.kind),
       config,
     );
+    return;
   }
+
+  if (directiveNode.repeatable !== false) {
+    handleError(
+      change,
+      new ValueMismatchError(Kind.BOOLEAN, String(directiveNode.repeatable), 'false'),
+      config,
+    );
+  }
+
+  (directiveNode.repeatable as boolean) = true;
 }
 
 export function directiveRepeatableRemoved(
@@ -481,22 +504,25 @@ export function directiveRepeatableRemoved(
       new ChangedAncestorCoordinateNotFoundError(Kind.DIRECTIVE_DEFINITION, 'description'),
       config,
     );
-  } else if (directiveNode.kind === Kind.DIRECTIVE_DEFINITION) {
-    // eslint-disable-next-line eqeqeq
-    if (directiveNode.repeatable !== true) {
-      handleError(
-        change,
-        new ValueMismatchError(Kind.BOOLEAN, String(directiveNode.repeatable), 'true'),
-        config,
-      );
-    }
+    return;
+  }
 
-    (directiveNode.repeatable as boolean) = false;
-  } else {
+  if (directiveNode.kind !== Kind.DIRECTIVE_DEFINITION) {
     handleError(
       change,
       new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, directiveNode.kind),
       config,
     );
+    return;
   }
+
+  if (directiveNode.repeatable !== true) {
+    handleError(
+      change,
+      new ValueMismatchError(Kind.BOOLEAN, String(directiveNode.repeatable), 'true'),
+      config,
+    );
+  }
+
+  (directiveNode.repeatable as boolean) = false;
 }
