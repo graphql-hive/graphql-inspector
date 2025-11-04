@@ -223,8 +223,7 @@ export function fieldDeprecationRemovedFromMeta(args: FieldDeprecationRemovedCha
   return {
     type: ChangeType.FieldDeprecationRemoved,
     criticality: {
-      // @todo: Add a reason for why is this dangerous... Why is it??
-      level: CriticalityLevel.Dangerous,
+      level: CriticalityLevel.NonBreaking,
     },
     message: `Field '${args.meta.typeName}.${args.meta.fieldName}' is no longer deprecated`,
     meta: args.meta,
