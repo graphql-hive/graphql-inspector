@@ -100,47 +100,61 @@ export function fieldAdded(
   }
   const changedNode = nodeByPath.get(change.path);
   if (changedNode) {
-    if (changedNode.kind === Kind.OBJECT_FIELD) {
-      config.onError(
-        new AddedCoordinateAlreadyExistsError(changedNode.kind, change.meta.addedFieldName),
-        change,
-      );
+    if (changedNode.kind === Kind.FIELD_DEFINITION) {
+      if (print(changedNode.type) === change.meta.addedFieldReturnType) {
+        config.onError(
+          new AddedCoordinateAlreadyExistsError(changedNode.kind, change.meta.addedFieldName),
+          change,
+        );
+      } else {
+        config.onError(
+          new ValueMismatchError(
+            Kind.FIELD_DEFINITION,
+            undefined,
+            change.meta.addedFieldReturnType,
+          ),
+          change,
+        );
+      }
     } else {
       config.onError(
-        new ChangedCoordinateKindMismatchError(Kind.OBJECT_FIELD, changedNode.kind),
+        new ChangedCoordinateKindMismatchError(Kind.FIELD_DEFINITION, changedNode.kind),
         change,
       );
     }
-  } else {
-    const typeNode = nodeByPath.get(parentPath(change.path)) as ASTNode & {
-      fields?: FieldDefinitionNode[];
-    };
-    if (!typeNode) {
-      config.onError(new ChangePathMissingError(change), change);
-    } else if (
-      typeNode.kind !== Kind.OBJECT_TYPE_DEFINITION &&
-      typeNode.kind !== Kind.INTERFACE_TYPE_DEFINITION
-    ) {
-      config.onError(
-        new ChangedCoordinateKindMismatchError(Kind.ENUM_TYPE_DEFINITION, typeNode.kind),
-        change,
-      );
-    } else {
-      const node: FieldDefinitionNode = {
-        kind: Kind.FIELD_DEFINITION,
-        name: nameNode(change.meta.addedFieldName),
-        type: parseType(change.meta.addedFieldReturnType),
-        // description: change.meta.addedFieldDescription
-        //   ? stringNode(change.meta.addedFieldDescription)
-        //   : undefined,
-      };
-
-      typeNode.fields = [...(typeNode.fields ?? []), node];
-
-      // add new field to the node set
-      nodeByPath.set(change.path, node);
-    }
+    return;
   }
+  const typeNode = nodeByPath.get(parentPath(change.path)) as ASTNode & {
+    fields?: FieldDefinitionNode[];
+  };
+  if (!typeNode) {
+    config.onError(new ChangePathMissingError(change), change);
+    return;
+  }
+
+  if (
+    typeNode.kind !== Kind.OBJECT_TYPE_DEFINITION &&
+    typeNode.kind !== Kind.INTERFACE_TYPE_DEFINITION
+  ) {
+    config.onError(
+      new ChangedCoordinateKindMismatchError(Kind.ENUM_TYPE_DEFINITION, typeNode.kind),
+      change,
+    );
+    return;
+  }
+  const node: FieldDefinitionNode = {
+    kind: Kind.FIELD_DEFINITION,
+    name: nameNode(change.meta.addedFieldName),
+    type: parseType(change.meta.addedFieldReturnType),
+    // description: change.meta.addedFieldDescription
+    //   ? stringNode(change.meta.addedFieldDescription)
+    //   : undefined,
+  };
+
+  typeNode.fields = [...(typeNode.fields ?? []), node];
+
+  // add new field to the node set
+  nodeByPath.set(change.path, node);
 }
 
 export function fieldArgumentAdded(

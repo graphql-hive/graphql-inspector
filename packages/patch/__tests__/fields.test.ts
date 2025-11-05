@@ -1,4 +1,4 @@
-import { expectDiffAndPatchToMatch } from './utils.js';
+import { expectDiffAndPatchToMatch, expectDiffAndPatchToThrow } from './utils.js';
 
 describe('fields', () => {
   test('fieldTypeChanged', async () => {
@@ -45,7 +45,7 @@ describe('fields', () => {
     await expectDiffAndPatchToMatch(before, after);
   });
 
-  test('fieldAdded to new type', async () => {
+  test('fieldAdded: adding field with a new type', async () => {
     const before = /* GraphQL */ `
       scalar Foo
     `;
@@ -57,6 +57,28 @@ describe('fields', () => {
       }
     `;
     await expectDiffAndPatchToMatch(before, after);
+  });
+
+  test('fieldAdded: throws if adding a field and the field already exists with a different returnType', async () => {
+    const before = /* GraphQL */ `
+      type Product {
+        id: ID!
+      }
+    `;
+    const after = /* GraphQL */ `
+      type Product {
+        id: ID!
+        name: String
+      }
+    `;
+
+    const patchTarget = /* GraphQL */ `
+      type Product {
+        id: ID!
+        name: String!
+      }
+    `;
+    await expectDiffAndPatchToThrow(before, after, patchTarget);
   });
 
   test('fieldArgumentAdded', async () => {
