@@ -10,7 +10,6 @@ import {
   ChangePathMissingError,
   DeletedAncestorCoordinateNotFoundError,
   DeletedAttributeNotFoundError,
-  handleError,
   ValueMismatchError,
 } from '../errors.js';
 import { nameNode } from '../node-templates.js';
@@ -72,10 +71,9 @@ function directiveUsageDefinitionAdded(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateNotFoundError(Kind.DIRECTIVE, change.meta.addedDirectiveName),
-      config,
+      change,
     );
     return;
   }
@@ -84,13 +82,12 @@ function directiveUsageDefinitionAdded(
     | { kind: Kind; directives?: DirectiveNode[] }
     | undefined;
   if (!parentNode) {
-    handleError(
-      change,
+    config.onError(
       new ChangedAncestorCoordinateNotFoundError(
         Kind.OBJECT_TYPE_DEFINITION, // or interface...
         'directives',
       ),
-      config,
+      change,
     );
     return;
   }
@@ -109,10 +106,9 @@ function directiveUsageDefinitionAdded(
     change.meta.directiveRepeatedTimes,
   );
   if (!repeatable && directiveNode) {
-    handleError(
-      change,
+    config.onError(
       new AddedCoordinateAlreadyExistsError(Kind.DIRECTIVE, change.meta.addedDirectiveName),
-      config,
+      change,
     );
     return;
   }
@@ -132,10 +128,9 @@ function schemaDirectiveUsageDefinitionAdded(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateNotFoundError(Kind.DIRECTIVE, change.meta.addedDirectiveName),
-      config,
+      change,
     );
     return;
   }
@@ -156,14 +151,13 @@ function schemaDirectiveUsageDefinitionAdded(
     ),
   );
   if (!repeatable && directiveAlreadyExists) {
-    handleError(
-      change,
+    config.onError(
       new AddedAttributeAlreadyExistsError(
         Kind.SCHEMA_DEFINITION,
         'directives',
         change.meta.addedDirectiveName,
       ),
-      config,
+      change,
     );
     return;
   }
@@ -201,14 +195,13 @@ function schemaDirectiveUsageDefinitionRemoved(
     }
   }
   if (!deleted) {
-    handleError(
-      change,
+    config.onError(
       new DeletedAttributeNotFoundError(
         Kind.SCHEMA_DEFINITION,
         'directives',
         change.meta.removedDirectiveName,
       ),
-      config,
+      change,
     );
   }
 }
@@ -220,7 +213,7 @@ function directiveUsageDefinitionRemoved(
   context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
@@ -228,14 +221,13 @@ function directiveUsageDefinitionRemoved(
     | { kind: Kind; directives?: DirectiveNode[] }
     | undefined;
   if (!parentNode) {
-    handleError(
-      change,
+    config.onError(
       new DeletedAncestorCoordinateNotFoundError(
         Kind.OBJECT_TYPE_DEFINITION,
         'directives',
         change.meta.removedDirectiveName,
       ),
-      config,
+      change,
     );
     return;
   }
@@ -246,14 +238,13 @@ function directiveUsageDefinitionRemoved(
     change.meta.directiveRepeatedTimes,
   );
   if (!directiveNode) {
-    handleError(
-      change,
+    config.onError(
       new DeletedAttributeNotFoundError(
         parentNode.kind,
         'directives',
         change.meta.removedDirectiveName,
       ),
-      config,
+      change,
     );
     return;
   }
@@ -494,7 +485,7 @@ export function directiveUsageArgumentAdded(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
   // Must use double parentPath b/c the path is referencing the argument
@@ -507,22 +498,20 @@ export function directiveUsageArgumentAdded(
     change.meta.directiveRepeatedTimes,
   );
   if (!directiveNode) {
-    handleError(
-      change,
+    config.onError(
       new AddedAttributeCoordinateNotFoundError(
         change.meta.directiveName,
         'arguments',
         change.meta.addedArgumentName,
       ),
-      config,
+      change,
     );
     return;
   }
   if (directiveNode.kind !== Kind.DIRECTIVE) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE, directiveNode.kind),
-      config,
+      change,
     );
     return;
   }
@@ -530,11 +519,7 @@ export function directiveUsageArgumentAdded(
   const existing = findNamedNode(directiveNode.arguments, change.meta.addedArgumentName);
   // "ArgumentAdded" but argument already exists.
   if (existing) {
-    handleError(
-      change,
-      new ValueMismatchError(directiveNode.kind, null, print(existing.value)),
-      config,
-    );
+    config.onError(new ValueMismatchError(directiveNode.kind, null, print(existing.value)), change);
     (existing.value as ValueNode) = parseValue(change.meta.addedArgumentValue);
     return;
   }
@@ -558,7 +543,7 @@ export function directiveUsageArgumentRemoved(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
   // Must use double parentPath b/c the path is referencing the argument
@@ -572,36 +557,33 @@ export function directiveUsageArgumentRemoved(
     change.meta.directiveRepeatedTimes,
   );
   if (!directiveNode) {
-    handleError(
-      change,
+    config.onError(
       new DeletedAncestorCoordinateNotFoundError(
         Kind.DIRECTIVE,
         'arguments',
         change.meta.removedArgumentName,
       ),
-      config,
+      change,
     );
     return;
   }
   if (directiveNode.kind !== Kind.DIRECTIVE) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE, directiveNode.kind),
-      config,
+      change,
     );
     return;
   }
 
   const existing = findNamedNode(directiveNode.arguments, change.meta.removedArgumentName);
   if (!existing) {
-    handleError(
-      change,
+    config.onError(
       new DeletedAttributeNotFoundError(
         directiveNode.kind,
         'arguments',
         change.meta.removedArgumentName,
       ),
-      config,
+      change,
     );
   }
 

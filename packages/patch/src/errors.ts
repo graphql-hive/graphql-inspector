@@ -1,25 +1,62 @@
 import { Kind } from 'graphql';
 import type { Change } from '@graphql-inspector/core';
-import type { PatchConfig } from './types.js';
+import type { ErrorHandler } from './types.js';
 
-export function handleError(change: Change<any>, err: Error, config: PatchConfig) {
-  if (config.onError?.(err, change) === true) {
-    // handled by onError
-    return;
-  }
-
+/**
+ * The strictest of the standard error handlers. This checks if the error is a "No-op",
+ * meaning if the change wouldn't impact the schema at all, and ignores the error
+ * only in this one case. Otherwise, the error is raised.
+ */
+export const strictErrorHandler: ErrorHandler = (err, change) => {
   if (err instanceof NoopError) {
     console.debug(
       `Ignoring change ${change.type} at "${change.path}" because it does not modify the resulting schema.`,
     );
-  } else if (!config.requireOldValueMatch && err instanceof ValueMismatchError) {
-    console.debug(`Ignoring old value mismatch at "${change.path}".`);
-  } else if (config.throwOnError === true) {
+  } else {
     throw err;
+  }
+};
+
+/**
+ * A convenient, semi-strict error handler. This ignores "no-op" errors -- if
+ * the change wouldn't impact the patched schema at all. And it ignores
+ * value mismatches, which are when the change notices that the value captured in
+ * the change doesn't match the value in the patched schema.
+ *
+ * For example, if the change indicates the default value WAS "foo" before being
+ * changed, but the patch is applied to a schema where the default value is "bar".
+ * This is useful to avoid overwriting changes unknowingly that may have occurred
+ * from other sources.
+ */
+export const defaultErrorHandler: ErrorHandler = (err, change) => {
+  if (err instanceof NoopError) {
+    console.debug(
+      `Ignoring change ${change.type} at "${change.path}" because it does not modify the resulting schema.`,
+    );
+  } else if (err instanceof ValueMismatchError) {
+    console.debug(`Ignoring old value mismatch at "${change.path}".`);
+  } else {
+    throw err;
+  }
+};
+
+/**
+ * The least strict error handler. This will only log errors and will never
+ * raise an error. This is potentially useful for getting a patched schema
+ * rendered, and then handling the conflict/error in a separate step. E.g.
+ * if creating a merge conflict resolution UI.
+ */
+export const looseErrorHandler: ErrorHandler = (err, change) => {
+  if (err instanceof NoopError) {
+    console.debug(
+      `Ignoring change ${change.type} at "${change.path}" because it does not modify the resulting schema.`,
+    );
+  } else if (err instanceof ValueMismatchError) {
+    console.debug(`Ignoring old value mismatch at "${change.path}".`);
   } else {
     console.warn(`Cannot apply ${change.type} at "${change.path}". ${err.message}`);
   }
-}
+};
 
 /**
  * When the change does not actually modify the resulting schema, then it is

@@ -7,7 +7,6 @@ import {
   ChangePathMissingError,
   DeletedAncestorCoordinateNotFoundError,
   DeletedCoordinateNotFound,
-  handleError,
 } from '../errors.js';
 import { namedTypeNode } from '../node-templates.js';
 import type { PatchConfig, PatchContext } from '../types';
@@ -20,16 +19,15 @@ export function objectTypeInterfaceAdded(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
   const typeNode = nodeByPath.get(change.path);
   if (!typeNode) {
-    handleError(
-      change,
+    config.onError(
       new ChangedAncestorCoordinateNotFoundError(Kind.OBJECT_TYPE_DEFINITION, 'interfaces'),
-      config,
+      change,
     );
     return;
   }
@@ -38,27 +36,25 @@ export function objectTypeInterfaceAdded(
     typeNode.kind !== Kind.OBJECT_TYPE_DEFINITION &&
     typeNode.kind !== Kind.INTERFACE_TYPE_DEFINITION
   ) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(
         Kind.OBJECT_TYPE_DEFINITION, // or Kind.INTERFACE_TYPE_DEFINITION
         typeNode.kind,
       ),
-      config,
+      change,
     );
     return;
   }
 
   const existing = findNamedNode(typeNode.interfaces, change.meta.addedInterfaceName);
   if (existing) {
-    handleError(
-      change,
+    config.onError(
       new AddedAttributeAlreadyExistsError(
         typeNode.kind,
         'interfaces',
         change.meta.addedInterfaceName,
       ),
-      config,
+      change,
     );
     return;
   }
@@ -76,20 +72,19 @@ export function objectTypeInterfaceRemoved(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
   const typeNode = nodeByPath.get(change.path);
   if (!typeNode) {
-    handleError(
-      change,
+    config.onError(
       new DeletedAncestorCoordinateNotFoundError(
         Kind.INPUT_OBJECT_TYPE_DEFINITION,
         'interfaces',
         change.meta.removedInterfaceName,
       ),
-      config,
+      change,
     );
     return;
   }
@@ -98,23 +93,21 @@ export function objectTypeInterfaceRemoved(
     typeNode.kind !== Kind.OBJECT_TYPE_DEFINITION &&
     typeNode.kind !== Kind.INTERFACE_TYPE_DEFINITION
   ) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.OBJECT_TYPE_DEFINITION, typeNode.kind),
-      config,
+      change,
     );
     return;
   }
 
   const existing = findNamedNode(typeNode.interfaces, change.meta.removedInterfaceName);
   if (!existing) {
-    handleError(
-      change,
+    config.onError(
       new DeletedCoordinateNotFound(
         Kind.INTERFACE_TYPE_DEFINITION,
         change.meta.removedInterfaceName,
       ),
-      config,
+      change,
     );
     return;
   }

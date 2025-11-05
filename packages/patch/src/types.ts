@@ -27,31 +27,19 @@ export type ChangesByType = { [key in TypeOfChangeType]?: Array<Change<key>> };
 
 export type PatchConfig = {
   /**
-   * By default does not throw when hitting errors such as if
-   * a type that was modified no longer exists.
-   */
-  throwOnError?: boolean;
-
-  /**
-   * The changes output from `diff` include the values, such as default argument values of the old schema. E.g. changing `foo(arg: String = "bar")` to `foo(arg: String = "foo")` would track that the previous default value was `"bar"`. By enabling this option, `patch` can throw an error when patching a schema where the value doesn't match what is expected. E.g. where `foo.arg`'s default value is _NOT_ `"bar"`. This will avoid overwriting conflicting changes. This is recommended if using an automated process for patching schema.
-   */
-  requireOldValueMatch?: boolean;
-
-  /**
    * Allows handling errors more granularly if you only care about specific types of
-   * errors or want to capture the errors in a list somewhere etc. If 'true' is returned
-   * then this error is considered handled and the default error handling will not
-   * be ran.
+   * errors or want to capture the errors in a list somewhere etc.
+   *
    * To halt patching, throw the error inside the handler.
    * @param err The raised error
-   * @returns True if the error has been handled
+   * @returns void
    */
-  onError?: (err: Error, change: Change<any>) => boolean | undefined | null;
+  onError: (err: Error, change: Change<any>) => void;
 
   /**
    * Enables debug logging
    */
-  debug?: boolean;
+  debug: boolean;
 };
 
 export type PatchContext = {
@@ -61,3 +49,5 @@ export type PatchContext = {
    */
   removedDirectiveNodes: Array<{ directives?: DirectiveNode[] }>;
 };
+
+export type ErrorHandler = (err: Error, change: Change<any>) => void;

@@ -7,7 +7,6 @@ import {
   ChangePathMissingError,
   DeletedAncestorCoordinateNotFoundError,
   DeletedCoordinateNotFound,
-  handleError,
   NodeAttribute,
   ValueMismatchError,
 } from './errors.js';
@@ -96,7 +95,7 @@ export function assertValueMatch(
   config: PatchConfig,
 ) {
   if (expected !== actual) {
-    handleError(change, new ValueMismatchError(expectedKind, expected, actual), config);
+    config.onError(new ValueMismatchError(expectedKind, expected, actual), change);
   }
 }
 
@@ -114,22 +113,17 @@ export function getChangedNodeOfKind<K extends Kind>(
     throw new Error('Directives cannot be found using this method.');
   }
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
   const existing = nodeByPath.get(change.path);
   if (!existing) {
-    handleError(
-      change,
-      // @todo improve the error by providing the name or value somehow.
-      new ChangedCoordinateNotFoundError(kind, undefined),
-      config,
-    );
+    config.onError(new ChangedCoordinateNotFoundError(kind, undefined), change);
     return;
   }
   if (existing.kind !== kind) {
-    handleError(change, new ChangedCoordinateKindMismatchError(kind, existing.kind), config);
+    config.onError(new ChangedCoordinateKindMismatchError(kind, existing.kind), change);
   }
   return existing as ASTKindToNode[K];
 }
@@ -141,21 +135,16 @@ export function getDeletedNodeOfKind<K extends Kind>(
   config: PatchConfig,
 ): ASTKindToNode[K] | void {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
   const existing = nodeByPath.get(change.path);
   if (!existing) {
-    handleError(
-      change,
-      // @todo improve the error by providing the name or value somehow.
-      new DeletedCoordinateNotFound(kind, undefined),
-      config,
-    );
+    config.onError(new DeletedCoordinateNotFound(kind, undefined), change);
     return;
   }
   if (existing.kind !== kind) {
-    handleError(change, new ChangedCoordinateKindMismatchError(kind, existing.kind), config);
+    config.onError(new ChangedCoordinateKindMismatchError(kind, existing.kind), change);
     return;
   }
   return existing as ASTKindToNode[K];
@@ -169,21 +158,16 @@ export function getDeletedParentNodeOfKind<K extends Kind>(
   config: PatchConfig,
 ): ASTKindToNode[K] | void {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
   const existing = nodeByPath.get(parentPath(change.path));
   if (!existing) {
-    handleError(
-      change,
-      // @todo improve the error by providing the name or value somehow.
-      new DeletedAncestorCoordinateNotFoundError(kind, attribute, undefined),
-      config,
-    );
+    config.onError(new DeletedAncestorCoordinateNotFoundError(kind, attribute, undefined), change);
     return;
   }
   if (existing.kind !== kind) {
-    handleError(change, new ChangedCoordinateKindMismatchError(kind, existing.kind), config);
+    config.onError(new ChangedCoordinateKindMismatchError(kind, existing.kind), change);
     return;
   }
   return existing as ASTKindToNode[K];

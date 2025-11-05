@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-negated-condition */
 import { Kind, NameNode, OperationTypeDefinitionNode, OperationTypeNode } from 'graphql';
 import type { Change, ChangeType } from '@graphql-inspector/core';
-import { handleError, ValueMismatchError } from '../errors.js';
+import { ValueMismatchError } from '../errors.js';
 import { nameNode } from '../node-templates.js';
 import { PatchConfig, PatchContext, SchemaNode } from '../types.js';
 
@@ -17,14 +17,13 @@ export function schemaMutationTypeChanged(
     );
     if (!mutation) {
       if (change.meta.oldMutationTypeName !== 'unknown') {
-        handleError(
-          change,
+        config.onError(
           new ValueMismatchError(
             Kind.SCHEMA_DEFINITION,
             change.meta.oldMutationTypeName,
             'unknown',
           ),
-          config,
+          change,
         );
       }
       (schemaNode.operationTypes as OperationTypeDefinitionNode[]) = [
@@ -40,14 +39,13 @@ export function schemaMutationTypeChanged(
       ];
     } else {
       if (mutation.type.name.value !== change.meta.oldMutationTypeName) {
-        handleError(
-          change,
+        config.onError(
           new ValueMismatchError(
             Kind.SCHEMA_DEFINITION,
             change.meta.oldMutationTypeName,
             mutation?.type.name.value,
           ),
-          config,
+          change,
         );
       }
       (mutation.type.name as NameNode) = nameNode(change.meta.newMutationTypeName);
@@ -67,10 +65,9 @@ export function schemaQueryTypeChanged(
     );
     if (!query) {
       if (change.meta.oldQueryTypeName !== 'unknown') {
-        handleError(
-          change,
+        config.onError(
           new ValueMismatchError(Kind.SCHEMA_DEFINITION, change.meta.oldQueryTypeName, 'unknown'),
-          config,
+          change,
         );
       }
       (schemaNode.operationTypes as OperationTypeDefinitionNode[]) = [
@@ -86,14 +83,13 @@ export function schemaQueryTypeChanged(
       ];
     } else {
       if (query.type.name.value !== change.meta.oldQueryTypeName) {
-        handleError(
-          change,
+        config.onError(
           new ValueMismatchError(
             Kind.SCHEMA_DEFINITION,
             change.meta.oldQueryTypeName,
             query?.type.name.value,
           ),
-          config,
+          change,
         );
       }
       (query.type.name as NameNode) = nameNode(change.meta.newQueryTypeName);
@@ -113,14 +109,13 @@ export function schemaSubscriptionTypeChanged(
     );
     if (!sub) {
       if (change.meta.oldSubscriptionTypeName !== 'unknown') {
-        handleError(
-          change,
+        config.onError(
           new ValueMismatchError(
             Kind.SCHEMA_DEFINITION,
             change.meta.oldSubscriptionTypeName,
             'unknown',
           ),
-          config,
+          change,
         );
       }
       (schemaNode.operationTypes as OperationTypeDefinitionNode[]) = [
@@ -136,14 +131,13 @@ export function schemaSubscriptionTypeChanged(
       ];
     } else {
       if (sub.type.name.value !== change.meta.oldSubscriptionTypeName) {
-        handleError(
-          change,
+        config.onError(
           new ValueMismatchError(
             Kind.SCHEMA_DEFINITION,
             change.meta.oldSubscriptionTypeName,
             sub?.type.name.value,
           ),
-          config,
+          change,
         );
       }
       (sub.type.name as NameNode) = nameNode(change.meta.newSubscriptionTypeName);

@@ -6,7 +6,6 @@ import {
   ChangePathMissingError,
   DeletedAncestorCoordinateNotFoundError,
   DeletedAttributeNotFoundError,
-  handleError,
 } from '../errors.js';
 import { namedTypeNode } from '../node-templates.js';
 import { PatchConfig, PatchContext } from '../types.js';
@@ -19,30 +18,28 @@ export function unionMemberAdded(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
   const union = nodeByPath.get(parentPath(change.path)) as
     | (ASTNode & { types?: NamedTypeNode[] })
     | undefined;
   if (!union) {
-    handleError(
-      change,
+    config.onError(
       new ChangedAncestorCoordinateNotFoundError(Kind.UNION_TYPE_DEFINITION, 'types'),
-      config,
+      change,
     );
     return;
   }
 
   if (findNamedNode(union.types, change.meta.addedUnionMemberTypeName)) {
-    handleError(
-      change,
+    config.onError(
       new AddedAttributeAlreadyExistsError(
         Kind.UNION_TYPE_DEFINITION,
         'types',
         change.meta.addedUnionMemberTypeName,
       ),
-      config,
+      change,
     );
     return;
   }
@@ -57,34 +54,32 @@ export function unionMemberRemoved(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
   const union = nodeByPath.get(parentPath(change.path)) as
     | (ASTNode & { types?: NamedTypeNode[] })
     | undefined;
   if (!union) {
-    handleError(
-      change,
+    config.onError(
       new DeletedAncestorCoordinateNotFoundError(
         Kind.UNION_TYPE_DEFINITION,
         'types',
         change.meta.removedUnionMemberTypeName,
       ),
-      config,
+      change,
     );
     return;
   }
 
   if (!findNamedNode(union.types, change.meta.removedUnionMemberTypeName)) {
-    handleError(
-      change,
+    config.onError(
       new DeletedAttributeNotFoundError(
         Kind.UNION_TYPE_DEFINITION,
         'types',
         change.meta.removedUnionMemberTypeName,
       ),
-      config,
+      change,
     );
     return;
   }

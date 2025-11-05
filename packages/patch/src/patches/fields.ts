@@ -19,7 +19,6 @@ import {
   DeletedAncestorCoordinateNotFoundError,
   DeletedAttributeNotFoundError,
   DeletedCoordinateNotFound,
-  handleError,
   ValueMismatchError,
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
@@ -41,10 +40,9 @@ export function fieldTypeChanged(
   if (node) {
     const currentReturnType = print(node.type);
     if (change.meta.oldFieldType !== currentReturnType) {
-      handleError(
-        change,
+      config.onError(
         new ValueMismatchError(Kind.FIELD_DEFINITION, change.meta.oldFieldType, currentReturnType),
-        config,
+        change,
       );
     }
     (node.type as TypeNode) = parseType(change.meta.newFieldType);
@@ -58,7 +56,7 @@ export function fieldRemoved(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
@@ -66,14 +64,13 @@ export function fieldRemoved(
     | (ASTNode & { fields?: FieldDefinitionNode[] })
     | undefined;
   if (!typeNode) {
-    handleError(
-      change,
+    config.onError(
       new DeletedAncestorCoordinateNotFoundError(
         Kind.OBJECT_TYPE_DEFINITION,
         'fields',
         change.meta.removedFieldName,
       ),
-      config,
+      change,
     );
     return;
   }
@@ -81,10 +78,9 @@ export function fieldRemoved(
   const beforeLength = typeNode.fields?.length ?? 0;
   typeNode.fields = typeNode.fields?.filter(f => f.name.value !== change.meta.removedFieldName);
   if (beforeLength === (typeNode.fields?.length ?? 0)) {
-    handleError(
-      change,
+    config.onError(
       new DeletedAttributeNotFoundError(typeNode?.kind, 'fields', change.meta.removedFieldName),
-      config,
+      change,
     );
   } else {
     // delete the reference to the removed field.
@@ -99,22 +95,20 @@ export function fieldAdded(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
   const changedNode = nodeByPath.get(change.path);
   if (changedNode) {
     if (changedNode.kind === Kind.OBJECT_FIELD) {
-      handleError(
-        change,
+      config.onError(
         new AddedCoordinateAlreadyExistsError(changedNode.kind, change.meta.addedFieldName),
-        config,
+        change,
       );
     } else {
-      handleError(
-        change,
+      config.onError(
         new ChangedCoordinateKindMismatchError(Kind.OBJECT_FIELD, changedNode.kind),
-        config,
+        change,
       );
     }
   } else {
@@ -122,15 +116,14 @@ export function fieldAdded(
       fields?: FieldDefinitionNode[];
     };
     if (!typeNode) {
-      handleError(change, new ChangePathMissingError(change), config);
+      config.onError(new ChangePathMissingError(change), change);
     } else if (
       typeNode.kind !== Kind.OBJECT_TYPE_DEFINITION &&
       typeNode.kind !== Kind.INTERFACE_TYPE_DEFINITION
     ) {
-      handleError(
-        change,
+      config.onError(
         new ChangedCoordinateKindMismatchError(Kind.ENUM_TYPE_DEFINITION, typeNode.kind),
-        config,
+        change,
       );
     } else {
       const node: FieldDefinitionNode = {
@@ -157,16 +150,15 @@ export function fieldArgumentAdded(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
   const existing = nodeByPath.get(change.path);
   if (existing) {
-    handleError(
-      change,
+    config.onError(
       new AddedCoordinateAlreadyExistsError(Kind.ARGUMENT, change.meta.addedArgumentName),
-      config,
+      change,
     );
     return;
   }
@@ -175,22 +167,20 @@ export function fieldArgumentAdded(
     arguments?: InputValueDefinitionNode[];
   };
   if (!fieldNode) {
-    handleError(
-      change,
+    config.onError(
       new AddedAttributeCoordinateNotFoundError(
         change.meta.fieldName,
         'arguments',
         change.meta.addedArgumentName,
       ),
-      config,
+      change,
     );
     return;
   }
   if (fieldNode.kind !== Kind.FIELD_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind),
-      config,
+      change,
     );
     return;
   }
@@ -278,10 +268,9 @@ export function fieldArgumentRemoved(
 ) {
   const existing = getDeletedNodeOfKind(change, nodeByPath, Kind.ARGUMENT, config);
   if (!existing) {
-    handleError(
-      change,
+    config.onError(
       new DeletedCoordinateNotFound(Kind.ARGUMENT, change.meta.removedFieldArgumentName),
-      config,
+      change,
     );
     return;
   }
@@ -290,22 +279,20 @@ export function fieldArgumentRemoved(
     arguments?: InputValueDefinitionNode[];
   };
   if (!fieldNode) {
-    handleError(
-      change,
+    config.onError(
       new DeletedAncestorCoordinateNotFoundError(
         Kind.FIELD_DEFINITION,
         'arguments',
         change.meta.removedFieldArgumentName,
       ),
-      config,
+      change,
     );
     return;
   }
   if (fieldNode.kind !== Kind.FIELD_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind),
-      config,
+      change,
     );
   }
   fieldNode.arguments = fieldNode.arguments?.filter(
@@ -337,24 +324,22 @@ export function fieldDescriptionRemoved(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
   const fieldNode = nodeByPath.get(change.path);
   if (!fieldNode) {
-    handleError(
-      change,
+    config.onError(
       new DeletedCoordinateNotFound(Kind.FIELD_DEFINITION, change.meta.fieldName),
-      config,
+      change,
     );
     return;
   }
   if (fieldNode.kind !== Kind.FIELD_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.FIELD_DEFINITION, fieldNode.kind),
-      config,
+      change,
     );
     return;
   }
@@ -373,14 +358,13 @@ export function fieldDescriptionChanged(
     return;
   }
   if (fieldNode.description?.value !== change.meta.oldDescription) {
-    handleError(
-      change,
+    config.onError(
       new ValueMismatchError(
         Kind.FIELD_DEFINITION,
         change.meta.oldDescription,
         fieldNode.description?.value,
       ),
-      config,
+      change,
     );
   }
 

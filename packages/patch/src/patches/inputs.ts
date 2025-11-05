@@ -18,7 +18,6 @@ import {
   ChangePathMissingError,
   DeletedAncestorCoordinateNotFoundError,
   DeletedCoordinateNotFound,
-  handleError,
   ValueMismatchError,
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
@@ -37,26 +36,24 @@ export function inputFieldAdded(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
   const existingNode = nodeByPath.get(change.path);
   if (existingNode) {
     if (existingNode.kind === Kind.INPUT_VALUE_DEFINITION) {
-      handleError(
-        change,
+      config.onError(
         new AddedCoordinateAlreadyExistsError(
           Kind.INPUT_VALUE_DEFINITION,
           change.meta.addedInputFieldName,
         ),
-        config,
+        change,
       );
     } else {
-      handleError(
-        change,
+      config.onError(
         new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, existingNode.kind),
-        config,
+        change,
       );
     }
     return;
@@ -65,22 +62,20 @@ export function inputFieldAdded(
     fields?: InputValueDefinitionNode[];
   };
   if (!typeNode) {
-    handleError(
-      change,
+    config.onError(
       new AddedAttributeCoordinateNotFoundError(
         change.meta.inputName,
         'fields',
         change.meta.addedInputFieldName,
       ),
-      config,
+      change,
     );
     return;
   }
   if (typeNode.kind !== Kind.INPUT_OBJECT_TYPE_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.INPUT_OBJECT_TYPE_DEFINITION, typeNode.kind),
-      config,
+      change,
     );
     return;
   }
@@ -107,19 +102,18 @@ export function inputFieldRemoved(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
   const existingNode = nodeByPath.get(change.path);
   if (!existingNode) {
-    handleError(
-      change,
+    config.onError(
       new DeletedCoordinateNotFound(
         Kind.INPUT_OBJECT_TYPE_DEFINITION,
         change.meta.removedFieldName,
       ),
-      config,
+      change,
     );
     return;
   }
@@ -128,23 +122,21 @@ export function inputFieldRemoved(
     fields?: InputValueDefinitionNode[];
   };
   if (!typeNode) {
-    handleError(
-      change,
+    config.onError(
       new DeletedAncestorCoordinateNotFoundError(
         Kind.INPUT_OBJECT_TYPE_DEFINITION,
         'fields',
         change.meta.removedFieldName,
       ),
-      config,
+      change,
     );
     return;
   }
 
   if (typeNode.kind !== Kind.INPUT_OBJECT_TYPE_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.INPUT_OBJECT_TYPE_DEFINITION, typeNode.kind),
-      config,
+      change,
     );
     return;
   }
@@ -162,27 +154,25 @@ export function inputFieldDescriptionAdded(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
   const existingNode = nodeByPath.get(change.path);
   if (!existingNode) {
-    handleError(
-      change,
+    config.onError(
       new DeletedAncestorCoordinateNotFoundError(
         Kind.INPUT_VALUE_DEFINITION,
         'description',
         change.meta.addedInputFieldDescription,
       ),
-      config,
+      change,
     );
     return;
   }
   if (existingNode.kind !== Kind.INPUT_VALUE_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, existingNode.kind),
-      config,
+      change,
     );
     return;
   }
@@ -224,24 +214,22 @@ export function inputFieldDefaultValueChanged(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
   const existingNode = nodeByPath.get(change.path);
   if (!existingNode) {
-    handleError(
-      change,
+    config.onError(
       new ChangedAncestorCoordinateNotFoundError(Kind.INPUT_VALUE_DEFINITION, 'defaultValue'),
-      config,
+      change,
     );
     return;
   }
 
   if (existingNode.kind !== Kind.INPUT_VALUE_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, existingNode.kind),
-      config,
+      change,
     );
     return;
   }
@@ -249,14 +237,13 @@ export function inputFieldDefaultValueChanged(
   const oldValueMatches =
     (existingNode.defaultValue && print(existingNode.defaultValue)) === change.meta.oldDefaultValue;
   if (!oldValueMatches) {
-    handleError(
-      change,
+    config.onError(
       new ValueMismatchError(
         existingNode.defaultValue?.kind ?? Kind.INPUT_VALUE_DEFINITION,
         change.meta.oldDefaultValue,
         existingNode.defaultValue && print(existingNode.defaultValue),
       ),
-      config,
+      change,
     );
   }
   (existingNode.defaultValue as ConstValueNode | undefined) = change.meta.newDefaultValue
@@ -280,14 +267,13 @@ export function inputFieldDescriptionChanged(
     return;
   }
   if (existingNode.description?.value !== change.meta.oldInputFieldDescription) {
-    handleError(
-      change,
+    config.onError(
       new ValueMismatchError(
         Kind.STRING,
         change.meta.oldInputFieldDescription,
         existingNode.description?.value,
       ),
-      config,
+      change,
     );
   }
   (existingNode.description as StringValueNode | undefined) = stringNode(

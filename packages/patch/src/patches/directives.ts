@@ -21,7 +21,6 @@ import {
   ChangePathMissingError,
   DeletedAncestorCoordinateNotFoundError,
   DeletedAttributeNotFoundError,
-  handleError,
   ValueMismatchError,
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
@@ -40,16 +39,15 @@ export function directiveAdded(
   _context: PatchContext,
 ) {
   if (change.path === undefined) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
   const changedNode = nodeByPath.get(change.path);
   if (changedNode) {
-    handleError(
-      change,
+    config.onError(
       new AddedCoordinateAlreadyExistsError(changedNode.kind, change.meta.addedDirectiveName),
-      config,
+      change,
     );
     return;
   }
@@ -84,28 +82,26 @@ export function directiveArgumentAdded(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
   const directiveNode = nodeByPath.get(change.path);
   if (!directiveNode) {
-    handleError(
-      change,
+    config.onError(
       new AddedAttributeCoordinateNotFoundError(
         change.meta.directiveName,
         'arguments',
         change.meta.addedDirectiveArgumentName,
       ),
-      config,
+      change,
     );
     return;
   }
   if (directiveNode.kind !== Kind.DIRECTIVE_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, directiveNode.kind),
-      config,
+      change,
     );
     return;
   }
@@ -115,14 +111,13 @@ export function directiveArgumentAdded(
     change.meta.addedDirectiveArgumentName,
   );
   if (existingArg) {
-    handleError(
-      change,
+    config.onError(
       new AddedAttributeAlreadyExistsError(
         existingArg.kind,
         'arguments',
         change.meta.addedDirectiveArgumentName,
       ),
-      config,
+      change,
     );
     return;
   }
@@ -169,38 +164,35 @@ export function directiveLocationAdded(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
   const changedNode = nodeByPath.get(change.path);
   if (!changedNode) {
-    handleError(
-      change,
+    config.onError(
       new ChangedAncestorCoordinateNotFoundError(Kind.DIRECTIVE_DEFINITION, 'locations'),
-      config,
+      change,
     );
     return;
   }
 
   if (changedNode.kind !== Kind.DIRECTIVE_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, changedNode.kind),
-      config,
+      change,
     );
     return;
   }
 
   if (changedNode.locations.some(l => l.value === change.meta.addedDirectiveLocation)) {
-    handleError(
-      change,
+    config.onError(
       new AddedAttributeAlreadyExistsError(
         Kind.DIRECTIVE_DEFINITION,
         'locations',
         change.meta.addedDirectiveLocation,
       ),
-      config,
+      change,
     );
     return;
   }
@@ -218,29 +210,27 @@ export function directiveLocationRemoved(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
   const changedNode = nodeByPath.get(change.path);
   if (!changedNode) {
-    handleError(
-      change,
+    config.onError(
       new DeletedAncestorCoordinateNotFoundError(
         Kind.DIRECTIVE_DEFINITION,
         'locations',
         change.meta.removedDirectiveLocation,
       ),
-      config,
+      change,
     );
     return;
   }
 
   if (changedNode.kind !== Kind.DIRECTIVE_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, changedNode.kind),
-      config,
+      change,
     );
     return;
   }
@@ -251,14 +241,13 @@ export function directiveLocationRemoved(
   if (existing >= 0) {
     (changedNode.locations as NameNode[]) = changedNode.locations.toSpliced(existing, 1);
   } else {
-    handleError(
-      change,
+    config.onError(
       new DeletedAttributeNotFoundError(
         changedNode.kind,
         'locations',
         change.meta.removedDirectiveLocation,
       ),
-      config,
+      change,
     );
   }
 }
@@ -270,37 +259,34 @@ export function directiveDescriptionChanged(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
   const directiveNode = nodeByPath.get(change.path);
   if (!directiveNode) {
-    handleError(
-      change,
+    config.onError(
       new ChangedAncestorCoordinateNotFoundError(Kind.DIRECTIVE_DEFINITION, 'description'),
-      config,
+      change,
     );
     return;
   }
   if (directiveNode.kind !== Kind.DIRECTIVE_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, directiveNode.kind),
-      config,
+      change,
     );
     return;
   }
 
   if (directiveNode.description?.value !== change.meta.oldDirectiveDescription) {
-    handleError(
-      change,
+    config.onError(
       new ValueMismatchError(
         Kind.STRING,
         change.meta.oldDirectiveDescription,
         directiveNode.description?.value,
       ),
-      config,
+      change,
     );
   }
 
@@ -316,25 +302,23 @@ export function directiveArgumentDefaultValueChanged(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
   const argumentNode = nodeByPath.get(change.path);
   if (!argumentNode) {
-    handleError(
-      change,
+    config.onError(
       new ChangedAncestorCoordinateNotFoundError(Kind.ARGUMENT, 'defaultValue'),
-      config,
+      change,
     );
     return;
   }
 
   if (argumentNode.kind !== Kind.INPUT_VALUE_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, argumentNode.kind),
-      config,
+      change,
     );
     return;
   }
@@ -348,14 +332,13 @@ export function directiveArgumentDefaultValueChanged(
       ? parseConstValue(change.meta.newDirectiveArgumentDefaultValue)
       : undefined;
   } else {
-    handleError(
-      change,
+    config.onError(
       new ValueMismatchError(
         Kind.INPUT_VALUE_DEFINITION,
         change.meta.oldDirectiveArgumentDefaultValue,
         argumentNode.defaultValue && print(argumentNode.defaultValue),
       ),
-      config,
+      change,
     );
   }
 }
@@ -367,38 +350,35 @@ export function directiveArgumentDescriptionChanged(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
   const argumentNode = nodeByPath.get(change.path);
   if (!argumentNode) {
-    handleError(
-      change,
+    config.onError(
       new ChangedAncestorCoordinateNotFoundError(Kind.INPUT_VALUE_DEFINITION, 'description'),
-      config,
+      change,
     );
     return;
   }
 
   if (argumentNode.kind !== Kind.INPUT_VALUE_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, argumentNode.kind),
-      config,
+      change,
     );
     return;
   }
 
   if ((argumentNode.description?.value ?? null) !== change.meta.oldDirectiveArgumentDescription) {
-    handleError(
-      change,
+    config.onError(
       new ValueMismatchError(
         Kind.STRING,
         change.meta.oldDirectiveArgumentDescription ?? undefined,
         argumentNode.description?.value,
       ),
-      config,
+      change,
     );
   }
   (argumentNode.description as StringValueNode | undefined) = change.meta
@@ -414,33 +394,31 @@ export function directiveArgumentTypeChanged(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
   const argumentNode = nodeByPath.get(change.path);
   if (!argumentNode) {
-    handleError(change, new ChangedAncestorCoordinateNotFoundError(Kind.ARGUMENT, 'type'), config);
+    config.onError(new ChangedAncestorCoordinateNotFoundError(Kind.ARGUMENT, 'type'), change);
     return;
   }
   if (argumentNode.kind !== Kind.INPUT_VALUE_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, argumentNode.kind),
-      config,
+      change,
     );
     return;
   }
 
   if (print(argumentNode.type) !== change.meta.oldDirectiveArgumentType) {
-    handleError(
-      change,
+    config.onError(
       new ValueMismatchError(
         Kind.STRING,
         change.meta.oldDirectiveArgumentType,
         print(argumentNode.type),
       ),
-      config,
+      change,
     );
   }
   (argumentNode.type as TypeNode | undefined) = parseType(change.meta.newDirectiveArgumentType);
@@ -453,33 +431,30 @@ export function directiveRepeatableAdded(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
   const directiveNode = nodeByPath.get(change.path);
   if (!directiveNode) {
-    handleError(
-      change,
+    config.onError(
       new ChangedAncestorCoordinateNotFoundError(Kind.DIRECTIVE_DEFINITION, 'description'),
-      config,
+      change,
     );
     return;
   }
   if (directiveNode.kind !== Kind.DIRECTIVE_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, directiveNode.kind),
-      config,
+      change,
     );
     return;
   }
 
   if (directiveNode.repeatable !== false) {
-    handleError(
-      change,
+    config.onError(
       new ValueMismatchError(Kind.BOOLEAN, String(directiveNode.repeatable), 'false'),
-      config,
+      change,
     );
   }
 
@@ -493,34 +468,31 @@ export function directiveRepeatableRemoved(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
   const directiveNode = nodeByPath.get(change.path);
   if (!directiveNode) {
-    handleError(
-      change,
+    config.onError(
       new ChangedAncestorCoordinateNotFoundError(Kind.DIRECTIVE_DEFINITION, 'description'),
-      config,
+      change,
     );
     return;
   }
 
   if (directiveNode.kind !== Kind.DIRECTIVE_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, directiveNode.kind),
-      config,
+      change,
     );
     return;
   }
 
   if (directiveNode.repeatable !== true) {
-    handleError(
-      change,
+    config.onError(
       new ValueMismatchError(Kind.BOOLEAN, String(directiveNode.repeatable), 'true'),
-      config,
+      change,
     );
   }
 

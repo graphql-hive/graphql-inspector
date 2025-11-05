@@ -10,6 +10,7 @@ import {
 } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import { printSchemaWithDirectives } from '@graphql-tools/utils';
+import { defaultErrorHandler } from './errors.js';
 import {
   directiveUsageArgumentAdded,
   directiveUsageArgumentDefinitionAdded,
@@ -101,7 +102,7 @@ export * as errors from './errors.js';
 export function patchSchema(
   schema: GraphQLSchema,
   changes: Change<any>[],
-  config?: PatchConfig,
+  config?: Partial<PatchConfig>,
 ): GraphQLSchema {
   const ast = parse(printSchemaWithDirectives(schema, { assumeValid: true }));
   const patchedAst = patch(ast, changes, config);
@@ -215,9 +216,13 @@ export function patchCoordinatesAST(
   schemaNodes: SchemaNode[],
   nodesByCoordinate: Map<string, ASTNode>,
   changes: Change<any>[],
-  patchConfig?: PatchConfig,
+  patchConfig: Partial<PatchConfig> = {},
 ): DocumentNode {
-  const config: PatchConfig = patchConfig ?? {};
+  const config: PatchConfig = {
+    onError: defaultErrorHandler,
+    debug: false,
+    ...patchConfig,
+  };
   const context: PatchContext = {
     removedDirectiveNodes: [],
   };
@@ -536,7 +541,7 @@ export function patchCoordinatesAST(
 export function patch(
   ast: DocumentNode,
   changes: Change<any>[],
-  patchConfig?: PatchConfig,
+  patchConfig?: Partial<PatchConfig>,
 ): DocumentNode {
   const [schemaNodes, nodesByCoordinate] = groupByCoordinateAST(ast);
   return patchCoordinatesAST(schemaNodes, nodesByCoordinate, changes, patchConfig);

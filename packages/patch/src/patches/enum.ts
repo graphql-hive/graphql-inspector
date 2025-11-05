@@ -7,7 +7,6 @@ import {
   ChangePathMissingError,
   DeletedAttributeNotFoundError,
   DeletedCoordinateNotFound,
-  handleError,
   ValueMismatchError,
 } from '../errors.js';
 import { nameNode, stringNode } from '../node-templates.js';
@@ -21,7 +20,7 @@ export function enumValueRemoved(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
@@ -29,32 +28,29 @@ export function enumValueRemoved(
     | (ASTNode & { values?: EnumValueDefinitionNode[] })
     | undefined;
   if (!enumNode) {
-    handleError(
-      change,
+    config.onError(
       new DeletedCoordinateNotFound(Kind.ENUM_TYPE_DEFINITION, change.meta.removedEnumValueName),
-      config,
+      change,
     );
     return;
   }
 
   if (enumNode.kind !== Kind.ENUM_TYPE_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.ENUM_TYPE_DEFINITION, enumNode.kind),
-      config,
+      change,
     );
     return;
   }
 
   if (enumNode.values === undefined || enumNode.values.length === 0) {
-    handleError(
-      change,
+    config.onError(
       new DeletedAttributeNotFoundError(
         Kind.ENUM_TYPE_DEFINITION,
         'values',
         change.meta.removedEnumValueName,
       ),
-      config,
+      change,
     );
     return;
   }
@@ -62,14 +58,13 @@ export function enumValueRemoved(
   const beforeLength = enumNode.values.length;
   enumNode.values = enumNode.values.filter(f => f.name.value !== change.meta.removedEnumValueName);
   if (beforeLength === enumNode.values.length) {
-    handleError(
-      change,
+    config.onError(
       new DeletedAttributeNotFoundError(
         Kind.ENUM_TYPE_DEFINITION,
         'values',
         change.meta.removedEnumValueName,
       ),
-      config,
+      change,
     );
     return;
   }
@@ -90,28 +85,26 @@ export function enumValueAdded(
     | undefined;
   const changedNode = nodeByPath.get(enumValuePath);
   if (!enumNode) {
-    handleError(change, new ChangedAncestorCoordinateNotFoundError(Kind.ENUM, 'values'), config);
+    config.onError(new ChangedAncestorCoordinateNotFoundError(Kind.ENUM, 'values'), change);
     return;
   }
 
   if (changedNode) {
-    handleError(
-      change,
+    config.onError(
       new AddedAttributeAlreadyExistsError(
         changedNode.kind,
         'values',
         change.meta.addedEnumValueName,
       ),
-      config,
+      change,
     );
     return;
   }
 
   if (enumNode.kind !== Kind.ENUM_TYPE_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.ENUM_TYPE_DEFINITION, enumNode.kind),
-      config,
+      change,
     );
     return;
   }
@@ -135,25 +128,23 @@ export function enumValueDescriptionChanged(
   _context: PatchContext,
 ) {
   if (!change.path) {
-    handleError(change, new ChangePathMissingError(change), config);
+    config.onError(new ChangePathMissingError(change), change);
     return;
   }
 
   const enumValueNode = nodeByPath.get(change.path);
   if (!enumValueNode) {
-    handleError(
-      change,
+    config.onError(
       new ChangedAncestorCoordinateNotFoundError(Kind.ENUM_VALUE_DEFINITION, 'values'),
-      config,
+      change,
     );
     return;
   }
 
   if (enumValueNode.kind !== Kind.ENUM_VALUE_DEFINITION) {
-    handleError(
-      change,
+    config.onError(
       new ChangedCoordinateKindMismatchError(Kind.ENUM_VALUE_DEFINITION, enumValueNode.kind),
-      config,
+      change,
     );
     return;
   }
@@ -161,14 +152,13 @@ export function enumValueDescriptionChanged(
   const oldValueMatches =
     change.meta.oldEnumValueDescription === (enumValueNode.description?.value ?? null);
   if (!oldValueMatches) {
-    handleError(
-      change,
+    config.onError(
       new ValueMismatchError(
         Kind.ENUM_TYPE_DEFINITION,
         change.meta.oldEnumValueDescription,
         enumValueNode.description?.value,
       ),
-      config,
+      change,
     );
   }
   (enumValueNode.description as StringValueNode | undefined) = change.meta.newEnumValueDescription
