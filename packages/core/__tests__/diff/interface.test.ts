@@ -181,7 +181,7 @@ describe('interface', () => {
       );
       // Removed
       expect(change.b.type).toEqual('FIELD_DEPRECATION_REMOVED');
-      expect(change.b.criticality.level).toEqual(CriticalityLevel.Dangerous);
+      expect(change.b.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.b.message).toEqual("Field 'Foo.b' is no longer deprecated");
       // Added
       expect(change.c.type).toEqual('FIELD_DEPRECATION_ADDED');
@@ -210,7 +210,7 @@ describe('interface', () => {
       };
 
       // Changed
-      expect(change.a.criticality.level).toEqual(CriticalityLevel.Dangerous);
+      expect(change.a.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.a.type).toEqual('FIELD_DEPRECATION_REMOVED');
       expect(change.a.message).toEqual("Field 'Foo.a' is no longer deprecated");
       // Removed

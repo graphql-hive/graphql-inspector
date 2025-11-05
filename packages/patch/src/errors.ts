@@ -73,7 +73,7 @@ export class ValueMismatchError extends Error {
   readonly mismatch = true;
   constructor(kind: Kind, expected: string | undefined | null, actual: string | undefined | null) {
     super(
-      `The existing value did not match what was expected. Expected the "${kind}" to be ${expected} but found ${actual}.`,
+      `The existing value did not match what was expected. Expected the "${kind}" to be "${String(expected)}" but found "${String(actual)}".`,
     );
   }
 }

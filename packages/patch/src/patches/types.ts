@@ -149,7 +149,7 @@ export function typeDescriptionChanged(
 }
 
 export function typeDescriptionRemoved(
-  change: Change<typeof ChangeType.TypeDescriptionChanged>,
+  change: Change<typeof ChangeType.TypeDescriptionRemoved>,
   nodeByPath: Map<string, ASTNode>,
   config: PatchConfig,
   _context: PatchContext,
@@ -180,11 +180,11 @@ export function typeDescriptionRemoved(
     return;
   }
 
-  if (typeNode.description?.value !== change.meta.oldTypeDescription) {
+  if (typeNode.description?.value !== change.meta.removedTypeDescription) {
     config.onError(
       new ValueMismatchError(
         Kind.STRING,
-        change.meta.oldTypeDescription,
+        change.meta.removedTypeDescription,
         typeNode.description?.value,
       ),
       change,

@@ -147,10 +147,10 @@ function changesInType(
   if (isNotEqual(oldType?.description, newType.description)) {
     if (isVoid(oldType?.description)) {
       addChange(typeDescriptionAdded(newType));
-    } else if (oldType && isVoid(newType.description)) {
+    } else if (oldType.description && isVoid(newType.description)) {
       addChange(typeDescriptionRemoved(oldType));
     } else {
-      addChange(typeDescriptionChanged(oldType!, newType));
+      addChange(typeDescriptionChanged(oldType, newType));
     }
   }
 }

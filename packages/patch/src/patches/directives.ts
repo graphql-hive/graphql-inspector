@@ -279,7 +279,7 @@ export function directiveDescriptionChanged(
     return;
   }
 
-  if (directiveNode.description?.value !== change.meta.oldDirectiveDescription) {
+  if ((directiveNode.description?.value ?? null) !== change.meta.oldDirectiveDescription) {
     config.onError(
       new ValueMismatchError(
         Kind.STRING,
