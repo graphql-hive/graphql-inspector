@@ -23,8 +23,10 @@ import {
   DirectiveUsageEnumRemovedChange,
   DirectiveUsageEnumValueAddedChange,
   DirectiveUsageEnumValueRemovedChange,
+  DirectiveUsageFieldAddedChange,
   DirectiveUsageFieldDefinitionAddedChange,
   DirectiveUsageFieldDefinitionRemovedChange,
+  DirectiveUsageFieldRemovedChange,
   DirectiveUsageInputFieldDefinitionAddedChange,
   DirectiveUsageInputFieldDefinitionRemovedChange,
   DirectiveUsageInputObjectAddedChange,
@@ -379,6 +381,25 @@ export function directiveUsageEnumRemovedFromMeta(args: DirectiveUsageEnumRemove
   } as const;
 }
 
+function buildDirectiveUsageFieldAddedMessage(
+  args: DirectiveUsageFieldAddedChange['meta'],
+): string {
+  return `Directive '${args.addedDirectiveName}' was added to field '${args.typeName}.${args.fieldName}'`;
+}
+
+export function directiveUsageFieldAddedFromMeta(args: DirectiveUsageFieldAddedChange) {
+  return {
+    criticality: {
+      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      reason: `Directive '${args.meta.addedDirectiveName}' was added to field '${args.meta.fieldName}'`,
+    },
+    type: ChangeType.DirectiveUsageFieldAdded,
+    message: buildDirectiveUsageFieldAddedMessage(args.meta),
+    path: [args.meta.typeName, args.meta.fieldName, args.meta.addedDirectiveName].join('.'),
+    meta: args.meta,
+  } as const;
+}
+
 function buildDirectiveUsageFieldDefinitionAddedMessage(
   args: DirectiveUsageFieldDefinitionAddedChange['meta'],
 ): string {
@@ -396,6 +417,25 @@ export function directiveUsageFieldDefinitionAddedFromMeta(
     type: ChangeType.DirectiveUsageFieldDefinitionAdded,
     message: buildDirectiveUsageFieldDefinitionAddedMessage(args.meta),
     path: [args.meta.typeName, args.meta.fieldName, args.meta.addedDirectiveName].join('.'),
+    meta: args.meta,
+  } as const;
+}
+
+function buildDirectiveUsageFieldRemovedMessage(
+  args: DirectiveUsageFieldRemovedChange['meta'],
+): string {
+  return `Directive '${args.removedDirectiveName}' was removed from field '${args.typeName}.${args.fieldName}'`;
+}
+
+export function directiveUsageFieldRemovedFromMeta(args: DirectiveUsageFieldRemovedChange) {
+  return {
+    criticality: {
+      level: removedSpecialDirective(args.meta.removedDirectiveName, CriticalityLevel.Dangerous),
+      reason: `Directive '${args.meta.removedDirectiveName}' was removed from field '${args.meta.fieldName}'`,
+    },
+    type: ChangeType.DirectiveUsageFieldRemoved,
+    message: buildDirectiveUsageFieldRemovedMessage(args.meta),
+    path: [args.meta.typeName, args.meta.fieldName, args.meta.removedDirectiveName].join('.'),
     meta: args.meta,
   } as const;
 }
