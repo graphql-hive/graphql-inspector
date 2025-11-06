@@ -108,7 +108,8 @@ export type NodeAttribute =
   | 'directives'
   | 'arguments'
   | 'locations'
-  | 'fields';
+  | 'fields'
+  | 'repeatable';
 
 /**
  * If trying to add a node at a path, but that path no longer exists. E.g. add a description to

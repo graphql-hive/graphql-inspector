@@ -40,7 +40,15 @@ export async function expectDiffAndPatchToThrow(
   /** The schema that gets patched using the diff  */
   patchSchema: string,
 ): Promise<void> {
-  await expect(async () => await buildDiffPatch(before, after, patchSchema)).rejects.toThrow();
+  await expect(async () => {
+    try {
+      return await buildDiffPatch(before, after, patchSchema);
+    } catch (e) {
+      const err = e as Error;
+      console.error(`Patch threw as expected with error: ${err.message}`);
+      throw e;
+    }
+  }).rejects.toThrow();
 }
 
 /**

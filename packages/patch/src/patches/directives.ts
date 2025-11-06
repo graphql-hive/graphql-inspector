@@ -44,23 +44,61 @@ export function directiveAdded(
   }
 
   const changedNode = nodeByPath.get(change.path);
-  if (changedNode) {
+
+  if (!changedNode) {
+    const node: DirectiveDefinitionNode = {
+      kind: Kind.DIRECTIVE_DEFINITION,
+      name: nameNode(change.meta.addedDirectiveName),
+      repeatable: change.meta.addedDirectiveRepeatable,
+      locations: change.meta.addedDirectiveLocations.map(l => nameNode(l)),
+      description: change.meta.addedDirectiveDescription
+        ? stringNode(change.meta.addedDirectiveDescription)
+        : undefined,
+    };
+    nodeByPath.set(change.path, node);
+    return;
+  }
+
+  if (changedNode.kind !== Kind.DIRECTIVE_DEFINITION) {
     config.onError(
-      new AddedCoordinateAlreadyExistsError(changedNode.kind, change.meta.addedDirectiveName),
+      new ChangedCoordinateKindMismatchError(Kind.DIRECTIVE_DEFINITION, changedNode.kind),
       change,
     );
     return;
   }
-  const node: DirectiveDefinitionNode = {
-    kind: Kind.DIRECTIVE_DEFINITION,
-    name: nameNode(change.meta.addedDirectiveName),
-    repeatable: change.meta.addedDirectiveRepeatable,
-    locations: change.meta.addedDirectiveLocations.map(l => nameNode(l)),
-    description: change.meta.addedDirectiveDescription
-      ? stringNode(change.meta.addedDirectiveDescription)
-      : undefined,
-  };
-  nodeByPath.set(change.path, node);
+
+  // eslint-disable-next-line eqeqeq
+  if (change.meta.addedDirectiveRepeatable != changedNode.repeatable) {
+    config.onError(
+      new ValueMismatchError(
+        changedNode.kind,
+        `repeatable=${change.meta.addedDirectiveRepeatable}`,
+        `repeatable=${changedNode.repeatable}`,
+      ),
+      change,
+    );
+    return;
+  }
+
+  if (
+    change.meta.addedDirectiveLocations.join('|') !==
+    changedNode.locations.map(l => l.value).join('|')
+  ) {
+    config.onError(
+      new ValueMismatchError(
+        changedNode.kind,
+        `locations=${change.meta.addedDirectiveLocations.join('|')}`,
+        `locations=${changedNode.locations.map(l => l.value).join('|')}`,
+      ),
+      change,
+    );
+    return;
+  }
+
+  config.onError(
+    new AddedCoordinateAlreadyExistsError(changedNode.kind, change.meta.addedDirectiveName),
+    change,
+  );
 }
 
 export function directiveRemoved(
@@ -110,28 +148,54 @@ export function directiveArgumentAdded(
     directiveNode.arguments,
     change.meta.addedDirectiveArgumentName,
   );
-  if (existingArg) {
-    config.onError(
-      new AddedAttributeAlreadyExistsError(
-        existingArg.kind,
-        'arguments',
-        change.meta.addedDirectiveArgumentName,
-      ),
-      change,
-    );
+  if (!existingArg) {
+    const node: InputValueDefinitionNode = {
+      kind: Kind.INPUT_VALUE_DEFINITION,
+      name: nameNode(change.meta.addedDirectiveArgumentName),
+      type: parseType(change.meta.addedDirectiveArgumentType),
+    };
+    (directiveNode.arguments as InputValueDefinitionNode[] | undefined) = [
+      ...(directiveNode.arguments ?? []),
+      node,
+    ];
+    nodeByPath.set(`${change.path}.${change.meta.addedDirectiveArgumentName}`, node);
     return;
   }
 
-  const node: InputValueDefinitionNode = {
-    kind: Kind.INPUT_VALUE_DEFINITION,
-    name: nameNode(change.meta.addedDirectiveArgumentName),
-    type: parseType(change.meta.addedDirectiveArgumentType),
-  };
-  (directiveNode.arguments as InputValueDefinitionNode[] | undefined) = [
-    ...(directiveNode.arguments ?? []),
-    node,
-  ];
-  nodeByPath.set(`${change.path}.${change.meta.addedDirectiveArgumentName}`, node);
+  const existingType = print(existingArg.type);
+  if (existingType !== change.meta.addedDirectiveArgumentType) {
+    config.onError(
+      new ValueMismatchError(
+        existingArg.kind,
+        `type=${change.meta.addedDirectiveArgumentType}`,
+        `type=${existingType}`,
+      ),
+      change,
+    );
+  }
+
+  const existingDefaultValue = existingArg.defaultValue
+    ? print(existingArg.defaultValue)
+    : undefined;
+  if (change.meta.addedDirectiveDefaultValue !== existingDefaultValue) {
+    config.onError(
+      new ValueMismatchError(
+        existingArg.kind,
+        `defaultValue=${change.meta.addedDirectiveDefaultValue}`,
+        `defaultValue=${existingDefaultValue}`,
+      ),
+      change,
+    );
+  }
+
+  config.onError(
+    new AddedAttributeAlreadyExistsError(
+      existingArg.kind,
+      'arguments',
+      change.meta.addedDirectiveArgumentName,
+    ),
+    change,
+  );
 }
 
 export function directiveArgumentRemoved(
@@ -475,7 +539,7 @@ export function directiveRepeatableRemoved(
   const directiveNode = nodeByPath.get(change.path);
   if (!directiveNode) {
     config.onError(
-      new ChangedAncestorCoordinateNotFoundError(Kind.DIRECTIVE_DEFINITION, 'description'),
+      new DeletedAncestorCoordinateNotFoundError(Kind.DIRECTIVE_DEFINITION, 'repeatable', 'true'),
       change,
     );
     return;
