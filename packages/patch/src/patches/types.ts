@@ -165,7 +165,7 @@ export function typeDescriptionRemoved(
       new DeletedAncestorCoordinateNotFoundError(
         Kind.OBJECT_TYPE_DEFINITION,
         'description',
-        change.meta.oldTypeDescription,
+        change.meta.removedTypeDescription,
       ),
       change,
     );
