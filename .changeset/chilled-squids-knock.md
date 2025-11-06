@@ -1,6 +1,6 @@
 ---
-'@graphql-inspector/core': patch
+'@graphql-inspector/core': minor
 ---
 
-add missing directive usage exports 'directiveUsageFieldAddedFromMeta' &
+add missing change detection of directive field usage and exports 'directiveUsageFieldAddedFromMeta' &
 'directiveUsageFieldRemovedFromMeta'

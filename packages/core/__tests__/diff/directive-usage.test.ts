@@ -1,5 +1,10 @@
 import { buildSchema } from 'graphql';
-import { CriticalityLevel, diff } from '../../src/index.js';
+import {
+  CriticalityLevel,
+  diff,
+  directiveUsageFieldAddedFromMeta,
+  directiveUsageFieldRemovedFromMeta,
+} from '../../src/index.js';
 import { findFirstChangeByPath } from '../../utils/testing.js';
 
 describe('directive-usage', () => {
@@ -722,6 +727,106 @@ describe('directive-usage', () => {
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_SCHEMA_REMOVED');
       expect(change.message).toEqual("Directive 'external' was removed from schema 'Foo'");
+    });
+  });
+
+  describe('directiveUsageFieldAddedFromMeta and directiveUsageFieldRemovedFromMeta', () => {
+    test('directiveUsageFieldAddedFromMeta creates correct change object', () => {
+      const change = directiveUsageFieldAddedFromMeta({
+        type: 'DIRECTIVE_USAGE_FIELD_ADDED',
+        meta: {
+          typeName: 'User',
+          fieldName: 'email',
+          addedDirectiveName: 'external',
+        },
+      });
+
+      expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_ADDED');
+      expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
+      expect(change.criticality.reason).toEqual("Directive 'external' was added to field 'email'");
+      expect(change.message).toEqual("Directive 'external' was added to field 'User.email'");
+      expect(change.path).toEqual('User.email.external');
+      expect(change.meta).toEqual({
+        typeName: 'User',
+        fieldName: 'email',
+        addedDirectiveName: 'external',
+      });
+    });
+
+    test('directiveUsageFieldAddedFromMeta with @deprecated directive', () => {
+      const change = directiveUsageFieldAddedFromMeta({
+        type: 'DIRECTIVE_USAGE_FIELD_ADDED',
+        meta: {
+          typeName: 'User',
+          fieldName: 'name',
+          addedDirectiveName: 'deprecated',
+        },
+      });
+
+      expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+    });
+
+    test('directiveUsageFieldAddedFromMeta with @oneOf directive', () => {
+      const change = directiveUsageFieldAddedFromMeta({
+        type: 'DIRECTIVE_USAGE_FIELD_ADDED',
+        meta: {
+          typeName: 'SearchResult',
+          fieldName: 'result',
+          addedDirectiveName: 'oneOf',
+        },
+      });
+
+      expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
+    });
+
+    test('directiveUsageFieldRemovedFromMeta creates correct change object', () => {
+      const change = directiveUsageFieldRemovedFromMeta({
+        type: 'DIRECTIVE_USAGE_FIELD_REMOVED',
+        meta: {
+          typeName: 'User',
+          fieldName: 'email',
+          removedDirectiveName: 'external',
+        },
+      });
+
+      expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_REMOVED');
+      expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
+      expect(change.criticality.reason).toEqual(
+        "Directive 'external' was removed from field 'email'",
+      );
+      expect(change.message).toEqual("Directive 'external' was removed from field 'User.email'");
+      expect(change.path).toEqual('User.email.external');
+      expect(change.meta).toEqual({
+        typeName: 'User',
+        fieldName: 'email',
+        removedDirectiveName: 'external',
+      });
+    });
+
+    test('directiveUsageFieldRemovedFromMeta with @deprecated directive', () => {
+      const change = directiveUsageFieldRemovedFromMeta({
+        type: 'DIRECTIVE_USAGE_FIELD_REMOVED',
+        meta: {
+          typeName: 'User',
+          fieldName: 'name',
+          removedDirectiveName: 'deprecated',
+        },
+      });
+
+      expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+    });
+
+    test('directiveUsageFieldRemovedFromMeta with @oneOf directive', () => {
+      const change = directiveUsageFieldRemovedFromMeta({
+        type: 'DIRECTIVE_USAGE_FIELD_REMOVED',
+        meta: {
+          typeName: 'SearchResult',
+          fieldName: 'result',
+          removedDirectiveName: 'oneOf',
+        },
+      });
+
+      expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
     });
   });
 });
