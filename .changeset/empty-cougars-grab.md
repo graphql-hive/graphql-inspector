@@ -18,3 +18,5 @@ const schemaB = buildSchema(after, { assumeValid: true, assumeValidSDL: true });
 const changes = await diff(schemaA, schemaB);
 const patched = patchSchema(schemaA, changes);
 ```
+
+If working from an AST, you may alternatively use the exported `patch` function. But be careful to make sure directives are included in your AST or those changes will be missed.

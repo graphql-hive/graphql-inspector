@@ -135,16 +135,3 @@ These additional changes can be filtered using a new rule:
 import { DiffRule, diff } from "@graphql-inspector/core";
 const changes = await diff(a, b, [DiffRule.ignoreNestedAdditions]);
 ```
-
-To apply the changes output to a schema using `patch`:
-
-```js
-const schemaA = buildSchema(before, { assumeValid: true, assumeValidSDL: true });
-const schemaB = buildSchema(after, { assumeValid: true, assumeValidSDL: true });
-
-const changes = await diff(schemaA, schemaB);
-const patched = patchSchema(schemaA, changes);
-expect(printSortedSchema(schemaB)).toBe(printSortedSchema(patched));
-```
-
-If working from an AST, you may alternatively use the exported `patch` function. But be careful to make sure directives are included in your AST or those changes will be missed.
