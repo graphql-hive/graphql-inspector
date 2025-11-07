@@ -25,10 +25,7 @@ export function typeAdded(
 
   const existing = nodeByPath.get(change.path);
   if (existing) {
-    config.onError(
-      new AddedCoordinateAlreadyExistsError(existing.kind, change.meta.addedTypeName),
-      change,
-    );
+    config.onError(new AddedCoordinateAlreadyExistsError(change.path, change.type), change);
     return;
   }
   const node: TypeDefinitionNode = {
@@ -88,7 +85,11 @@ export function typeDescriptionAdded(
   const typeNode = nodeByPath.get(change.path);
   if (!typeNode) {
     config.onError(
-      new ChangedAncestorCoordinateNotFoundError(Kind.OBJECT_TYPE_DEFINITION, 'description'),
+      new ChangedAncestorCoordinateNotFoundError(
+        change.path,
+        change.type,
+        change.meta.addedTypeDescription,
+      ),
       change,
     );
     return;
@@ -120,7 +121,11 @@ export function typeDescriptionChanged(
   const typeNode = nodeByPath.get(change.path);
   if (!typeNode) {
     config.onError(
-      new ChangedAncestorCoordinateNotFoundError(Kind.OBJECT_TYPE_DEFINITION, 'description'),
+      new ChangedAncestorCoordinateNotFoundError(
+        change.path,
+        change.type,
+        change.meta.newTypeDescription,
+      ),
       change,
     );
     return;
@@ -163,8 +168,8 @@ export function typeDescriptionRemoved(
   if (!typeNode) {
     config.onError(
       new DeletedAncestorCoordinateNotFoundError(
-        Kind.OBJECT_TYPE_DEFINITION,
-        'description',
+        change.path,
+        change.type,
         change.meta.removedTypeDescription,
       ),
       change,

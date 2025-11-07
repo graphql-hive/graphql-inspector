@@ -14,6 +14,7 @@ import { Change, ChangeType } from '@graphql-inspector/core';
 import {
   AddedAttributeCoordinateNotFoundError,
   AddedCoordinateAlreadyExistsError,
+  ChangedAncestorCoordinateNotFoundError,
   ChangedCoordinateKindMismatchError,
   ChangePathMissingError,
   DeletedAncestorCoordinateNotFoundError,
@@ -66,8 +67,8 @@ export function fieldRemoved(
   if (!typeNode) {
     config.onError(
       new DeletedAncestorCoordinateNotFoundError(
-        Kind.OBJECT_TYPE_DEFINITION,
-        'fields',
+        change.path,
+        change.type,
         change.meta.removedFieldName,
       ),
       change,
@@ -79,7 +80,12 @@ export function fieldRemoved(
   typeNode.fields = typeNode.fields?.filter(f => f.name.value !== change.meta.removedFieldName);
   if (beforeLength === (typeNode.fields?.length ?? 0)) {
     config.onError(
-      new DeletedAttributeNotFoundError(typeNode?.kind, 'fields', change.meta.removedFieldName),
+      new DeletedAttributeNotFoundError(
+        change.path,
+        change.type,
+        'fields',
+        change.meta.removedFieldName,
+      ),
       change,
     );
   } else {
@@ -102,10 +108,7 @@ export function fieldAdded(
   if (changedNode) {
     if (changedNode.kind === Kind.FIELD_DEFINITION) {
       if (print(changedNode.type) === change.meta.addedFieldReturnType) {
-        config.onError(
-          new AddedCoordinateAlreadyExistsError(changedNode.kind, change.meta.addedFieldName),
-          change,
-        );
+        config.onError(new AddedCoordinateAlreadyExistsError(change.path, change.type), change);
       } else {
         config.onError(
           new ValueMismatchError(
@@ -128,7 +131,14 @@ export function fieldAdded(
     fields?: FieldDefinitionNode[];
   };
   if (!typeNode) {
-    config.onError(new ChangePathMissingError(change), change);
+    config.onError(
+      new ChangedAncestorCoordinateNotFoundError(
+        change.path,
+        change.type,
+        change.meta.addedFieldName,
+      ),
+      change,
+    );
     return;
   }
 
@@ -170,10 +180,7 @@ export function fieldArgumentAdded(
 
   const existing = nodeByPath.get(change.path);
   if (existing) {
-    config.onError(
-      new AddedCoordinateAlreadyExistsError(Kind.ARGUMENT, change.meta.addedArgumentName),
-      change,
-    );
+    config.onError(new AddedCoordinateAlreadyExistsError(change.path, change.type), change);
     return;
   }
 
@@ -183,8 +190,8 @@ export function fieldArgumentAdded(
   if (!fieldNode) {
     config.onError(
       new AddedAttributeCoordinateNotFoundError(
-        change.meta.fieldName,
-        'arguments',
+        change.path,
+        change.type,
         change.meta.addedArgumentName,
       ),
       change,
@@ -295,8 +302,8 @@ export function fieldArgumentRemoved(
   if (!fieldNode) {
     config.onError(
       new DeletedAncestorCoordinateNotFoundError(
-        Kind.FIELD_DEFINITION,
-        'arguments',
+        change.path!, // asserted by "getDeletedNodeOfKind"
+        change.type,
         change.meta.removedFieldArgumentName,
       ),
       change,

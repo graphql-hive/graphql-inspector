@@ -84,8 +84,9 @@ function directiveUsageDefinitionAdded(
   if (!parentNode) {
     config.onError(
       new ChangedAncestorCoordinateNotFoundError(
-        Kind.OBJECT_TYPE_DEFINITION, // or interface...
-        'directives',
+        change.path,
+        change.type,
+        change.meta.addedDirectiveName,
       ),
       change,
     );
@@ -106,10 +107,7 @@ function directiveUsageDefinitionAdded(
     change.meta.directiveRepeatedTimes,
   );
   if (!repeatable && directiveNode) {
-    config.onError(
-      new AddedCoordinateAlreadyExistsError(Kind.DIRECTIVE, change.meta.addedDirectiveName),
-      change,
-    );
+    config.onError(new AddedCoordinateAlreadyExistsError(change.path, change.type), change);
     return;
   }
 
@@ -153,7 +151,8 @@ function schemaDirectiveUsageDefinitionAdded(
   if (!repeatable && directiveAlreadyExists) {
     config.onError(
       new AddedAttributeAlreadyExistsError(
-        Kind.SCHEMA_DEFINITION,
+        change.path,
+        change.type,
         'directives',
         change.meta.addedDirectiveName,
       ),
@@ -197,7 +196,8 @@ function schemaDirectiveUsageDefinitionRemoved(
   if (!deleted) {
     config.onError(
       new DeletedAttributeNotFoundError(
-        Kind.SCHEMA_DEFINITION,
+        change.path ?? '',
+        change.type,
         'directives',
         change.meta.removedDirectiveName,
       ),
@@ -223,8 +223,8 @@ function directiveUsageDefinitionRemoved(
   if (!parentNode) {
     config.onError(
       new DeletedAncestorCoordinateNotFoundError(
-        Kind.OBJECT_TYPE_DEFINITION,
-        'directives',
+        change.path,
+        change.type,
         change.meta.removedDirectiveName,
       ),
       change,
@@ -240,7 +240,8 @@ function directiveUsageDefinitionRemoved(
   if (!directiveNode) {
     config.onError(
       new DeletedAttributeNotFoundError(
-        parentNode.kind,
+        change.path,
+        change.type,
         'directives',
         change.meta.removedDirectiveName,
       ),
@@ -500,8 +501,8 @@ export function directiveUsageArgumentAdded(
   if (!directiveNode) {
     config.onError(
       new AddedAttributeCoordinateNotFoundError(
-        change.meta.directiveName,
-        'arguments',
+        change.path,
+        change.type,
         change.meta.addedArgumentName,
       ),
       change,
@@ -559,8 +560,8 @@ export function directiveUsageArgumentRemoved(
   if (!directiveNode) {
     config.onError(
       new DeletedAncestorCoordinateNotFoundError(
-        Kind.DIRECTIVE,
-        'arguments',
+        change.path,
+        change.type,
         change.meta.removedArgumentName,
       ),
       change,
@@ -579,7 +580,8 @@ export function directiveUsageArgumentRemoved(
   if (!existing) {
     config.onError(
       new DeletedAttributeNotFoundError(
-        directiveNode.kind,
+        change.path,
+        change.type,
         'arguments',
         change.meta.removedArgumentName,
       ),

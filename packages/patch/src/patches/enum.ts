@@ -60,7 +60,8 @@ export function enumValueRemoved(
   if (beforeLength === enumNode.values.length) {
     config.onError(
       new DeletedAttributeNotFoundError(
-        Kind.ENUM_TYPE_DEFINITION,
+        change.path,
+        change.type,
         'values',
         change.meta.removedEnumValueName,
       ),
@@ -79,20 +80,32 @@ export function enumValueAdded(
   config: PatchConfig,
   _context: PatchContext,
 ) {
-  const enumValuePath = change.path!;
+  if (!change.path) {
+    config.onError(new ChangePathMissingError(change), change);
+    return;
+  }
+  const enumValuePath = change.path;
   const enumNode = nodeByPath.get(parentPath(enumValuePath)) as
     | (ASTNode & { values: EnumValueDefinitionNode[] })
     | undefined;
   const changedNode = nodeByPath.get(enumValuePath);
   if (!enumNode) {
-    config.onError(new ChangedAncestorCoordinateNotFoundError(Kind.ENUM, 'values'), change);
+    config.onError(
+      new ChangedAncestorCoordinateNotFoundError(
+        change.path,
+        change.type,
+        change.meta.addedEnumValueName,
+      ),
+      change,
+    );
     return;
   }
 
   if (changedNode) {
     config.onError(
       new AddedAttributeAlreadyExistsError(
-        changedNode.kind,
+        change.path,
+        change.type,
         'values',
         change.meta.addedEnumValueName,
       ),
@@ -135,7 +148,11 @@ export function enumValueDescriptionChanged(
   const enumValueNode = nodeByPath.get(change.path);
   if (!enumValueNode) {
     config.onError(
-      new ChangedAncestorCoordinateNotFoundError(Kind.ENUM_VALUE_DEFINITION, 'values'),
+      new ChangedAncestorCoordinateNotFoundError(
+        change.path,
+        change.type,
+        change.meta.newEnumValueDescription,
+      ),
       change,
     );
     return;

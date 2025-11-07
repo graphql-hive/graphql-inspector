@@ -43,13 +43,7 @@ export function inputFieldAdded(
   const existingNode = nodeByPath.get(change.path);
   if (existingNode) {
     if (existingNode.kind === Kind.INPUT_VALUE_DEFINITION) {
-      config.onError(
-        new AddedCoordinateAlreadyExistsError(
-          Kind.INPUT_VALUE_DEFINITION,
-          change.meta.addedInputFieldName,
-        ),
-        change,
-      );
+      config.onError(new AddedCoordinateAlreadyExistsError(change.path, change.type), change);
     } else {
       config.onError(
         new ChangedCoordinateKindMismatchError(Kind.INPUT_VALUE_DEFINITION, existingNode.kind),
@@ -64,8 +58,8 @@ export function inputFieldAdded(
   if (!typeNode) {
     config.onError(
       new AddedAttributeCoordinateNotFoundError(
-        change.meta.inputName,
-        'fields',
+        change.path,
+        change.type,
         change.meta.addedInputFieldName,
       ),
       change,
@@ -124,8 +118,8 @@ export function inputFieldRemoved(
   if (!typeNode) {
     config.onError(
       new DeletedAncestorCoordinateNotFoundError(
-        Kind.INPUT_OBJECT_TYPE_DEFINITION,
-        'fields',
+        change.path,
+        change.type,
         change.meta.removedFieldName,
       ),
       change,
@@ -161,8 +155,8 @@ export function inputFieldDescriptionAdded(
   if (!existingNode) {
     config.onError(
       new DeletedAncestorCoordinateNotFoundError(
-        Kind.INPUT_VALUE_DEFINITION,
-        'description',
+        change.path,
+        change.type,
         change.meta.addedInputFieldDescription,
       ),
       change,
@@ -220,7 +214,11 @@ export function inputFieldDefaultValueChanged(
   const existingNode = nodeByPath.get(change.path);
   if (!existingNode) {
     config.onError(
-      new ChangedAncestorCoordinateNotFoundError(Kind.INPUT_VALUE_DEFINITION, 'defaultValue'),
+      new ChangedAncestorCoordinateNotFoundError(
+        change.path,
+        change.type,
+        change.meta.newDefaultValue ?? null,
+      ),
       change,
     );
     return;

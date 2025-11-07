@@ -5,9 +5,7 @@ import {
   ChangedCoordinateKindMismatchError,
   ChangedCoordinateNotFoundError,
   ChangePathMissingError,
-  DeletedAncestorCoordinateNotFoundError,
   DeletedCoordinateNotFound,
-  NodeAttribute,
   ValueMismatchError,
 } from './errors.js';
 import { AdditionChangeType, PatchConfig } from './types.js';
@@ -141,29 +139,6 @@ export function getDeletedNodeOfKind<K extends Kind>(
   const existing = nodeByPath.get(change.path);
   if (!existing) {
     config.onError(new DeletedCoordinateNotFound(kind, undefined), change);
-    return;
-  }
-  if (existing.kind !== kind) {
-    config.onError(new ChangedCoordinateKindMismatchError(kind, existing.kind), change);
-    return;
-  }
-  return existing as ASTKindToNode[K];
-}
-
-export function getDeletedParentNodeOfKind<K extends Kind>(
-  change: Change<any>,
-  nodeByPath: Map<string, ASTNode>,
-  kind: K,
-  attribute: NodeAttribute,
-  config: PatchConfig,
-): ASTKindToNode[K] | void {
-  if (!change.path) {
-    config.onError(new ChangePathMissingError(change), change);
-    return;
-  }
-  const existing = nodeByPath.get(parentPath(change.path));
-  if (!existing) {
-    config.onError(new DeletedAncestorCoordinateNotFoundError(kind, attribute, undefined), change);
     return;
   }
   if (existing.kind !== kind) {

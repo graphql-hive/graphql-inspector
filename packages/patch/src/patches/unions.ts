@@ -1,4 +1,4 @@
-import { ASTNode, Kind, NamedTypeNode } from 'graphql';
+import { ASTNode, NamedTypeNode } from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
   AddedAttributeAlreadyExistsError,
@@ -26,7 +26,11 @@ export function unionMemberAdded(
     | undefined;
   if (!union) {
     config.onError(
-      new ChangedAncestorCoordinateNotFoundError(Kind.UNION_TYPE_DEFINITION, 'types'),
+      new ChangedAncestorCoordinateNotFoundError(
+        change.path,
+        change.type,
+        change.meta.addedUnionMemberTypeName,
+      ),
       change,
     );
     return;
@@ -35,7 +39,8 @@ export function unionMemberAdded(
   if (findNamedNode(union.types, change.meta.addedUnionMemberTypeName)) {
     config.onError(
       new AddedAttributeAlreadyExistsError(
-        Kind.UNION_TYPE_DEFINITION,
+        change.path,
+        change.type,
         'types',
         change.meta.addedUnionMemberTypeName,
       ),
@@ -63,8 +68,8 @@ export function unionMemberRemoved(
   if (!union) {
     config.onError(
       new DeletedAncestorCoordinateNotFoundError(
-        Kind.UNION_TYPE_DEFINITION,
-        'types',
+        change.path,
+        change.type,
         change.meta.removedUnionMemberTypeName,
       ),
       change,
@@ -75,7 +80,8 @@ export function unionMemberRemoved(
   if (!findNamedNode(union.types, change.meta.removedUnionMemberTypeName)) {
     config.onError(
       new DeletedAttributeNotFoundError(
-        Kind.UNION_TYPE_DEFINITION,
+        change.path,
+        change.type,
         'types',
         change.meta.removedUnionMemberTypeName,
       ),

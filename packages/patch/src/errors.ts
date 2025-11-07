@@ -1,17 +1,16 @@
 import { Kind } from 'graphql';
 import type { Change } from '@graphql-inspector/core';
-import type { ErrorHandler } from './types.js';
+import type { ChangesByType, ErrorHandler } from './types.js';
+import { parentPath } from './utils.js';
 
 /**
  * The strictest of the standard error handlers. This checks if the error is a "No-op",
  * meaning if the change wouldn't impact the schema at all, and ignores the error
  * only in this one case. Otherwise, the error is raised.
  */
-export const strictErrorHandler: ErrorHandler = (err, change) => {
+export const strictErrorHandler: ErrorHandler = (err, _change) => {
   if (err instanceof NoopError) {
-    console.debug(
-      `Ignoring change ${change.type} at "${change.path}" because it does not modify the resulting schema.`,
-    );
+    console.debug(`[IGNORED] ${err.message}`);
   } else {
     throw err;
   }
@@ -30,9 +29,7 @@ export const strictErrorHandler: ErrorHandler = (err, change) => {
  */
 export const defaultErrorHandler: ErrorHandler = (err, change) => {
   if (err instanceof NoopError) {
-    console.debug(
-      `Ignoring change ${change.type} at "${change.path}" because it does not modify the resulting schema.`,
-    );
+    console.debug(`[IGNORED] ${err.message}`);
   } else if (err instanceof ValueMismatchError) {
     console.debug(`Ignoring old value mismatch at "${change.path}".`);
   } else {
@@ -48,13 +45,11 @@ export const defaultErrorHandler: ErrorHandler = (err, change) => {
  */
 export const looseErrorHandler: ErrorHandler = (err, change) => {
   if (err instanceof NoopError) {
-    console.debug(
-      `Ignoring change ${change.type} at "${change.path}" because it does not modify the resulting schema.`,
-    );
+    console.debug(`[IGNORED] ${err.message}`);
   } else if (err instanceof ValueMismatchError) {
     console.debug(`Ignoring old value mismatch at "${change.path}".`);
   } else {
-    console.warn(`Cannot apply ${change.type} at "${change.path}". ${err.message}`);
+    console.warn(err.message);
   }
 };
 
@@ -87,43 +82,31 @@ export class ValueMismatchError extends Error {
  */
 export class AddedCoordinateAlreadyExistsError extends NoopError {
   constructor(
-    public readonly kind: Kind,
-    readonly expectedNameOrValue: string | undefined,
+    public readonly path: string,
+    public readonly changeType: keyof ChangesByType,
   ) {
-    const expected = expectedNameOrValue ? `${expectedNameOrValue} ` : '';
-    super(`A "${kind}" ${expected}already exists at the schema coordinate.`);
+    const subpath = path.substring(path.lastIndexOf('.') + 1);
+    const parent = parentPath(path);
+    const printedParent = parent === subpath ? 'schema' : `"${parent}"`;
+    super(
+      `Cannot apply "${changeType}" to add "${subpath}" to ${printedParent} because that schema coordinate already exists.`,
+    );
   }
 }
 
-export type NodeAttribute =
-  | 'description'
-  | 'defaultValue'
-  /** Enum values */
-  | 'values'
-  /** Union types */
-  | 'types'
-  /** Return type */
-  | 'type'
-  | 'interfaces'
-  | 'directives'
-  | 'arguments'
-  | 'locations'
-  | 'fields'
-  | 'repeatable';
-
-/**
- * If trying to add a node at a path, but that path no longer exists. E.g. add a description to
- * a type, but that type was previously deleted.
- * This differs from AddedCoordinateAlreadyExistsError because
- */
 export class AddedAttributeCoordinateNotFoundError extends Error {
   constructor(
-    public readonly parentName: string,
-    readonly attribute: NodeAttribute,
-    readonly attributeValue: string,
+    public readonly path: string,
+    public readonly changeType: keyof ChangesByType,
+    /**
+     * The value of what is being changed at the path. E.g. if the description is being changed, then this should
+     * be the description string.
+     */
+    public readonly changeValue: string | number | null,
   ) {
+    const subpath = path.substring(path.lastIndexOf('.'));
     super(
-      `Cannot add "${attributeValue}" to "${attribute}", because "${parentName}" does not exist.`,
+      `Cannot apply addition "${changeType}" (${changeValue}) to "${subpath}", because "${path}" does not exist.`,
     );
   }
 }
@@ -134,10 +117,18 @@ export class AddedAttributeCoordinateNotFoundError extends Error {
  */
 export class ChangedAncestorCoordinateNotFoundError extends Error {
   constructor(
-    public readonly parentKind: Kind,
-    readonly attribute: NodeAttribute,
+    public readonly path: string,
+    public readonly changeType: keyof ChangesByType,
+    /**
+     * The value of what is being changed at the path. E.g. if the description is being changed, then this should
+     * be the description string.
+     */
+    public readonly changeValue: string | number | boolean | null,
   ) {
-    super(`Cannot change the "${attribute}" because the "${parentKind}" does not exist.`);
+    const subpath = path.substring(path.lastIndexOf('.'));
+    super(
+      `Cannot apply change "${changeType}" (${typeof changeValue === 'string' ? `"${changeValue}"` : changeValue}) to "${subpath}", because the "${parentPath(path)}" does not exist.`,
+    );
   }
 }
 
@@ -147,12 +138,17 @@ export class ChangedAncestorCoordinateNotFoundError extends Error {
  */
 export class DeletedAncestorCoordinateNotFoundError extends NoopError {
   constructor(
-    public readonly parentKind: Kind,
-    readonly attribute: NodeAttribute,
-    readonly expectedValue: string | undefined,
+    public readonly path: string,
+    public readonly changeType: keyof ChangesByType,
+    /**
+     * The value of what is being changed at the path. E.g. if the description is being changed, then this should
+     * be the description string.
+     */
+    public readonly expectedValue: string | number | boolean | null,
   ) {
+    const subpath = path.substring(path.lastIndexOf('.'));
     super(
-      `Cannot delete ${expectedValue ? `"${expectedValue}" ` : ''}from "${attribute}" on "${parentKind}" because the "${parentKind}" does not exist.`,
+      `Cannot apply "${changeType}" to remove ${typeof expectedValue === 'string' ? `"${expectedValue}"` : expectedValue}} from "${subpath}", because "${parentPath(path)}" does not exist.`,
     );
   }
 }
@@ -163,12 +159,15 @@ export class DeletedAncestorCoordinateNotFoundError extends NoopError {
  */
 export class AddedAttributeAlreadyExistsError extends NoopError {
   constructor(
-    public readonly parentKind: Kind,
-    readonly attribute: NodeAttribute,
-    readonly attributeValue: string,
+    public readonly path: string,
+    public readonly changeType: string,
+    /** The property's path on the node. E.g. defaultValue */
+    public readonly attribute: string,
+    public readonly expectedValue?: string,
   ) {
+    const subpath = path.substring(path.lastIndexOf('.'));
     super(
-      `Cannot add "${attributeValue}" to "${attribute}" on "${parentKind}" because it already exists.`,
+      `Cannot apply "${changeType}" to add ${typeof expectedValue === 'string' ? `"${expectedValue}"` : expectedValue} to "${subpath}.${attribute}", because it already exists`,
     );
   }
 }
@@ -179,12 +178,15 @@ export class AddedAttributeAlreadyExistsError extends NoopError {
  */
 export class DeletedAttributeNotFoundError extends NoopError {
   constructor(
-    public readonly parentKind: Kind,
-    readonly attribute: NodeAttribute,
-    public readonly value: string,
+    public readonly path: string,
+    public readonly changeType: string,
+    /** The property's path on the node. E.g. defaultValue */
+    public readonly attribute: string,
+    public readonly expectedValue?: string,
   ) {
+    const subpath = path.substring(path.lastIndexOf('.'));
     super(
-      `Cannot delete "${value}" from "${parentKind}"'s "${attribute}" because "${value}" does not exist.`,
+      `Cannot apply "${changeType}" to remove ${typeof expectedValue === 'string' ? `"${expectedValue}"` : expectedValue}} from ${subpath}'s "${attribute}", because "${attribute}" does not exist at "${path}".`,
     );
   }
 }
@@ -218,6 +220,8 @@ export class ChangedCoordinateKindMismatchError extends Error {
  */
 export class ChangePathMissingError extends Error {
   constructor(public readonly change: Change<any>) {
-    super(`The change is missing a "path". Cannot apply.`);
+    super(
+      `The change "${change.type}" at "${change.path}" is missing a "path" value. Cannot apply.`,
+    );
   }
 }

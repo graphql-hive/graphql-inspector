@@ -26,7 +26,11 @@ export function objectTypeInterfaceAdded(
   const typeNode = nodeByPath.get(change.path);
   if (!typeNode) {
     config.onError(
-      new ChangedAncestorCoordinateNotFoundError(Kind.OBJECT_TYPE_DEFINITION, 'interfaces'),
+      new ChangedAncestorCoordinateNotFoundError(
+        change.path,
+        change.type,
+        change.meta.addedInterfaceName,
+      ),
       change,
     );
     return;
@@ -50,7 +54,8 @@ export function objectTypeInterfaceAdded(
   if (existing) {
     config.onError(
       new AddedAttributeAlreadyExistsError(
-        typeNode.kind,
+        change.path,
+        change.type,
         'interfaces',
         change.meta.addedInterfaceName,
       ),
@@ -80,8 +85,8 @@ export function objectTypeInterfaceRemoved(
   if (!typeNode) {
     config.onError(
       new DeletedAncestorCoordinateNotFoundError(
-        Kind.INPUT_OBJECT_TYPE_DEFINITION,
-        'interfaces',
+        change.path,
+        change.type,
         change.meta.removedInterfaceName,
       ),
       change,
