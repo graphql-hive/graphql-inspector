@@ -29,8 +29,10 @@ import {
   DirectiveUsageEnumRemovedChange,
   DirectiveUsageEnumValueAddedChange,
   DirectiveUsageEnumValueRemovedChange,
+  DirectiveUsageFieldAddedChange,
   DirectiveUsageFieldDefinitionAddedChange,
   DirectiveUsageFieldDefinitionRemovedChange,
+  DirectiveUsageFieldRemovedChange,
   DirectiveUsageInputFieldDefinitionAddedChange,
   DirectiveUsageInputFieldDefinitionRemovedChange,
   DirectiveUsageInputObjectAddedChange,
@@ -77,6 +79,13 @@ type KindToPayload = {
   [Kind.ENUM_TYPE_DEFINITION]: {
     input: GraphQLEnumType;
     change: DirectiveUsageEnumAddedChange | DirectiveUsageEnumRemovedChange;
+  };
+  [Kind.FIELD]: {
+    input: {
+      field: GraphQLField<any, any, any>;
+      parentType: GraphQLInterfaceType | GraphQLObjectType<any, any>;
+    };
+    change: DirectiveUsageFieldAddedChange | DirectiveUsageFieldRemovedChange;
   };
   [Kind.FIELD_DEFINITION]: {
     input: {
@@ -403,6 +412,25 @@ export function directiveUsageEnumRemovedFromMeta(args: DirectiveUsageEnumRemove
   } as const;
 }
 
+function buildDirectiveUsageFieldAddedMessage(
+  args: DirectiveUsageFieldAddedChange['meta'],
+): string {
+  return `Directive '${args.addedDirectiveName}' was added to field '${args.typeName}.${args.fieldName}'`;
+}
+
+export function directiveUsageFieldAddedFromMeta(args: DirectiveUsageFieldAddedChange) {
+  return {
+    criticality: {
+      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      reason: `Directive '${args.meta.addedDirectiveName}' was added to field '${args.meta.fieldName}'`,
+    },
+    type: ChangeType.DirectiveUsageFieldAdded,
+    message: buildDirectiveUsageFieldAddedMessage(args.meta),
+    path: [args.meta.typeName, args.meta.fieldName, args.meta.addedDirectiveName].join('.'),
+    meta: args.meta,
+  } as const;
+}
+
 function buildDirectiveUsageFieldDefinitionAddedMessage(
   args: DirectiveUsageFieldDefinitionAddedChange['meta'],
 ): string {
@@ -422,6 +450,25 @@ export function directiveUsageFieldDefinitionAddedFromMeta(
     type: ChangeType.DirectiveUsageFieldDefinitionAdded,
     message: buildDirectiveUsageFieldDefinitionAddedMessage(args.meta),
     path: [args.meta.typeName, args.meta.fieldName, `@${args.meta.addedDirectiveName}`].join('.'),
+    meta: args.meta,
+  } as const;
+}
+
+function buildDirectiveUsageFieldRemovedMessage(
+  args: DirectiveUsageFieldRemovedChange['meta'],
+): string {
+  return `Directive '${args.removedDirectiveName}' was removed from field '${args.typeName}.${args.fieldName}'`;
+}
+
+export function directiveUsageFieldRemovedFromMeta(args: DirectiveUsageFieldRemovedChange) {
+  return {
+    criticality: {
+      level: removedSpecialDirective(args.meta.removedDirectiveName, CriticalityLevel.Dangerous),
+      reason: `Directive '${args.meta.removedDirectiveName}' was removed from field '${args.meta.fieldName}'`,
+    },
+    type: ChangeType.DirectiveUsageFieldRemoved,
+    message: buildDirectiveUsageFieldRemovedMessage(args.meta),
+    path: [args.meta.typeName, args.meta.fieldName, args.meta.removedDirectiveName].join('.'),
     meta: args.meta,
   } as const;
 }
@@ -726,6 +773,16 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
       },
     });
   }
+  if (isOfKind(kind, Kind.FIELD, payload)) {
+    return directiveUsageFieldAddedFromMeta({
+      type: ChangeType.DirectiveUsageFieldAdded,
+      meta: {
+        addedDirectiveName: directive.name.value,
+        fieldName: payload.field.name,
+        typeName: payload.parentType.name,
+      },
+    });
+  }
   if (isOfKind(kind, Kind.FIELD_DEFINITION, payload)) {
     return directiveUsageFieldDefinitionAddedFromMeta({
       type: ChangeType.DirectiveUsageFieldDefinitionAdded,
@@ -892,6 +949,16 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
         enumName: payload.name,
         removedDirectiveName: directive.name.value,
         directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
+      },
+    });
+  }
+  if (isOfKind(kind, Kind.FIELD, payload)) {
+    return directiveUsageFieldRemovedFromMeta({
+      type: ChangeType.DirectiveUsageFieldRemoved,
+      meta: {
+        removedDirectiveName: directive.name.value,
+        fieldName: payload.field.name,
+        typeName: payload.parentType.name,
       },
     });
   }
