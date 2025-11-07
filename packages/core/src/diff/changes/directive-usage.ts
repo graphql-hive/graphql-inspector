@@ -780,6 +780,7 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         addedDirectiveName: directive.name.value,
         fieldName: payload.field.name,
         typeName: payload.parentType.name,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.field.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -959,6 +960,7 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
         removedDirectiveName: directive.name.value,
         fieldName: payload.field.name,
         typeName: payload.parentType.name,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.field.astNode?.directives ?? [], directive),
       },
     });
   }
