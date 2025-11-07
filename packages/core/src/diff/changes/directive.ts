@@ -271,7 +271,7 @@ export function directiveArgumentAdded(
       addedDirectiveDefaultValue:
         arg.defaultValue === undefined ? undefined : safeString(arg.defaultValue),
       addedDirectiveArgumentTypeIsNonNull: isNonNullType(arg.type),
-      addedDirectiveArgumentDescription: arg.description ?? null,
+      addedDirectiveArgumentDescription: arg.description ?? undefined,
       addedToNewDirective,
     },
   });

@@ -215,7 +215,7 @@ export type DirectiveArgumentAddedChange = {
     addedDirectiveArgumentName: string;
     addedDirectiveArgumentTypeIsNonNull: boolean;
     addedToNewDirective: boolean;
-    addedDirectiveArgumentDescription: string | null;
+    addedDirectiveArgumentDescription?: string /* | null */;
     addedDirectiveArgumentType: string;
     addedDirectiveDefaultValue?: string /* | null */;
   };
