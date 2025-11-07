@@ -1,5 +1,21 @@
 # @graphql-inspector/core
 
+## 6.3.0
+
+### Minor Changes
+
+- [#2906](https://github.com/graphql-hive/graphql-inspector/pull/2906)
+  [`2d22d32`](https://github.com/graphql-hive/graphql-inspector/commit/2d22d32b2d24dbc8f922007fcecc339c38bdb9cb)
+  Thanks [@adambenhassen](https://github.com/adambenhassen)! - add missing change detection of
+  directive field usage and exports 'directiveUsageFieldAddedFromMeta' &
+  'directiveUsageFieldRemovedFromMeta'
+
+- [#2838](https://github.com/graphql-hive/graphql-inspector/pull/2838)
+  [`416a9ce`](https://github.com/graphql-hive/graphql-inspector/commit/416a9ce9b44ba3859388dd625026067aba1f0a49)
+  Thanks [@egoodwinx](https://github.com/egoodwinx)! - Updated removing field message to contain
+  more information on why its a breaking change such as if the field is a union or indirectly
+  referenced.
+
 ## 6.2.1
 
 ### Patch Changes
