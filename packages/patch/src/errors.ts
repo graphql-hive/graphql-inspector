@@ -148,7 +148,7 @@ export class DeletedAncestorCoordinateNotFoundError extends NoopError {
   ) {
     const subpath = path.substring(path.lastIndexOf('.'));
     super(
-      `Cannot apply "${changeType}" to remove ${typeof expectedValue === 'string' ? `"${expectedValue}"` : expectedValue}} from "${subpath}", because "${parentPath(path)}" does not exist.`,
+      `Cannot apply "${changeType}" to remove ${typeof expectedValue === 'string' ? `"${expectedValue}"` : expectedValue} from "${subpath}", because "${parentPath(path)}" does not exist.`,
     );
   }
 }
@@ -186,7 +186,7 @@ export class DeletedAttributeNotFoundError extends NoopError {
   ) {
     const subpath = path.substring(path.lastIndexOf('.'));
     super(
-      `Cannot apply "${changeType}" to remove ${typeof expectedValue === 'string' ? `"${expectedValue}"` : expectedValue}} from ${subpath}'s "${attribute}", because "${attribute}" does not exist at "${path}".`,
+      `Cannot apply "${changeType}" to remove ${typeof expectedValue === 'string' ? `"${expectedValue}"` : expectedValue} from ${subpath}'s "${attribute}", because "${attribute}" does not exist at "${path}".`,
     );
   }
 }
@@ -200,9 +200,16 @@ export class ChangedCoordinateNotFoundError extends Error {
 }
 
 export class DeletedCoordinateNotFound extends NoopError {
-  constructor(expectedKind: Kind, expectedNameOrValue: string | undefined) {
-    const expected = expectedNameOrValue ? `${expectedNameOrValue} ` : '';
-    super(`The removed "${expectedKind}" ${expected}already does not exist.`);
+  constructor(
+    public readonly path: string,
+    public readonly changeType: string,
+  ) {
+    const subpath = path.substring(path.lastIndexOf('.'));
+    const parent = parentPath(path);
+    const printedParent = parent === subpath ? 'schema' : `"${parent}"`;
+    super(
+      `Cannot apply "${changeType}" on "${printedParent}", because "${subpath}" does not exist.`,
+    );
   }
 }
 

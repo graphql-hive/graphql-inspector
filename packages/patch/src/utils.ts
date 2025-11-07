@@ -138,7 +138,7 @@ export function getDeletedNodeOfKind<K extends Kind>(
   }
   const existing = nodeByPath.get(change.path);
   if (!existing) {
-    config.onError(new DeletedCoordinateNotFound(kind, undefined), change);
+    config.onError(new DeletedCoordinateNotFound(change.path, change.type), change);
     return;
   }
   if (existing.kind !== kind) {

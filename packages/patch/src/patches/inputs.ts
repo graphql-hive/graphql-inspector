@@ -102,13 +102,7 @@ export function inputFieldRemoved(
 
   const existingNode = nodeByPath.get(change.path);
   if (!existingNode) {
-    config.onError(
-      new DeletedCoordinateNotFound(
-        Kind.INPUT_OBJECT_TYPE_DEFINITION,
-        change.meta.removedFieldName,
-      ),
-      change,
-    );
+    config.onError(new DeletedCoordinateNotFound(change.path, change.type), change);
     return;
   }
 

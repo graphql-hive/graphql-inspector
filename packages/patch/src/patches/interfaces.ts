@@ -107,13 +107,7 @@ export function objectTypeInterfaceRemoved(
 
   const existing = findNamedNode(typeNode.interfaces, change.meta.removedInterfaceName);
   if (!existing) {
-    config.onError(
-      new DeletedCoordinateNotFound(
-        Kind.INTERFACE_TYPE_DEFINITION,
-        change.meta.removedInterfaceName,
-      ),
-      change,
-    );
+    config.onError(new DeletedCoordinateNotFound(change.path, change.type), change);
     return;
   }
 

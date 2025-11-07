@@ -289,10 +289,7 @@ export function fieldArgumentRemoved(
 ) {
   const existing = getDeletedNodeOfKind(change, nodeByPath, Kind.ARGUMENT, config);
   if (!existing) {
-    config.onError(
-      new DeletedCoordinateNotFound(Kind.ARGUMENT, change.meta.removedFieldArgumentName),
-      change,
-    );
+    config.onError(new DeletedCoordinateNotFound(change.path ?? '', change.type), change);
     return;
   }
 
@@ -351,10 +348,7 @@ export function fieldDescriptionRemoved(
 
   const fieldNode = nodeByPath.get(change.path);
   if (!fieldNode) {
-    config.onError(
-      new DeletedCoordinateNotFound(Kind.FIELD_DEFINITION, change.meta.fieldName),
-      change,
-    );
+    config.onError(new DeletedCoordinateNotFound(change.path, change.type), change);
     return;
   }
   if (fieldNode.kind !== Kind.FIELD_DEFINITION) {

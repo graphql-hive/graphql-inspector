@@ -96,7 +96,9 @@ function directiveUsageDefinitionAdded(
   const definition = nodeByPath.get(`@${change.meta.addedDirectiveName}`);
   let repeatable = false;
   if (!definition) {
-    console.warn(`Directive "@${change.meta.addedDirectiveName}" is missing a definition.`);
+    console.warn(
+      `Patch cannot determine the repeatability of directive "@${change.meta.addedDirectiveName}" because it's missing a definition.`,
+    );
   }
   if (definition?.kind === Kind.DIRECTIVE_DEFINITION) {
     repeatable = definition.repeatable;

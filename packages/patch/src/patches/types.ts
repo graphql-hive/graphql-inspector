@@ -48,18 +48,12 @@ export function typeRemoved(
 
   const removedNode = nodeByPath.get(change.path);
   if (!removedNode) {
-    config.onError(
-      new DeletedCoordinateNotFound(Kind.OBJECT_TYPE_DEFINITION, change.meta.removedTypeName),
-      change,
-    );
+    config.onError(new DeletedCoordinateNotFound(change.path, change.type), change);
     return;
   }
 
   if (!isTypeDefinitionNode(removedNode)) {
-    config.onError(
-      new DeletedCoordinateNotFound(removedNode.kind, change.meta.removedTypeName),
-      change,
-    );
+    config.onError(new DeletedCoordinateNotFound(change.path, change.type), change);
     return;
   }
 
