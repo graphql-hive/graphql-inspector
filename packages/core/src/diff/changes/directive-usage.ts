@@ -638,7 +638,8 @@ export type DirectiveUsageRemovedChange =
   | typeof ChangeType.DirectiveUsageUnionMemberRemoved
   | typeof ChangeType.DirectiveUsageEnumValueRemoved
   | typeof ChangeType.DirectiveUsageSchemaRemoved
-  | typeof ChangeType.DirectiveUsageScalarRemoved;
+  | typeof ChangeType.DirectiveUsageScalarRemoved
+  | typeof ChangeType.DirectiveUsageFieldRemoved;
 
 export function directiveUsageAdded<K extends keyof KindToPayload>(
   kind: K,
