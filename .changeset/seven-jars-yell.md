@@ -9,7 +9,7 @@ These changes include:
 - Adjustmented the "path" on several change types in order to consistently map to the exact AST node being changed. For example, `EnumValueDeprecationReasonAdded`'s path previously referenced the enumValue (e.g. `EnumName.value`), not the deprecated directive (e.g. `EnumName.value.@deprecated`).
 - Added new attributes in order to provide enough context for a new "@graphql-inspector/patch" function to apply changes accurately.
 - Added support for repeatable directives
-- Includes all nested changes in `diff` output when a new node is added. This can dramatically increase the number of changes listed which can be noisy, but it makes it possible for "@graphql-inspector/patch" to apply all changes from a schema. This can be optionally filtered using a newly exported `DiffRule.ignoreNestedAdditions` rule.
+- Includes all nested changes in `diff` output when a new node is added. This can dramatically increase the number of changes listed which can be noisy, but it makes it possible for "@graphql-inspector/patch" to apply all changes from a schema. This can be optionally filtered using a newly exported `DiffRule.simplifyChanges` rule.
 
 For example, given an existing schema:
 
@@ -133,5 +133,5 @@ These additional changes can be filtered using a new rule:
 
 ```js
 import { DiffRule, diff } from "@graphql-inspector/core";
-const changes = await diff(a, b, [DiffRule.ignoreNestedAdditions]);
+const changes = await diff(a, b, [DiffRule.simplifyChanges]);
 ```

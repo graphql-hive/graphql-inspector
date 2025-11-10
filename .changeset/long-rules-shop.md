@@ -2,7 +2,7 @@
 '@graphql-inspector/diff-command': major
 ---
 
-Added option to include nested changes. Use `--rule showNestedAdditions`.
+Added option to include nested changes. Use `--rule verboseChanges`.
 Added better directive support.
 Adjusted severity level for conditionally safe changes:
 - Adding or removing deprecated directive is considered non-breaking

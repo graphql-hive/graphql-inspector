@@ -2,6 +2,7 @@ import { buildSchema } from 'graphql';
 import {
   CriticalityLevel,
   diff,
+  DiffRule,
   directiveUsageFieldAddedFromMeta,
   directiveUsageFieldRemovedFromMeta,
 } from '../../src/index.js';

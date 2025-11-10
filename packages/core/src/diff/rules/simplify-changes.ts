@@ -1,7 +1,7 @@
 import { ChangeType } from '../changes/change.js';
 import { Rule } from './types.js';
 
-const additionChangeTypes = new Set([
+const simpleChangeTypes = new Set([
   ChangeType.DirectiveAdded,
   ChangeType.DirectiveArgumentAdded,
   ChangeType.DirectiveLocationAdded,
@@ -23,6 +23,13 @@ const additionChangeTypes = new Set([
   ChangeType.FieldAdded,
   ChangeType.FieldArgumentAdded,
   ChangeType.FieldDeprecationAdded,
+
+  // These are not additions -- but this is necessary to eliminate nested removals for directives
+  // because the deprecationReasons are redundant with directives
+  ChangeType.FieldDeprecationRemoved,
+  ChangeType.FieldDeprecationReasonChanged,
+  ChangeType.EnumValueDeprecationReasonChanged,
+
   ChangeType.FieldDeprecationReasonAdded,
   ChangeType.FieldDescriptionAdded,
   ChangeType.InputFieldAdded,
@@ -38,21 +45,22 @@ const parentPath = (path: string) => {
   return lastDividerIndex === -1 ? path : path.substring(0, lastDividerIndex);
 };
 
-export const ignoreNestedAdditions: Rule = ({ changes }) => {
-  // Track which paths contained changes that represent additions to the schema
-  const additionPaths: string[] = [];
+export const simplifyChanges: Rule = ({ changes }) => {
+  // Track which paths contained changes that represent a group of changes to the schema
+  // e.g. the addition of a type implicity contains the addition of that type's fields.
+  const changePaths: string[] = [];
 
   const filteredChanges = changes.filter(({ path, type }) => {
     if (path) {
       const parent = parentPath(path);
-      const matches = additionPaths.filter(matchedPath => matchedPath.startsWith(parent));
-      const hasAddedParent = matches.length > 0;
+      const matches = changePaths.filter(matchedPath => matchedPath.startsWith(parent));
+      const hasChangedParent = matches.length > 0;
 
-      if (additionChangeTypes.has(type)) {
-        additionPaths.push(path);
+      if (simpleChangeTypes.has(type)) {
+        changePaths.push(path);
       }
 
-      return !hasAddedParent;
+      return !hasChangedParent;
     }
     return true;
   });

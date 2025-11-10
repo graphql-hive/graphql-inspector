@@ -32,12 +32,12 @@ export async function handler(input: {
     ? resolveCompletionHandler(input.onComplete)
     : failOnBreakingChanges;
 
-  let showNestedAdditions = false;
+  let verboseChanges = false;
   const rules = [...(input.rules ?? [])]
     .filter(isString)
     .map((name): Rule | undefined => {
-      if (name === 'showNestedAdditions') {
-        showNestedAdditions = true;
+      if (name === 'verboseChanges') {
+        verboseChanges = true;
         return;
       }
 
@@ -50,8 +50,8 @@ export async function handler(input: {
       return rule;
     })
     .filter((f): f is NonNullable<typeof f> => !!f);
-  if (!showNestedAdditions) {
-    rules.push(DiffRule.ignoreNestedAdditions);
+  if (!verboseChanges) {
+    rules.push(DiffRule.simplifyChanges);
   }
 
   const changes = await diffSchema(input.oldSchema, input.newSchema, rules, {
