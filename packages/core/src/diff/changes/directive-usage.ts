@@ -21,6 +21,8 @@ import {
   Change,
   ChangeType,
   CriticalityLevel,
+  DirectiveAddedChange,
+  DirectiveRemovedChange,
   DirectiveUsageArgumentAddedChange,
   DirectiveUsageArgumentDefinitionAddedChange,
   DirectiveUsageArgumentDefinitionRemovedChange,
@@ -76,6 +78,13 @@ function removedSpecialDirective(
 }
 
 type KindToPayload = {
+  [Kind.FIELD]: {
+    input: {
+      field: GraphQLField<any, any, any>;
+      parentType: GraphQLInterfaceType | GraphQLObjectType<any, any>;
+    };
+    change: DirectiveAddedChange | DirectiveRemovedChange;
+  };
   [Kind.ENUM_TYPE_DEFINITION]: {
     input: GraphQLEnumType;
     change: DirectiveUsageEnumAddedChange | DirectiveUsageEnumRemovedChange;
