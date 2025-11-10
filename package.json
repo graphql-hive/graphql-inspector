@@ -91,7 +91,7 @@
     "nock": "14.0.1",
     "prettier": "3.3.3",
     "rimraf": "5.0.10",
-    "smee-client": "2.0.2",
+    "smee-client": "4.4.1",
     "strip-ansi": "7.1.0",
     "typescript": "5.5.4",
     "vitest": "3.0.9",
