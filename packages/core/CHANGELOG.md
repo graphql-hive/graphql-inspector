@@ -1,5 +1,14 @@
 # @graphql-inspector/core
 
+## 6.4.1
+
+### Patch Changes
+
+- [#2908](https://github.com/graphql-hive/graphql-inspector/pull/2908)
+  [`4f1e1c1`](https://github.com/graphql-hive/graphql-inspector/commit/4f1e1c1442c89adb244356333061df6ebb4156bb)
+  Thanks [@adambenhassen](https://github.com/adambenhassen)! - fix payload missing directive change
+  type
+
 ## 6.4.0
 
 ### Minor Changes
