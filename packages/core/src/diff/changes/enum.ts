@@ -1,5 +1,6 @@
 import { GraphQLDeprecatedDirective, GraphQLEnumType, GraphQLEnumValue } from 'graphql';
 import { isDeprecated } from '../../utils/is-deprecated.js';
+import { fmt } from '../../utils/string.js';
 import {
   Change,
   ChangeType,
@@ -85,13 +86,11 @@ export function enumValueAdded(
 }
 
 function buildEnumValueDescriptionChangedMessage(args: EnumValueDescriptionChangedChange['meta']) {
+  const oldDesc = fmt(args.oldEnumValueDescription ?? 'undefined');
+  const newDesc = fmt(args.newEnumValueDescription ?? 'undefined');
   return args.oldEnumValueDescription === null
-    ? `Description '${args.newEnumValueDescription ?? 'undefined'}' was added to enum value '${
-        args.enumName
-      }.${args.enumValueName}'`
-    : `Description for enum value '${args.enumName}.${args.enumValueName}' changed from '${
-        args.oldEnumValueDescription ?? 'undefined'
-      }' to '${args.newEnumValueDescription ?? 'undefined'}'`;
+    ? `Description '${newDesc}' was added to enum value '${args.enumName}.${args.enumValueName}'`
+    : `Description for enum value '${args.enumName}.${args.enumValueName}' changed from '${oldDesc}' to '${newDesc}'`;
 }
 
 export function enumValueDescriptionChangedFromMeta(
@@ -127,7 +126,9 @@ export function enumValueDescriptionChanged(
 function buildEnumValueDeprecationChangedMessage(
   args: EnumValueDeprecationReasonChangedChange['meta'],
 ) {
-  return `Enum value '${args.enumName}.${args.enumValueName}' deprecation reason changed from '${args.oldEnumValueDeprecationReason}' to '${args.newEnumValueDeprecationReason}'`;
+  const oldReason = fmt(args.oldEnumValueDeprecationReason);
+  const newReason = fmt(args.newEnumValueDeprecationReason);
+  return `Enum value '${args.enumName}.${args.enumValueName}' deprecation reason changed from '${oldReason}' to '${newReason}'`;
 }
 
 export function enumValueDeprecationReasonChangedFromMeta(
@@ -165,7 +166,8 @@ export function enumValueDeprecationReasonChanged(
 function buildEnumValueDeprecationReasonAddedMessage(
   args: EnumValueDeprecationReasonAddedChange['meta'],
 ) {
-  return `Enum value '${args.enumName}.${args.enumValueName}' was deprecated with reason '${args.addedValueDeprecationReason}'`;
+  const reason = fmt(args.addedValueDeprecationReason);
+  return `Enum value '${args.enumName}.${args.enumValueName}' was deprecated with reason '${reason}'`;
 }
 
 export function enumValueDeprecationReasonAddedFromMeta(

@@ -80,13 +80,6 @@ type KindToPayload = {
     input: GraphQLEnumType;
     change: DirectiveUsageEnumAddedChange | DirectiveUsageEnumRemovedChange;
   };
-  [Kind.FIELD]: {
-    input: {
-      field: GraphQLField<any, any, any>;
-      parentType: GraphQLInterfaceType | GraphQLObjectType<any, any>;
-    };
-    change: DirectiveUsageFieldAddedChange | DirectiveUsageFieldRemovedChange;
-  };
   [Kind.FIELD_DEFINITION]: {
     input: {
       field: GraphQLField<any, any, any>;

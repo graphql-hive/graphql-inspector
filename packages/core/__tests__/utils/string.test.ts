@@ -1,4 +1,4 @@
-import { safeString } from '../../src/utils/string.js';
+import { fmt, safeString } from '../../src/utils/string.js';
 
 test('scalars', () => {
   expect(safeString(0)).toBe('0');
@@ -32,4 +32,19 @@ test('array', () => {
   expect(safeString([Object.create(null, { foo: { value: 42, enumerable: true } })])).toBe(
     '[ { foo: 42 } ]',
   );
+});
+
+describe('fmt', () => {
+  test('escapes single quotes in strings', () => {
+    expect(fmt("It's a test")).toBe("It\\'s a test");
+    expect(fmt("Don't do this")).toBe("Don\\'t do this");
+    expect(fmt("'quoted'")).toBe("\\'quoted\\'");
+  });
+
+  test('handles strings without single quotes', () => {
+    expect(fmt('test')).toBe('test');
+    expect(fmt('Old Reason')).toBe('Old Reason');
+    expect(fmt('enumA.B')).toBe('enumA.B');
+    expect(fmt('')).toBe('');
+  });
 });

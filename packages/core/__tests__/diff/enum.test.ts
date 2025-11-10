@@ -347,4 +347,105 @@ describe('enum', () => {
     expect(change.criticality.reason).toBeDefined();
     expect(change.message).toEqual(`Enum value 'C' was added to enum 'enumA'`);
   });
+
+  describe('string escaping', () => {
+    test('deprecation reason changed with escaped single quotes', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        type Query {
+          fieldA: String
+        }
+
+        enum enumA {
+          A @deprecated(reason: "It's old")
+          B
+        }
+      `);
+
+      const b = buildSchema(/* GraphQL */ `
+        type Query {
+          fieldA: String
+        }
+
+        enum enumA {
+          A @deprecated(reason: "It's new")
+          B
+        }
+      `);
+
+      const changes = await diff(a, b);
+      const change = findFirstChangeByPath(changes, 'enumA.A');
+
+      expect(changes.length).toEqual(1);
+      expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      expect(change.message).toEqual(
+        `Enum value 'enumA.A' deprecation reason changed from 'It\\'s old' to 'It\\'s new'`,
+      );
+    });
+
+    test('deprecation reason added with escaped single quotes', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        type Query {
+          fieldA: String
+        }
+
+        enum enumA {
+          A
+          B
+        }
+      `);
+
+      const b = buildSchema(/* GraphQL */ `
+        type Query {
+          fieldA: String
+        }
+
+        enum enumA {
+          A @deprecated(reason: "Don't use this")
+          B
+        }
+      `);
+
+      const changes = await diff(a, b);
+      const change = findFirstChangeByPath(changes, 'enumA.A');
+
+      expect(changes.length).toEqual(2);
+      expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      expect(change.message).toEqual(
+        `Enum value 'enumA.A' was deprecated with reason 'Don\\'t use this'`,
+      );
+    });
+
+    test('deprecation reason without single quotes is unchanged', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        type Query {
+          fieldA: String
+        }
+
+        enum enumA {
+          A @deprecated(reason: "Old Reason")
+          B
+        }
+      `);
+
+      const b = buildSchema(/* GraphQL */ `
+        type Query {
+          fieldA: String
+        }
+
+        enum enumA {
+          A @deprecated(reason: "New Reason")
+          B
+        }
+      `);
+
+      const changes = await diff(a, b);
+      const change = findFirstChangeByPath(changes, 'enumA.A');
+
+      expect(changes.length).toEqual(1);
+      expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      expect(change.message).toEqual(
+        `Enum value 'enumA.A' deprecation reason changed from 'Old Reason' to 'New Reason'`,
+      );
+    });
+  });
 });
