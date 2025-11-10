@@ -373,9 +373,8 @@ describe('enum', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'enumA.A');
-
-      expect(changes.length).toEqual(1);
+      expect(changes.length).toEqual(3);
+      const change = findFirstChangeByPath(changes, 'enumA.A.@deprecated');
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.message).toEqual(
         `Enum value 'enumA.A' deprecation reason changed from 'It\\'s old' to 'It\\'s new'`,
@@ -406,9 +405,9 @@ describe('enum', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'enumA.A');
+      const change = findFirstChangeByPath(changes, 'enumA.A.@deprecated');
 
-      expect(changes.length).toEqual(2);
+      expect(changes.length).toEqual(3);
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.message).toEqual(
         `Enum value 'enumA.A' was deprecated with reason 'Don\\'t use this'`,
@@ -439,9 +438,9 @@ describe('enum', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'enumA.A');
+      const change = findFirstChangeByPath(changes, 'enumA.A.@deprecated');
 
-      expect(changes.length).toEqual(1);
+      expect(changes.length).toEqual(3);
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.message).toEqual(
         `Enum value 'enumA.A' deprecation reason changed from 'Old Reason' to 'New Reason'`,
