@@ -74,13 +74,6 @@ type KindToPayload = {
     input: GraphQLEnumType;
     change: DirectiveUsageEnumAddedChange | DirectiveUsageEnumRemovedChange;
   };
-  [Kind.FIELD]: {
-    input: {
-      field: GraphQLField<any, any, any>;
-      parentType: GraphQLInterfaceType | GraphQLObjectType<any, any>;
-    };
-    change: DirectiveUsageFieldAddedChange | DirectiveUsageFieldRemovedChange;
-  };
   [Kind.FIELD_DEFINITION]: {
     input: {
       field: GraphQLField<any, any, any>;
@@ -687,16 +680,6 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
       },
     });
   }
-  if (isOfKind(kind, Kind.FIELD, payload)) {
-    return directiveUsageFieldAddedFromMeta({
-      type: ChangeType.DirectiveUsageFieldAdded,
-      meta: {
-        addedDirectiveName: directive.name.value,
-        fieldName: payload.field.name,
-        typeName: payload.parentType.name,
-      },
-    });
-  }
   if (isOfKind(kind, Kind.FIELD_DEFINITION, payload)) {
     return directiveUsageFieldDefinitionAddedFromMeta({
       type: ChangeType.DirectiveUsageFieldDefinitionAdded,
@@ -811,16 +794,6 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
       meta: {
         enumName: payload.name,
         removedDirectiveName: directive.name.value,
-      },
-    });
-  }
-  if (isOfKind(kind, Kind.FIELD, payload)) {
-    return directiveUsageFieldRemovedFromMeta({
-      type: ChangeType.DirectiveUsageFieldRemoved,
-      meta: {
-        removedDirectiveName: directive.name.value,
-        fieldName: payload.field.name,
-        typeName: payload.parentType.name,
       },
     });
   }
