@@ -1,5 +1,14 @@
 # @graphql-inspector/core
 
+## 6.4.0
+
+### Minor Changes
+
+- [#2904](https://github.com/graphql-hive/graphql-inspector/pull/2904)
+  [`ad7e04b`](https://github.com/graphql-hive/graphql-inspector/commit/ad7e04b557256ec3cf9ac3a003d4d5e348c05bfa)
+  Thanks [@adambenhassen](https://github.com/adambenhassen)! - Escape single quotes in all enum
+  descriptions and deprecation reasons
+
 ## 6.3.0
 
 ### Minor Changes
