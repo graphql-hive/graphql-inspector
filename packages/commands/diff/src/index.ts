@@ -33,10 +33,10 @@ export async function handler(input: {
     : failOnBreakingChanges;
 
   const rules = input.rules
-    ? input.rules
+    ? await Promise.all(input.rules
         .filter(isString)
-        .map((name): Rule => {
-          const rule = resolveRule(name);
+        .map(async (name): Promise<Rule> => {
+          const rule = await resolveRule(name);
 
           if (!rule) {
             throw new Error(`Rule '${name}' does not exist!\n`);
@@ -44,7 +44,7 @@ export async function handler(input: {
 
           return rule;
         })
-        .filter(f => f)
+        .filter(f => f))
     : [];
 
   const changes = await diffSchema(input.oldSchema, input.newSchema, rules, {
@@ -223,10 +223,10 @@ function reportNonBreakingChanges(changes: Change[]) {
   }
 }
 
-function resolveRule(name: string): Rule | undefined {
+async function resolveRule(name: string): Promise<Rule | undefined> {
   const filepath = ensureAbsolute(name);
   if (existsSync(filepath)) {
-    return require(filepath);
+    return (await import(filepath)).default;
   }
 
   return DiffRule[name as keyof typeof DiffRule];

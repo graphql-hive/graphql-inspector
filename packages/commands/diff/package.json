@@ -76,5 +76,8 @@
   "sideEffects": false,
   "typescript": {
     "definition": "dist/typings/index.d.ts"
+  },
+  "devDependencies": {
+    "ts-node": "10.9.2"
   }
 }

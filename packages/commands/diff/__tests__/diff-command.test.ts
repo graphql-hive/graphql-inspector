@@ -106,8 +106,20 @@ describe('diff', () => {
     expect(spyReporter).not.toHaveBeenCalledNormalized('does not exist');
   });
 
-  test('should load rules with local path from fs', async () => {
+  test('should load cjs rules with local path from fs', async () => {
     await mockCommand(diff, 'diff old.graphql new.graphql --rule ./assets/rule.cjs');
+
+    expect(spyReporter).not.toHaveBeenCalledNormalized('does not exist');
+  });
+
+  test('should load esm rules with local path from fs', async () => {
+    await mockCommand(diff, 'diff old.graphql new.graphql --rule ./assets/rule.js');
+
+    expect(spyReporter).not.toHaveBeenCalledNormalized('does not exist');
+  });
+
+  test('should load typescript rules with local path from fs', async () => {
+    await mockCommand(diff, 'diff old.graphql new.graphql --rule ./assets/rule.ts --register ts-node/register');
 
     expect(spyReporter).not.toHaveBeenCalledNormalized('does not exist');
   });
