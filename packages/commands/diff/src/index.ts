@@ -33,10 +33,9 @@ export async function handler(input: {
     : failOnBreakingChanges;
 
   let verboseChanges = false;
-  const rules = await Promise.all(
-    [...(input.rules ?? [])]
-      .filter(isString)
-      .map(async (name): Promise<Rule> | undefined => {
+  const rules = (
+    await Promise.all(
+      [...(input.rules ?? [])].filter(isString).map(async (name): Promise<Rule | undefined> => {
         if (name === 'verboseChanges') {
           verboseChanges = true;
           return;
@@ -49,9 +48,9 @@ export async function handler(input: {
         }
 
         return rule;
-      })
-      .filter((f): f is NonNullable<typeof f> => !!f)
-  );
+      }),
+    )
+  ).filter((f): f is NonNullable<typeof f> => !!f);
   if (!verboseChanges) {
     rules.push(DiffRule.simplifyChanges);
   }
