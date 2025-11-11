@@ -1,5 +1,15 @@
 # @graphql-inspector/loaders
 
+## 4.1.0
+
+### Minor Changes
+
+- [#2900](https://github.com/graphql-hive/graphql-inspector/pull/2900)
+  [`2fc8b25`](https://github.com/graphql-hive/graphql-inspector/commit/2fc8b254b425b63781b59c5913b7043a3f95c68a)
+  Thanks [@emileriksson](https://github.com/emileriksson)! - Apollo Federation v2 support.
+  Introduced built-in Federation v2 directives and a new CLI flag --federationV2 to enable
+  processing schemas that use them.
+
 ## 4.0.5
 
 ### Patch Changes

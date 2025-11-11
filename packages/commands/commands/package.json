@@ -1,6 +1,6 @@
 {
   "name": "@graphql-inspector/commands",
-  "version": "5.0.4",
+  "version": "6.0.0",
   "type": "module",
   "description": "Plugin system for commands in GraphQL Inspector",
   "repository": {
@@ -62,7 +62,7 @@
   },
   "peerDependencies": {
     "@graphql-inspector/config": "^4.0.0",
-    "@graphql-inspector/loaders": "^4.0.5",
+    "@graphql-inspector/loaders": "^4.1.0",
     "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0",
     "yargs": "17.7.2"
   },

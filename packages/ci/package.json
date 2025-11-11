@@ -1,6 +1,6 @@
 {
   "name": "@graphql-inspector/ci",
-  "version": "5.0.6",
+  "version": "5.0.7",
   "type": "module",
   "description": "Tooling for GraphQL. Compare GraphQL Schemas, check documents, find breaking changes, find similar types.",
   "repository": {

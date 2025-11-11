@@ -1,6 +1,6 @@
 {
   "name": "@graphql-inspector/diff-command",
-  "version": "5.0.11",
+  "version": "6.0.0",
   "type": "module",
   "description": "Compare GraphQL Schemas",
   "repository": {

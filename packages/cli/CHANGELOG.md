@@ -1,5 +1,40 @@
 # @graphql-inspector/cli
 
+## 6.0.0
+
+### Major Changes
+
+- [#2913](https://github.com/graphql-hive/graphql-inspector/pull/2913)
+  [`cf9c40c`](https://github.com/graphql-hive/graphql-inspector/commit/cf9c40c7a105ebf0b910bc5f0cb8b18f0f15b79b)
+  Thanks [@jdolle](https://github.com/jdolle)! - major upgrade to diff command which modifies paths,
+  severity levels, and adds support for directives. See changelog for diff-command package for more
+  insights.
+
+### Minor Changes
+
+- [#2900](https://github.com/graphql-hive/graphql-inspector/pull/2900)
+  [`2fc8b25`](https://github.com/graphql-hive/graphql-inspector/commit/2fc8b254b425b63781b59c5913b7043a3f95c68a)
+  Thanks [@emileriksson](https://github.com/emileriksson)! - Apollo Federation v2 support.
+  Introduced built-in Federation v2 directives and a new CLI flag --federationV2 to enable
+  processing schemas that use them.
+
+### Patch Changes
+
+- Updated dependencies
+  [[`2fc8b25`](https://github.com/graphql-hive/graphql-inspector/commit/2fc8b254b425b63781b59c5913b7043a3f95c68a),
+  [`ef13125`](https://github.com/graphql-hive/graphql-inspector/commit/ef131254cc4f33efa52e8e48b842cdbd35f50d00),
+  [`6a8add5`](https://github.com/graphql-hive/graphql-inspector/commit/6a8add530e66e3751d692c6b970a78a5e211dcdd)]:
+  - @graphql-inspector/commands@6.0.0
+  - @graphql-inspector/loaders@4.1.0
+  - @graphql-inspector/diff-command@6.0.0
+  - @graphql-inspector/audit-command@5.0.12
+  - @graphql-inspector/coverage-command@6.1.6
+  - @graphql-inspector/docs-command@5.0.5
+  - @graphql-inspector/introspect-command@5.0.12
+  - @graphql-inspector/serve-command@5.0.7
+  - @graphql-inspector/similar-command@5.0.12
+  - @graphql-inspector/validate-command@5.0.12
+
 ## 5.0.11
 
 ### Patch Changes

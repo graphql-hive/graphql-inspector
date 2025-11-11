@@ -1,5 +1,165 @@
 # @graphql-inspector/core
 
+## 7.0.0
+
+### Major Changes
+
+- [#2893](https://github.com/graphql-hive/graphql-inspector/pull/2893)
+  [`ef13125`](https://github.com/graphql-hive/graphql-inspector/commit/ef131254cc4f33efa52e8e48b842cdbd35f50d00)
+  Thanks [@jdolle](https://github.com/jdolle)! - This is a major change to `@graphql-inspector/core`
+  and introduces a new `@graphql-inspector/patch` package, which applies changes output from `diff`
+  on top of a schema -- essentially rebasing these changes onto any schema.
+
+  These changes include:
+
+  - Numerous adjustments to Change types to create more accurate severity levels, such as a boolean
+    indicating if the change applies to a new type or an existing type.
+  - Adjustmented the "path" on several change types in order to consistently map to the exact AST
+    node being changed. For example, `EnumValueDeprecationReasonAdded`'s path previously referenced
+    the enumValue (e.g. `EnumName.value`), not the deprecated directive (e.g.
+    `EnumName.value.@deprecated`).
+  - Added new attributes in order to provide enough context for a new "@graphql-inspector/patch"
+    function to apply changes accurately.
+  - Added support for repeatable directives
+  - Includes all nested changes in `diff` output when a new node is added. This can dramatically
+    increase the number of changes listed which can be noisy, but it makes it possible for
+    "@graphql-inspector/patch" to apply all changes from a schema. This can be optionally filtered
+    using a newly exported `DiffRule.simplifyChanges` rule.
+
+  For example, given an existing schema:
+
+  ```graphql
+  type User {
+    id: ID!
+    name: String!
+  }
+  ```
+
+  And a diff schema:
+
+  ```graphql
+  type User {
+    id: ID!
+    name: String!
+    address: Address
+  }
+
+  type Address {
+    line1: String!
+    line2: String!
+  }
+  ```
+
+  Then previously the output would be:
+
+  ```json
+  [
+    {
+      "criticality": {
+        "level": "NON_BREAKING"
+      },
+      "message": "Type 'Address' was added",
+      "meta": {
+        "addedTypeKind": "ObjectTypeDefinition",
+        "addedTypeName": "Address"
+      },
+      "path": "Address",
+      "type": "TYPE_ADDED"
+    },
+    {
+      "criticality": {
+        "level": "NON_BREAKING"
+      },
+      "message": "Field 'address' was added to object type 'User'",
+      "meta": {
+        "addedFieldName": "address",
+        "addedFieldReturnType": "Address",
+        "typeName": "User",
+        "typeType": "object type"
+      },
+      "path": "User.address",
+      "type": "FIELD_ADDED"
+    }
+  ]
+  ```
+
+  But now the output also includes the fields inside the new `Address` type:
+
+  ```json
+  [
+    {
+      "criticality": {
+        "level": "NON_BREAKING"
+      },
+      "message": "Type 'Address' was added",
+      "meta": {
+        "addedTypeKind": "ObjectTypeDefinition",
+        "addedTypeName": "Address"
+      },
+      "path": "Address",
+      "type": "TYPE_ADDED"
+    },
+    {
+      "criticality": {
+        "level": "NON_BREAKING"
+      },
+      "message": "Field 'line1' was added to object type 'Address'",
+      "meta": {
+        "addedFieldName": "line1",
+        "addedFieldReturnType": "String!",
+        "typeName": "Address",
+        "typeType": "object type"
+      },
+      "path": "Address.line1",
+      "type": "FIELD_ADDED"
+    },
+    {
+      "criticality": {
+        "level": "NON_BREAKING"
+      },
+      "message": "Field 'line2' was added to object type 'Address'",
+      "meta": {
+        "addedFieldName": "line2",
+        "addedFieldReturnType": "String!",
+        "typeName": "Address",
+        "typeType": "object type"
+      },
+      "path": "Address.line2",
+      "type": "FIELD_ADDED"
+    },
+    {
+      "criticality": {
+        "level": "NON_BREAKING"
+      },
+      "message": "Field 'address' was added to object type 'User'",
+      "meta": {
+        "addedFieldName": "address",
+        "addedFieldReturnType": "Address",
+        "typeName": "User",
+        "typeType": "object type"
+      },
+      "path": "User.address",
+      "type": "FIELD_ADDED"
+    }
+  ]
+  ```
+
+  These additional changes can be filtered using a new rule:
+
+  ```js
+  import { diff, DiffRule } from '@graphql-inspector/core'
+
+  const changes = await diff(a, b, [DiffRule.simplifyChanges])
+  ```
+
+### Minor Changes
+
+- [#2900](https://github.com/graphql-hive/graphql-inspector/pull/2900)
+  [`2fc8b25`](https://github.com/graphql-hive/graphql-inspector/commit/2fc8b254b425b63781b59c5913b7043a3f95c68a)
+  Thanks [@emileriksson](https://github.com/emileriksson)! - Apollo Federation v2 support.
+  Introduced built-in Federation v2 directives and a new CLI flag --federationV2 to enable
+  processing schemas that use them.
+
 ## 6.4.1
 
 ### Patch Changes
