@@ -1,5 +1,6 @@
 import {
   GraphQLArgument,
+  GraphQLDeprecatedDirective,
   GraphQLField,
   GraphQLInterfaceType,
   GraphQLObjectType,
@@ -90,6 +91,7 @@ export function fieldAdded(
       typeName: type.name,
       addedFieldName: field.name,
       typeType: entity,
+      addedFieldReturnType: field.type.toString(),
     },
   });
 }
@@ -197,7 +199,9 @@ export function fieldDeprecationAddedFromMeta(args: FieldDeprecationAddedChange)
     },
     message: buildFieldDeprecatedAddedMessage(args.meta),
     meta: args.meta,
-    path: [args.meta.typeName, args.meta.fieldName].join('.'),
+    path: [args.meta.typeName, args.meta.fieldName, `@${GraphQLDeprecatedDirective.name}`].join(
+      '.',
+    ),
   } as const;
 }
 
@@ -210,6 +214,7 @@ export function fieldDeprecationAdded(
     meta: {
       typeName: type.name,
       fieldName: field.name,
+      deprecationReason: field.deprecationReason ?? '',
     },
   });
 }
@@ -218,11 +223,13 @@ export function fieldDeprecationRemovedFromMeta(args: FieldDeprecationRemovedCha
   return {
     type: ChangeType.FieldDeprecationRemoved,
     criticality: {
-      level: CriticalityLevel.Dangerous,
+      level: CriticalityLevel.NonBreaking,
     },
     message: `Field '${args.meta.typeName}.${args.meta.fieldName}' is no longer deprecated`,
     meta: args.meta,
-    path: [args.meta.typeName, args.meta.fieldName].join('.'),
+    path: [args.meta.typeName, args.meta.fieldName, `@${GraphQLDeprecatedDirective.name}`].join(
+      '.',
+    ),
   } as const;
 }
 
@@ -253,7 +260,9 @@ export function fieldDeprecationReasonChangedFromMeta(args: FieldDeprecationReas
     },
     message: buildFieldDeprecationReasonChangedMessage(args.meta),
     meta: args.meta,
-    path: [args.meta.typeName, args.meta.fieldName].join('.'),
+    path: [args.meta.typeName, args.meta.fieldName, `@${GraphQLDeprecatedDirective.name}`].join(
+      '.',
+    ),
   } as const;
 }
 
@@ -285,7 +294,9 @@ export function fieldDeprecationReasonAddedFromMeta(args: FieldDeprecationReason
     },
     message: buildFieldDeprecationReasonAddedMessage(args.meta),
     meta: args.meta,
-    path: [args.meta.typeName, args.meta.fieldName].join('.'),
+    path: [args.meta.typeName, args.meta.fieldName, `@${GraphQLDeprecatedDirective.name}`].join(
+      '.',
+    ),
   } as const;
 }
 
@@ -373,9 +384,11 @@ export function fieldArgumentAddedFromMeta(args: FieldArgumentAddedChange) {
   return {
     type: ChangeType.FieldArgumentAdded,
     criticality: {
-      level: args.meta.isAddedFieldArgumentBreaking
-        ? CriticalityLevel.Breaking
-        : CriticalityLevel.Dangerous,
+      level: args.meta.addedToNewField
+        ? CriticalityLevel.NonBreaking
+        : args.meta.isAddedFieldArgumentBreaking
+          ? CriticalityLevel.Breaking
+          : CriticalityLevel.Dangerous,
     },
     message: buildFieldArgumentAddedMessage(args.meta),
     meta: args.meta,
@@ -387,6 +400,7 @@ export function fieldArgumentAdded(
   type: GraphQLObjectType | GraphQLInterfaceType,
   field: GraphQLField<any, any, any>,
   arg: GraphQLArgument,
+  addedToNewField: boolean,
 ): Change<typeof ChangeType.FieldArgumentAdded> {
   const isBreaking = isNonNullType(arg.type) && typeof arg.defaultValue === 'undefined';
 
@@ -398,6 +412,7 @@ export function fieldArgumentAdded(
       addedArgumentName: arg.name,
       addedArgumentType: arg.type.toString(),
       hasDefaultValue: arg.defaultValue != null,
+      addedToNewField,
       isAddedFieldArgumentBreaking: isBreaking,
     },
   });

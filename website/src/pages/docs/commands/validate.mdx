@@ -32,7 +32,8 @@ graphql-inspector validate DOCUMENTS SCHEMA
 - `--keepClientFields <b>` - Keeps the fields with `@client`, but removes `@client` directive from
   them - works only with combination of `--apollo` (default: `false`)
 - `--method` - method on url schema pointers (default: `POST`)
-- `--federation` - Support Apollo Federation directives (default: `false`)
+- `--federation` - Support Apollo Federation V1 directives (default: `false`)
+- `--federationV2` - Support Apollo Federation V2 directives (default: `false`)
 - `--aws` - Support AWS Appsync directives and scalar types (default: `false`)
 - `--maxDepth <n>` - Fail when operation depth exceeds maximum depth (default: `false`)
 - `--maxAliasCount <n>` - Fail when alias count (including the referenced fragments) exceeds maximum

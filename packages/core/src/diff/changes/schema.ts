@@ -16,7 +16,10 @@ export function schemaQueryTypeChangedFromMeta(args: SchemaQueryTypeChangedChang
   return {
     type: ChangeType.SchemaQueryTypeChanged,
     criticality: {
-      level: CriticalityLevel.Breaking,
+      level:
+        args.meta.oldQueryTypeName === 'unknown'
+          ? CriticalityLevel.NonBreaking
+          : CriticalityLevel.Breaking,
     },
     message: buildSchemaQueryTypeChangedMessage(args.meta),
     meta: args.meta,
@@ -49,7 +52,10 @@ export function schemaMutationTypeChangedFromMeta(args: SchemaMutationTypeChange
   return {
     type: ChangeType.SchemaMutationTypeChanged,
     criticality: {
-      level: CriticalityLevel.Breaking,
+      level:
+        args.meta.oldMutationTypeName === 'unknown'
+          ? CriticalityLevel.NonBreaking
+          : CriticalityLevel.Breaking,
     },
     message: buildSchemaMutationTypeChangedMessage(args.meta),
     meta: args.meta,
@@ -82,7 +88,10 @@ export function schemaSubscriptionTypeChangedFromMeta(args: SchemaSubscriptionTy
   return {
     type: ChangeType.SchemaSubscriptionTypeChanged,
     criticality: {
-      level: CriticalityLevel.Breaking,
+      level:
+        args.meta.oldSubscriptionTypeName === 'unknown'
+          ? CriticalityLevel.NonBreaking
+          : CriticalityLevel.Breaking,
     },
     message: buildSchemaSubscriptionTypeChangedMessage(args.meta),
     meta: args.meta,

@@ -10,10 +10,14 @@ import {
   isUnionType,
   Kind,
 } from 'graphql';
-import { compareLists, isNotEqual, isVoid } from '../utils/compare.js';
+import { compareDirectiveLists, compareLists, isNotEqual, isVoid } from '../utils/compare.js';
 import { isPrimitive } from '../utils/graphql.js';
 import { Change } from './changes/change.js';
-import { directiveUsageAdded, directiveUsageRemoved } from './changes/directive-usage.js';
+import {
+  directiveUsageAdded,
+  directiveUsageChanged,
+  directiveUsageRemoved,
+} from './changes/directive-usage.js';
 import { directiveAdded, directiveRemoved } from './changes/directive.js';
 import {
   schemaMutationTypeChanged,
@@ -53,6 +57,7 @@ export function diffSchema(oldSchema: GraphQLSchema, newSchema: GraphQLSchema): 
     {
       onAdded(type) {
         addChange(typeAdded(type));
+        changesInType(null, type, addChange);
       },
       onRemoved(type) {
         addChange(typeRemoved(type));
@@ -66,6 +71,7 @@ export function diffSchema(oldSchema: GraphQLSchema, newSchema: GraphQLSchema): 
   compareLists(oldSchema.getDirectives(), newSchema.getDirectives(), {
     onAdded(directive) {
       addChange(directiveAdded(directive));
+      changesInDirective(null, directive, addChange);
     },
     onRemoved(directive) {
       addChange(directiveRemoved(directive));
@@ -75,9 +81,13 @@ export function diffSchema(oldSchema: GraphQLSchema, newSchema: GraphQLSchema): 
     },
   });
 
-  compareLists(oldSchema.astNode?.directives || [], newSchema.astNode?.directives || [], {
+  compareDirectiveLists(oldSchema.astNode?.directives || [], newSchema.astNode?.directives || [], {
     onAdded(directive) {
-      addChange(directiveUsageAdded(Kind.SCHEMA_DEFINITION, directive, newSchema));
+      addChange(directiveUsageAdded(Kind.SCHEMA_DEFINITION, directive, newSchema, false));
+      directiveUsageChanged(null, directive, addChange);
+    },
+    onMutual(directive) {
+      directiveUsageChanged(directive.oldVersion, directive.newVersion, addChange);
     },
     onRemoved(directive) {
       addChange(directiveUsageRemoved(Kind.SCHEMA_DEFINITION, directive, oldSchema));
@@ -88,26 +98,15 @@ export function diffSchema(oldSchema: GraphQLSchema, newSchema: GraphQLSchema): 
 }
 
 function changesInSchema(oldSchema: GraphQLSchema, newSchema: GraphQLSchema, addChange: AddChange) {
-  const defaultNames = {
-    query: 'Query',
-    mutation: 'Mutation',
-    subscription: 'Subscription',
-  };
   const oldRoot = {
-    query: (oldSchema.getQueryType() || ({} as GraphQLObjectType)).name ?? defaultNames.query,
-    mutation:
-      (oldSchema.getMutationType() || ({} as GraphQLObjectType)).name ?? defaultNames.mutation,
-    subscription:
-      (oldSchema.getSubscriptionType() || ({} as GraphQLObjectType)).name ??
-      defaultNames.subscription,
+    query: (oldSchema.getQueryType() || ({} as GraphQLObjectType)).name,
+    mutation: (oldSchema.getMutationType() || ({} as GraphQLObjectType)).name,
+    subscription: (oldSchema.getSubscriptionType() || ({} as GraphQLObjectType)).name,
   };
   const newRoot = {
-    query: (newSchema.getQueryType() || ({} as GraphQLObjectType)).name ?? defaultNames.query,
-    mutation:
-      (newSchema.getMutationType() || ({} as GraphQLObjectType)).name ?? defaultNames.mutation,
-    subscription:
-      (newSchema.getSubscriptionType() || ({} as GraphQLObjectType)).name ??
-      defaultNames.subscription,
+    query: (newSchema.getQueryType() || ({} as GraphQLObjectType)).name,
+    mutation: (newSchema.getMutationType() || ({} as GraphQLObjectType)).name,
+    subscription: (newSchema.getSubscriptionType() || ({} as GraphQLObjectType)).name,
   };
 
   if (isNotEqual(oldRoot.query, newRoot.query)) {
@@ -123,27 +122,32 @@ function changesInSchema(oldSchema: GraphQLSchema, newSchema: GraphQLSchema, add
   }
 }
 
-function changesInType(oldType: GraphQLNamedType, newType: GraphQLNamedType, addChange: AddChange) {
-  if (isEnumType(oldType) && isEnumType(newType)) {
+function changesInType(
+  oldType: GraphQLNamedType | null,
+  newType: GraphQLNamedType,
+  addChange: AddChange,
+) {
+  if ((isVoid(oldType) || isEnumType(oldType)) && isEnumType(newType)) {
     changesInEnum(oldType, newType, addChange);
-  } else if (isUnionType(oldType) && isUnionType(newType)) {
+  } else if ((isVoid(oldType) || isUnionType(oldType)) && isUnionType(newType)) {
     changesInUnion(oldType, newType, addChange);
-  } else if (isInputObjectType(oldType) && isInputObjectType(newType)) {
+  } else if ((isVoid(oldType) || isInputObjectType(oldType)) && isInputObjectType(newType)) {
     changesInInputObject(oldType, newType, addChange);
-  } else if (isObjectType(oldType) && isObjectType(newType)) {
+  } else if ((isVoid(oldType) || isObjectType(oldType)) && isObjectType(newType)) {
     changesInObject(oldType, newType, addChange);
-  } else if (isInterfaceType(oldType) && isInterfaceType(newType)) {
+  } else if ((isVoid(oldType) || isInterfaceType(oldType)) && isInterfaceType(newType)) {
     changesInInterface(oldType, newType, addChange);
-  } else if (isScalarType(oldType) && isScalarType(newType)) {
+  } else if ((isVoid(oldType) || isScalarType(oldType)) && isScalarType(newType)) {
     changesInScalar(oldType, newType, addChange);
-  } else {
+  } else if (!isVoid(oldType)) {
+    // no need to call if oldType is void since the type will be captured by the TypeAdded change.
     addChange(typeKindChanged(oldType, newType));
   }
 
-  if (isNotEqual(oldType.description, newType.description)) {
-    if (isVoid(oldType.description)) {
+  if (isNotEqual(oldType?.description, newType.description)) {
+    if (isVoid(oldType?.description)) {
       addChange(typeDescriptionAdded(newType));
-    } else if (isVoid(newType.description)) {
+    } else if (oldType.description && isVoid(newType.description)) {
       addChange(typeDescriptionRemoved(oldType));
     } else {
       addChange(typeDescriptionChanged(oldType, newType));

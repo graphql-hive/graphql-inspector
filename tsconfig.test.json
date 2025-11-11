@@ -44,7 +44,8 @@
       "@graphql-inspector/validate-command": ["packages/commands/validate/src/index.ts"],
       "@graphql-inspector/introspect-command": ["packages/commands/introspect/src/index.ts"],
       "@graphql-inspector/similar-command": ["packages/commands/similar/src/index.ts"],
-      "@graphql-inspector/testing": ["packages/testing/src/index.ts"]
+      "@graphql-inspector/testing": ["packages/testing/src/index.ts"],
+      "@graphql-inspector/patch": ["packages/patch/src/index.ts"]
     }
   },
   "include": ["packages"]

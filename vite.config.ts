@@ -12,6 +12,7 @@ export default defineConfig({
       '@graphql-inspector/url-loader': 'packages/loaders/url/src/index.ts',
       '@graphql-inspector/testing': 'packages/testing/src/index.ts',
       '@graphql-inspector/core': 'packages/core/src/index.ts',
+      '@graphql-inspector/patch': 'packages/patch/src/index.ts',
       'graphql/language/parser.js': 'graphql/language/parser.js',
       graphql: 'graphql/index.js',
     },

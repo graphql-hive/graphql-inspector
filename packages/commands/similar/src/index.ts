@@ -117,6 +117,7 @@ export default createCommand<
       const type = args.name;
       const threshold = args.threshold;
       const apolloFederation = args.federation || false;
+      const apolloFederationV2 = args.federationV2 || false;
       const aws = args.aws || false;
       const method = args.method?.toUpperCase() || 'POST';
 
@@ -128,6 +129,7 @@ export default createCommand<
           method,
         },
         apolloFederation,
+        apolloFederationV2,
         aws,
       );
 

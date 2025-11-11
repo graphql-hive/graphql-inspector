@@ -1,6 +1,7 @@
 import { buildClientSchema, buildSchema, introspectionFromSchema } from 'graphql';
 import { Change, CriticalityLevel, diff } from '../../src/index.js';
 import { findBestMatch } from '../../src/utils/string.js';
+import { findChangesByPath, findFirstChangeByPath } from '../../utils/testing.js';
 
 test('same schema', async () => {
   const schemaA = buildSchema(/* GraphQL */ `
@@ -275,121 +276,61 @@ test('huge test', async () => {
   `);
 
   const changes = await diff(schemaA, schemaB);
-
-  for (const msg of [
-    `Type 'WillBeRemoved' was removed`,
-    `Type 'DType' was added`,
-    `Field 'Query.a' description changed from 'Just a simple string' to 'This description has been changed'`,
-    `Argument 'anArg: String' was removed from field 'Query.a'`,
-    `Field 'Query.b' changed type from 'BType' to 'Int!'`,
-    `Description 'The Query Root of this schema' on type 'Query' has changed to 'Query Root description changed'`,
-    `'BType' kind changed from 'ObjectTypeDefinition' to 'InputObjectTypeDefinition'`,
-    `Input field 'b' was removed from input object type 'AInput'`,
-    `Input field 'c' of type 'String!' was added to input object type 'AInput'`,
-    `Input field 'AInput.a' description changed from 'a' to 'changed'`,
-    `Input field 'AInput.a' default value changed from '"1"' to '1'`,
-    `Input field 'ListInput.a' default value changed from '[ 'foo' ]' to '[ 'bar' ]'`,
-    `Input field 'AInput.a' changed type from 'String' to 'Int'`,
-    `'CType' object implements 'AnInterface' interface`,
-    `Field 'c' was removed from object type 'CType'`,
-    `Field 'b' was added to object type 'CType'`,
-    `Deprecation reason on field 'CType.a' has changed from 'whynot' to 'cuz'`,
-    `Argument 'arg: Int' added to field 'CType.a'`,
-    `Default value '10' was added to argument 'arg' on field 'CType.d'`,
-    `Member 'BType' was removed from Union type 'MyUnion'`,
-    `Member 'DType' was added to Union type 'MyUnion'`,
-    `Field 'anotherInterfaceField' was removed from interface 'AnotherInterface'`,
-    `Field 'b' was added to interface 'AnotherInterface'`,
-    `'WithInterfaces' object type no longer implements 'AnotherInterface' interface`,
-    `Description for argument 'a' on field 'WithArguments.a' changed from 'Meh' to 'Description for a'`,
-    `Type for argument 'b' on field 'WithArguments.a' changed from 'String' to 'String!'`,
-    `Default value for argument 'arg' on field 'WithArguments.b' changed from '1' to '2'`,
-    `Enum value 'C' was removed from enum 'Options'`,
-    `Enum value 'D' was added to enum 'Options'`,
-    `Description 'Stuff' was added to enum value 'Options.A'`,
-    `Enum value 'Options.E' was deprecated with reason 'No longer supported'`,
-    `Enum value 'Options.F' deprecation reason changed from 'Old' to 'New'`,
-    `Directive 'willBeRemoved' was removed`,
-    `Directive 'yolo2' was added`,
-    `Directive 'yolo' description changed from 'Old' to 'New'`,
-    `Location 'FRAGMENT_SPREAD' was removed from directive 'yolo'`,
-    `Location 'INLINE_FRAGMENT' was removed from directive 'yolo'`,
-    `Location 'FIELD_DEFINITION' was added to directive 'yolo'`,
-    `Argument 'willBeRemoved' was removed from directive 'yolo'`,
-    `Description for argument 'someArg' on directive 'yolo' changed from 'Included when true.' to 'someArg does stuff'`,
-    `Type for argument 'someArg' on directive 'yolo' changed from 'Boolean!' to 'String!'`,
-    `Default value '"Test"' was added to argument 'anotherArg' on directive 'yolo'`,
-  ]) {
-    try {
-      expect(changes.some(c => c.message === msg)).toEqual(true);
-    } catch (e) {
-      console.log(`Couldn't find: ${msg}`);
-      const match = findBestMatch(
-        msg,
-        changes.map(c => ({
-          typeId: c.path || '',
-          value: c.message,
-        })),
-      );
-
-      if (match.bestMatch) {
-        console.log(`We found a similar change: ${match.bestMatch.target.value}`);
-      }
-
-      throw e;
-    }
-  }
-
-  for (const path of [
-    'WillBeRemoved',
-    'DType',
-    'Query.a',
-    'Query.a.anArg',
-    'Query.b',
-    'Query',
-    'BType',
-    'AInput.b',
-    'AInput.c',
-    'AInput.a',
-    'AInput.a',
-    'AInput.a',
-    'CType',
-    'CType.c',
-    'CType.b',
-    'CType.a',
-    'CType.a.arg',
-    'CType.d.arg',
-    'MyUnion',
-    'MyUnion',
-    'AnotherInterface.anotherInterfaceField',
-    'AnotherInterface.b',
-    'WithInterfaces',
-    'WithArguments.a.a',
-    'WithArguments.a.b',
-    'WithArguments.b.arg',
-    'Options.C',
-    'Options.D',
-    'Options.A',
-    'Options.E',
-    'Options.F',
-    '@willBeRemoved',
-    '@yolo2',
-    '@yolo',
-    '@yolo',
-    '@yolo',
-    '@yolo',
-    '@yolo.willBeRemoved',
-    '@yolo.someArg',
-    '@yolo.someArg',
-    '@yolo.anotherArg',
-  ]) {
-    try {
-      expect(changes.some(c => c.path === path)).toEqual(true);
-    } catch (e) {
-      console.log(`Couldn't find: ${path}`);
-      throw e;
-    }
-  }
+  expect(changes.map(c => `[${c.criticality.level}] ${c.path}: ${c.message}`))
+    .toMatchInlineSnapshot(`
+    [
+      "[BREAKING] WillBeRemoved: Type 'WillBeRemoved' was removed",
+      "[NON_BREAKING] DType: Type 'DType' was added",
+      "[NON_BREAKING] DType.b: Field 'b' was added to object type 'DType'",
+      "[BREAKING] AInput.b: Input field 'b' was removed from input object type 'AInput'",
+      "[BREAKING] AInput.c: Input field 'c' of type 'String!' was added to input object type 'AInput'",
+      "[NON_BREAKING] AInput.a: Input field 'AInput.a' description changed from 'a' to 'changed'",
+      "[DANGEROUS] AInput.a: Input field 'AInput.a' default value changed from '"1"' to '1'",
+      "[BREAKING] AInput.a: Input field 'AInput.a' changed type from 'String' to 'Int'",
+      "[DANGEROUS] ListInput.a: Input field 'ListInput.a' default value changed from '[ 'foo' ]' to '[ 'bar' ]'",
+      "[NON_BREAKING] Query.a: Field 'Query.a' description changed from 'Just a simple string' to 'This description has been changed'",
+      "[BREAKING] Query.a.anArg: Argument 'anArg: String' was removed from field 'Query.a'",
+      "[BREAKING] Query.b: Field 'Query.b' changed type from 'BType' to 'Int!'",
+      "[NON_BREAKING] Query: Description 'The Query Root of this schema' on type 'Query' has changed to 'Query Root description changed'",
+      "[BREAKING] BType: 'BType' kind changed from 'ObjectTypeDefinition' to 'InputObjectTypeDefinition'",
+      "[DANGEROUS] CType: 'CType' object implements 'AnInterface' interface",
+      "[BREAKING] CType.c: Field 'c' was removed from object type 'CType'",
+      "[NON_BREAKING] CType.b: Field 'b' was added to object type 'CType'",
+      "[NON_BREAKING] CType.a.@deprecated: Deprecation reason on field 'CType.a' has changed from 'whynot' to 'cuz'",
+      "[DANGEROUS] CType.a.arg: Argument 'arg: Int' added to field 'CType.a'",
+      "[DANGEROUS] CType.a.@deprecated.reason: Argument 'reason' was removed from '@deprecated'",
+      "[NON_BREAKING] CType.a.@deprecated.reason: Argument 'reason' was added to '@deprecated'",
+      "[DANGEROUS] CType.d.arg: Default value '10' was added to argument 'arg' on field 'CType.d'",
+      "[BREAKING] MyUnion: Member 'BType' was removed from Union type 'MyUnion'",
+      "[DANGEROUS] MyUnion: Member 'DType' was added to Union type 'MyUnion'",
+      "[BREAKING] AnotherInterface.anotherInterfaceField: Field 'anotherInterfaceField' was removed from interface 'AnotherInterface'",
+      "[NON_BREAKING] AnotherInterface.b: Field 'b' was added to interface 'AnotherInterface'",
+      "[BREAKING] WithInterfaces: 'WithInterfaces' object type no longer implements 'AnotherInterface' interface",
+      "[NON_BREAKING] WithArguments.a.a: Description for argument 'a' on field 'WithArguments.a' changed from 'Meh' to 'Description for a'",
+      "[BREAKING] WithArguments.a.b: Type for argument 'b' on field 'WithArguments.a' changed from 'String' to 'String!'",
+      "[DANGEROUS] WithArguments.b.arg: Default value for argument 'arg' on field 'WithArguments.b' changed from '1' to '2'",
+      "[BREAKING] Options.C: Enum value 'C' was removed from enum 'Options'",
+      "[DANGEROUS] Options.D: Enum value 'D' was added to enum 'Options'",
+      "[NON_BREAKING] Options.A: Description 'Stuff' was added to enum value 'Options.A'",
+      "[NON_BREAKING] Options.E.@deprecated: Enum value 'Options.E' was deprecated with reason 'No longer supported'",
+      "[NON_BREAKING] Options.E.@deprecated: Directive 'deprecated' was added to enum value 'Options.E'",
+      "[NON_BREAKING] Options.F.@deprecated: Enum value 'Options.F' deprecation reason changed from 'Old' to 'New'",
+      "[DANGEROUS] Options.F.@deprecated.reason: Argument 'reason' was removed from '@deprecated'",
+      "[NON_BREAKING] Options.F.@deprecated.reason: Argument 'reason' was added to '@deprecated'",
+      "[BREAKING] @willBeRemoved: Directive 'willBeRemoved' was removed",
+      "[NON_BREAKING] @yolo2: Directive 'yolo2' was added",
+      "[NON_BREAKING] @yolo2: Location 'FIELD' was added to directive 'yolo2'",
+      "[NON_BREAKING] @yolo2: Argument 'someArg' was added to directive 'yolo2'",
+      "[NON_BREAKING] @yolo: Directive 'yolo' description changed from 'Old' to 'New'",
+      "[NON_BREAKING] @yolo: Location 'FIELD_DEFINITION' was added to directive 'yolo'",
+      "[BREAKING] @yolo: Location 'FRAGMENT_SPREAD' was removed from directive 'yolo'",
+      "[BREAKING] @yolo: Location 'INLINE_FRAGMENT' was removed from directive 'yolo'",
+      "[BREAKING] @yolo.willBeRemoved: Argument 'willBeRemoved' was removed from directive 'yolo'",
+      "[NON_BREAKING] @yolo.someArg: Description for argument 'someArg' on directive 'yolo' changed from 'Included when true.' to 'someArg does stuff'",
+      "[BREAKING] @yolo.someArg: Type for argument 'someArg' on directive 'yolo' changed from 'Boolean!' to 'String!'",
+      "[DANGEROUS] @yolo.anotherArg: Default value '"Test"' was added to argument 'anotherArg' on directive 'yolo'",
+    ]
+  `);
 });
 
 test('array as default value in argument (same)', async () => {
@@ -820,9 +761,45 @@ test('adding root type should not be breaking', async () => {
   `);
 
   const changes = await diff(schemaA, schemaB);
-  const subscription = changes[0];
-
-  expect(changes).toHaveLength(1);
-  expect(subscription).toBeDefined();
-  expect(subscription!.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+  expect(changes).toMatchInlineSnapshot(`
+    [
+      {
+        "criticality": {
+          "level": "NON_BREAKING",
+        },
+        "message": "Schema subscription root has changed from 'unknown' to 'Subscription'",
+        "meta": {
+          "newSubscriptionTypeName": "Subscription",
+          "oldSubscriptionTypeName": "unknown",
+        },
+        "type": "SCHEMA_SUBSCRIPTION_TYPE_CHANGED",
+      },
+      {
+        "criticality": {
+          "level": "NON_BREAKING",
+        },
+        "message": "Type 'Subscription' was added",
+        "meta": {
+          "addedTypeKind": "ObjectTypeDefinition",
+          "addedTypeName": "Subscription",
+        },
+        "path": "Subscription",
+        "type": "TYPE_ADDED",
+      },
+      {
+        "criticality": {
+          "level": "NON_BREAKING",
+        },
+        "message": "Field 'onFoo' was added to object type 'Subscription'",
+        "meta": {
+          "addedFieldName": "onFoo",
+          "addedFieldReturnType": "String",
+          "typeName": "Subscription",
+          "typeType": "object type",
+        },
+        "path": "Subscription.onFoo",
+        "type": "FIELD_ADDED",
+      },
+    ]
+  `);
 });

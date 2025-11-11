@@ -173,13 +173,13 @@ describe('directive', () => {
       };
 
       // Nullable
-      expect(change.a.criticality.level).toEqual(CriticalityLevel.NonBreaking);
-      expect(change.a.type).toEqual('DIRECTIVE_ARGUMENT_ADDED');
-      expect(change.a.message).toEqual(`Argument 'name' was added to directive 'a'`);
+      expect(change.a?.type).toEqual('DIRECTIVE_ARGUMENT_ADDED');
+      expect(change.a?.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      expect(change.a?.message).toEqual(`Argument 'name' was added to directive 'a'`);
       // Non-nullable
-      expect(change.b.criticality.level).toEqual(CriticalityLevel.Breaking);
-      expect(change.b.type).toEqual('DIRECTIVE_ARGUMENT_ADDED');
-      expect(change.b.message).toEqual(`Argument 'name' was added to directive 'b'`);
+      expect(change.b?.type).toEqual('DIRECTIVE_ARGUMENT_ADDED');
+      expect(change.b?.criticality.level).toEqual(CriticalityLevel.Breaking);
+      expect(change.b?.message).toEqual(`Argument 'name' was added to directive 'b'`);
     });
 
     test('removed', async () => {
@@ -327,5 +327,92 @@ describe('directive', () => {
     expect(change.e.message).toEqual(
       `Default value for argument 'name' on directive 'e' changed from '"Eee"' to 'undefined'`,
     );
+  });
+
+  describe('repeatable', async () => {
+    test('added', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @a on FIELD
+
+        type Dummy {
+          field: String
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @a repeatable on FIELD
+
+        type Dummy {
+          field: String
+        }
+      `);
+
+      const changes = await diff(a, b);
+      const change = findFirstChangeByPath(changes, '@a');
+
+      expect(changes).toHaveLength(1);
+
+      expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      expect(change.type).toEqual('DIRECTIVE_REPEATABLE_ADDED');
+      expect(change.message).toEqual("Directive 'a' added repeatable.");
+    });
+
+    test('removed', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @a repeatable on FIELD
+
+        type Dummy {
+          field: String
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @a on FIELD
+
+        type Dummy {
+          field: String
+        }
+      `);
+
+      const changes = await diff(a, b);
+      const change = findFirstChangeByPath(changes, '@a');
+
+      expect(changes).toHaveLength(1);
+
+      expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
+      expect(change.type).toEqual('DIRECTIVE_REPEATABLE_REMOVED');
+      expect(change.message).toEqual("Directive 'a' removed repeatable.");
+    });
+
+    test('complex remove', async () => {
+      const before = buildSchema(/* GraphQL */ `
+        directive @flavor(flavor: String!) repeatable on OBJECT
+        type Pancake @flavor(flavor: "bread") {
+          radius: Int!
+        }
+      `);
+      const after = buildSchema(/* GraphQL */ `
+        directive @flavor(flavor: String!) repeatable on OBJECT
+        type Pancake
+          @flavor(flavor: "sweet")
+          @flavor(flavor: "bread")
+          @flavor(flavor: "chocolate")
+          @flavor(flavor: "strawberry") {
+          radius: Int!
+        }
+      `);
+      const changes = await diff(before, after);
+      expect(changes.map(c => `[${c.criticality.level}] ${c.path}: ${c.message}`))
+        .toMatchInlineSnapshot(`
+        [
+          "[DANGEROUS] Pancake.@flavor: Directive 'flavor' was added to object 'Pancake'",
+          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to '@flavor'",
+          "[DANGEROUS] Pancake.@flavor: Directive 'flavor' was added to object 'Pancake'",
+          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to '@flavor'",
+          "[DANGEROUS] Pancake.@flavor: Directive 'flavor' was added to object 'Pancake'",
+          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to '@flavor'",
+          "[DANGEROUS] Pancake.@flavor.flavor: Argument 'flavor' was removed from '@flavor'",
+          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to '@flavor'",
+        ]
+      `);
+    });
   });
 });

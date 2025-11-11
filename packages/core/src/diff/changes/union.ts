@@ -45,7 +45,7 @@ function buildUnionMemberAddedMessage(args: UnionMemberAddedChange['meta']) {
 export function buildUnionMemberAddedMessageFromMeta(args: UnionMemberAddedChange) {
   return {
     criticality: {
-      level: CriticalityLevel.Dangerous,
+      level: args.meta.addedToNewType ? CriticalityLevel.NonBreaking : CriticalityLevel.Dangerous,
       reason:
         'Adding a possible type to Unions may break existing clients that were not programming defensively against a new possible type.',
     },
@@ -59,12 +59,14 @@ export function buildUnionMemberAddedMessageFromMeta(args: UnionMemberAddedChang
 export function unionMemberAdded(
   union: GraphQLUnionType,
   type: GraphQLObjectType,
+  addedToNewType: boolean,
 ): Change<typeof ChangeType.UnionMemberAdded> {
   return buildUnionMemberAddedMessageFromMeta({
     type: ChangeType.UnionMemberAdded,
     meta: {
       unionName: union.name,
       addedUnionMemberTypeName: type.name,
+      addedToNewType,
     },
   });
 }

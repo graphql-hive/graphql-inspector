@@ -7,18 +7,26 @@ import {
   GraphQLInputField,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
+  GraphQLNamedType,
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLSchema,
   GraphQLUnionType,
   Kind,
+  print,
 } from 'graphql';
+import { compareLists } from '../../utils/compare.js';
+import { AddChange } from '../schema.js';
 import {
   Change,
   ChangeType,
   CriticalityLevel,
-  DirectiveUsageArgumentDefinitionChange,
+  DirectiveAddedChange,
+  DirectiveRemovedChange,
+  DirectiveUsageArgumentAddedChange,
+  DirectiveUsageArgumentDefinitionAddedChange,
   DirectiveUsageArgumentDefinitionRemovedChange,
+  DirectiveUsageArgumentRemovedChange,
   DirectiveUsageEnumAddedChange,
   DirectiveUsageEnumRemovedChange,
   DirectiveUsageEnumValueAddedChange,
@@ -70,6 +78,13 @@ function removedSpecialDirective(
 }
 
 type KindToPayload = {
+  [Kind.FIELD]: {
+    input: {
+      field: GraphQLField<any, any, any>;
+      parentType: GraphQLInterfaceType | GraphQLObjectType<any, any>;
+    };
+    change: DirectiveAddedChange | DirectiveRemovedChange;
+  };
   [Kind.ENUM_TYPE_DEFINITION]: {
     input: GraphQLEnumType;
     change: DirectiveUsageEnumAddedChange | DirectiveUsageEnumRemovedChange;
@@ -117,7 +132,9 @@ type KindToPayload = {
       field: GraphQLInputField;
       type: GraphQLInputObjectType;
     };
-    change: DirectiveUsageArgumentDefinitionChange | DirectiveUsageArgumentDefinitionRemovedChange;
+    change:
+      | DirectiveUsageArgumentDefinitionAddedChange
+      | DirectiveUsageArgumentDefinitionRemovedChange;
   };
   [Kind.ARGUMENT]: {
     input: {
@@ -125,22 +142,26 @@ type KindToPayload = {
       type: GraphQLObjectType | GraphQLInterfaceType;
       argument: GraphQLArgument;
     };
-    change: DirectiveUsageArgumentDefinitionChange | DirectiveUsageArgumentDefinitionRemovedChange;
+    change:
+      | DirectiveUsageArgumentDefinitionAddedChange
+      | DirectiveUsageArgumentDefinitionRemovedChange;
   };
 };
 
 function buildDirectiveUsageArgumentDefinitionAddedMessage(
-  args: DirectiveUsageArgumentDefinitionChange['meta'],
+  args: DirectiveUsageArgumentDefinitionAddedChange['meta'],
 ): string {
   return `Directive '${args.addedDirectiveName}' was added to argument '${args.argumentName}' of field '${args.fieldName}' in type '${args.typeName}'`;
 }
 
 export function directiveUsageArgumentDefinitionAddedFromMeta(
-  args: DirectiveUsageArgumentDefinitionChange,
+  args: DirectiveUsageArgumentDefinitionAddedChange,
 ) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to argument '${args.meta.argumentName}'`,
     },
     type: ChangeType.DirectiveUsageArgumentDefinitionAdded,
@@ -149,7 +170,7 @@ export function directiveUsageArgumentDefinitionAddedFromMeta(
       args.meta.typeName,
       args.meta.fieldName,
       args.meta.argumentName,
-      args.meta.addedDirectiveName,
+      `@${args.meta.addedDirectiveName}`,
     ].join('.'),
     meta: args.meta,
   } as const;
@@ -175,7 +196,7 @@ export function directiveUsageArgumentDefinitionRemovedFromMeta(
       args.meta.typeName,
       args.meta.fieldName,
       args.meta.argumentName,
-      args.meta.removedDirectiveName,
+      `@${args.meta.removedDirectiveName}`,
     ].join('.'),
     meta: args.meta,
   } as const;
@@ -190,12 +211,14 @@ function buildDirectiveUsageInputObjectAddedMessage(
 export function directiveUsageInputObjectAddedFromMeta(args: DirectiveUsageInputObjectAddedChange) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to input object '${args.meta.inputObjectName}'`,
     },
     type: ChangeType.DirectiveUsageInputObjectAdded,
     message: buildDirectiveUsageInputObjectAddedMessage(args.meta),
-    path: [args.meta.inputObjectName, args.meta.addedDirectiveName].join('.'),
+    path: [args.meta.inputObjectName, `@${args.meta.addedDirectiveName}`].join('.'),
     meta: args.meta,
   } as const;
 }
@@ -216,7 +239,7 @@ export function directiveUsageInputObjectRemovedFromMeta(
     },
     type: ChangeType.DirectiveUsageInputObjectRemoved,
     message: buildDirectiveUsageInputObjectRemovedMessage(args.meta),
-    path: [args.meta.inputObjectName, args.meta.removedDirectiveName].join('.'),
+    path: [args.meta.inputObjectName, `@${args.meta.removedDirectiveName}`].join('.'),
     meta: args.meta,
   } as const;
 }
@@ -230,12 +253,14 @@ function buildDirectiveUsageInterfaceAddedMessage(
 export function directiveUsageInterfaceAddedFromMeta(args: DirectiveUsageInterfaceAddedChange) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to interface '${args.meta.interfaceName}'`,
     },
     type: ChangeType.DirectiveUsageInterfaceAdded,
     message: buildDirectiveUsageInterfaceAddedMessage(args.meta),
-    path: [args.meta.interfaceName, args.meta.addedDirectiveName].join('.'),
+    path: [args.meta.interfaceName, `@${args.meta.addedDirectiveName}`].join('.'),
     meta: args.meta,
   } as const;
 }
@@ -254,7 +279,7 @@ export function directiveUsageInterfaceRemovedFromMeta(args: DirectiveUsageInter
     },
     type: ChangeType.DirectiveUsageInterfaceRemoved,
     message: buildDirectiveUsageInterfaceRemovedMessage(args.meta),
-    path: [args.meta.interfaceName, args.meta.removedDirectiveName].join('.'),
+    path: [args.meta.interfaceName, `@${args.meta.removedDirectiveName}`].join('.'),
     meta: args.meta,
   } as const;
 }
@@ -270,14 +295,18 @@ export function directiveUsageInputFieldDefinitionAddedFromMeta(
 ) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to input field '${args.meta.inputFieldName}'`,
     },
     type: ChangeType.DirectiveUsageInputFieldDefinitionAdded,
     message: buildDirectiveUsageInputFieldDefinitionAddedMessage(args.meta),
-    path: [args.meta.inputObjectName, args.meta.inputFieldName, args.meta.addedDirectiveName].join(
-      '.',
-    ),
+    path: [
+      args.meta.inputObjectName,
+      args.meta.inputFieldName,
+      `@${args.meta.addedDirectiveName}`,
+    ].join('.'),
     meta: args.meta,
   } as const;
 }
@@ -301,7 +330,7 @@ export function directiveUsageInputFieldDefinitionRemovedFromMeta(
     path: [
       args.meta.inputObjectName,
       args.meta.inputFieldName,
-      args.meta.removedDirectiveName,
+      `@${args.meta.removedDirectiveName}`,
     ].join('.'),
     meta: args.meta,
   } as const;
@@ -316,12 +345,14 @@ function buildDirectiveUsageObjectAddedMessage(
 export function directiveUsageObjectAddedFromMeta(args: DirectiveUsageObjectAddedChange) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to object '${args.meta.objectName}'`,
     },
     type: ChangeType.DirectiveUsageObjectAdded,
     message: buildDirectiveUsageObjectAddedMessage(args.meta),
-    path: [args.meta.objectName, args.meta.addedDirectiveName].join('.'),
+    path: [args.meta.objectName, `@${args.meta.addedDirectiveName}`].join('.'),
     meta: args.meta,
   } as const;
 }
@@ -340,7 +371,7 @@ export function directiveUsageObjectRemovedFromMeta(args: DirectiveUsageObjectRe
     },
     type: ChangeType.DirectiveUsageObjectRemoved,
     message: buildDirectiveUsageObjectRemovedMessage(args.meta),
-    path: [args.meta.objectName, args.meta.removedDirectiveName].join('.'),
+    path: [args.meta.objectName, `@${args.meta.removedDirectiveName}`].join('.'),
     meta: args.meta,
   } as const;
 }
@@ -352,12 +383,14 @@ function buildDirectiveUsageEnumAddedMessage(args: DirectiveUsageEnumAddedChange
 export function directiveUsageEnumAddedFromMeta(args: DirectiveUsageEnumAddedChange) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to enum '${args.meta.enumName}'`,
     },
     type: ChangeType.DirectiveUsageEnumAdded,
     message: buildDirectiveUsageEnumAddedMessage(args.meta),
-    path: [args.meta.enumName, args.meta.addedDirectiveName].join('.'),
+    path: [args.meta.enumName, `@${args.meta.addedDirectiveName}`].join('.'),
     meta: args.meta,
   } as const;
 }
@@ -376,7 +409,7 @@ export function directiveUsageEnumRemovedFromMeta(args: DirectiveUsageEnumRemove
     },
     type: ChangeType.DirectiveUsageEnumRemoved,
     message: buildDirectiveUsageEnumRemovedMessage(args.meta),
-    path: [args.meta.enumName, args.meta.removedDirectiveName].join('.'),
+    path: [args.meta.enumName, `@${args.meta.removedDirectiveName}`].join('.'),
     meta: args.meta,
   } as const;
 }
@@ -411,12 +444,14 @@ export function directiveUsageFieldDefinitionAddedFromMeta(
 ) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to field '${args.meta.fieldName}'`,
     },
     type: ChangeType.DirectiveUsageFieldDefinitionAdded,
     message: buildDirectiveUsageFieldDefinitionAddedMessage(args.meta),
-    path: [args.meta.typeName, args.meta.fieldName, args.meta.addedDirectiveName].join('.'),
+    path: [args.meta.typeName, args.meta.fieldName, `@${args.meta.addedDirectiveName}`].join('.'),
     meta: args.meta,
   } as const;
 }
@@ -456,7 +491,7 @@ export function directiveUsageFieldDefinitionRemovedFromMeta(
     },
     type: ChangeType.DirectiveUsageFieldDefinitionRemoved,
     message: buildDirectiveUsageFieldDefinitionRemovedMessage(args.meta),
-    path: [args.meta.typeName, args.meta.fieldName, args.meta.removedDirectiveName].join('.'),
+    path: [args.meta.typeName, args.meta.fieldName, `@${args.meta.removedDirectiveName}`].join('.'),
     meta: args.meta,
   } as const;
 }
@@ -470,12 +505,16 @@ function buildDirectiveUsageEnumValueAddedMessage(
 export function directiveUsageEnumValueAddedFromMeta(args: DirectiveUsageEnumValueAddedChange) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to enum value '${args.meta.enumName}.${args.meta.enumValueName}'`,
     },
     type: ChangeType.DirectiveUsageEnumValueAdded,
     message: buildDirectiveUsageEnumValueAddedMessage(args.meta),
-    path: [args.meta.enumName, args.meta.enumValueName, args.meta.addedDirectiveName].join('.'),
+    path: [args.meta.enumName, args.meta.enumValueName, `@${args.meta.addedDirectiveName}`].join(
+      '.',
+    ),
     meta: args.meta,
   } as const;
 }
@@ -494,7 +533,9 @@ export function directiveUsageEnumValueRemovedFromMeta(args: DirectiveUsageEnumV
     },
     type: ChangeType.DirectiveUsageEnumValueRemoved,
     message: buildDirectiveUsageEnumValueRemovedMessage(args.meta),
-    path: [args.meta.enumName, args.meta.enumValueName, args.meta.removedDirectiveName].join('.'),
+    path: [args.meta.enumName, args.meta.enumValueName, `@${args.meta.removedDirectiveName}`].join(
+      '.',
+    ),
     meta: args.meta,
   } as const;
 }
@@ -508,12 +549,14 @@ function buildDirectiveUsageSchemaAddedMessage(
 export function directiveUsageSchemaAddedFromMeta(args: DirectiveUsageSchemaAddedChange) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to schema '${args.meta.schemaTypeName}'`,
     },
     type: ChangeType.DirectiveUsageSchemaAdded,
     message: buildDirectiveUsageSchemaAddedMessage(args.meta),
-    path: [args.meta.schemaTypeName, args.meta.addedDirectiveName].join('.'),
+    path: `.@${args.meta.addedDirectiveName}`,
     meta: args.meta,
   } as const;
 }
@@ -532,7 +575,7 @@ export function directiveUsageSchemaRemovedFromMeta(args: DirectiveUsageSchemaRe
     },
     type: ChangeType.DirectiveUsageSchemaRemoved,
     message: buildDirectiveUsageSchemaRemovedMessage(args.meta),
-    path: [args.meta.schemaTypeName, args.meta.removedDirectiveName].join('.'),
+    path: `.@${args.meta.removedDirectiveName}`,
     meta: args.meta,
   } as const;
 }
@@ -546,12 +589,14 @@ function buildDirectiveUsageScalarAddedMessage(
 export function directiveUsageScalarAddedFromMeta(args: DirectiveUsageScalarAddedChange) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to scalar '${args.meta.scalarName}'`,
     },
     type: ChangeType.DirectiveUsageScalarAdded,
     message: buildDirectiveUsageScalarAddedMessage(args.meta),
-    path: [args.meta.scalarName, args.meta.addedDirectiveName].join('.'),
+    path: [args.meta.scalarName, `@${args.meta.addedDirectiveName}`].join('.'),
     meta: args.meta,
   } as const;
 }
@@ -570,7 +615,7 @@ export function directiveUsageScalarRemovedFromMeta(args: DirectiveUsageScalarRe
     },
     type: ChangeType.DirectiveUsageScalarRemoved,
     message: buildDirectiveUsageScalarRemovedMessage(args.meta),
-    path: [args.meta.scalarName, args.meta.removedDirectiveName].join('.'),
+    path: [args.meta.scalarName, `@${args.meta.removedDirectiveName}`].join('.'),
     meta: args.meta,
   } as const;
 }
@@ -584,12 +629,14 @@ function buildDirectiveUsageUnionMemberAddedMessage(
 export function directiveUsageUnionMemberAddedFromMeta(args: DirectiveUsageUnionMemberAddedChange) {
   return {
     criticality: {
-      level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
+      level: args.meta.addedToNewType
+        ? CriticalityLevel.NonBreaking
+        : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
       reason: `Directive '${args.meta.addedDirectiveName}' was added to union member '${args.meta.unionName}.${args.meta.addedUnionMemberTypeName}'`,
     },
     type: ChangeType.DirectiveUsageUnionMemberAdded,
     message: buildDirectiveUsageUnionMemberAddedMessage(args.meta),
-    path: [args.meta.unionName, args.meta.addedDirectiveName].join('.'),
+    path: [args.meta.unionName, `@${args.meta.addedDirectiveName}`].join('.'),
     meta: args.meta,
   } as const;
 }
@@ -610,16 +657,45 @@ export function directiveUsageUnionMemberRemovedFromMeta(
     },
     type: ChangeType.DirectiveUsageUnionMemberRemoved,
     message: buildDirectiveUsageUnionMemberRemovedMessage(args.meta),
-    path: [args.meta.unionName, args.meta.removedDirectiveName].join('.'),
+    path: [args.meta.unionName, `@${args.meta.removedDirectiveName}`].join('.'),
     meta: args.meta,
   } as const;
 }
+
+export type DirectiveUsageAddedChange =
+  | typeof ChangeType.DirectiveUsageArgumentDefinitionAdded
+  | typeof ChangeType.DirectiveUsageInputFieldDefinitionAdded
+  | typeof ChangeType.DirectiveUsageInputObjectAdded
+  | typeof ChangeType.DirectiveUsageInterfaceAdded
+  | typeof ChangeType.DirectiveUsageObjectAdded
+  | typeof ChangeType.DirectiveUsageEnumAdded
+  | typeof ChangeType.DirectiveUsageFieldDefinitionAdded
+  | typeof ChangeType.DirectiveUsageUnionMemberAdded
+  | typeof ChangeType.DirectiveUsageEnumValueAdded
+  | typeof ChangeType.DirectiveUsageSchemaAdded
+  | typeof ChangeType.DirectiveUsageScalarAdded
+  | typeof ChangeType.DirectiveUsageFieldAdded;
+
+export type DirectiveUsageRemovedChange =
+  | typeof ChangeType.DirectiveUsageArgumentDefinitionRemoved
+  | typeof ChangeType.DirectiveUsageInputFieldDefinitionRemoved
+  | typeof ChangeType.DirectiveUsageInputObjectRemoved
+  | typeof ChangeType.DirectiveUsageInterfaceRemoved
+  | typeof ChangeType.DirectiveUsageObjectRemoved
+  | typeof ChangeType.DirectiveUsageEnumRemoved
+  | typeof ChangeType.DirectiveUsageFieldDefinitionRemoved
+  | typeof ChangeType.DirectiveUsageUnionMemberRemoved
+  | typeof ChangeType.DirectiveUsageEnumValueRemoved
+  | typeof ChangeType.DirectiveUsageSchemaRemoved
+  | typeof ChangeType.DirectiveUsageScalarRemoved
+  | typeof ChangeType.DirectiveUsageFieldRemoved;
 
 export function directiveUsageAdded<K extends keyof KindToPayload>(
   kind: K,
   directive: ConstDirectiveNode,
   payload: KindToPayload[K]['input'],
-): Change {
+  addedToNewType: boolean,
+): Change<DirectiveUsageAddedChange> {
   if (isOfKind(kind, Kind.ARGUMENT, payload)) {
     return directiveUsageArgumentDefinitionAddedFromMeta({
       type: ChangeType.DirectiveUsageArgumentDefinitionAdded,
@@ -628,6 +704,11 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         argumentName: payload.argument.name,
         fieldName: payload.field.name,
         typeName: payload.type.name,
+        addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(
+          payload.argument.astNode?.directives ?? [],
+          directive,
+        ),
       },
     });
   }
@@ -637,7 +718,13 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
       meta: {
         addedDirectiveName: directive.name.value,
         inputFieldName: payload.field.name,
+        inputFieldType: payload.field.type.toString(),
         inputObjectName: payload.type.name,
+        addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(
+          payload.field.astNode?.directives ?? [],
+          directive,
+        ),
       },
     });
   }
@@ -650,6 +737,8 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         addedInputFieldType: payload.name,
         inputObjectName: payload.name,
         isAddedInputFieldTypeNullable: kind === Kind.INPUT_VALUE_DEFINITION,
+        addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -659,6 +748,8 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
       meta: {
         addedDirectiveName: directive.name.value,
         interfaceName: payload.name,
+        addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -668,6 +759,8 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
       meta: {
         objectName: payload.name,
         addedDirectiveName: directive.name.value,
+        addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -677,6 +770,22 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
       meta: {
         enumName: payload.name,
         addedDirectiveName: directive.name.value,
+        addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
+      },
+    });
+  }
+  if (isOfKind(kind, Kind.FIELD, payload)) {
+    return directiveUsageFieldAddedFromMeta({
+      type: ChangeType.DirectiveUsageFieldAdded,
+      meta: {
+        addedDirectiveName: directive.name.value,
+        fieldName: payload.field.name,
+        typeName: payload.parentType.name,
+        directiveRepeatedTimes: directiveRepeatTimes(
+          payload.field.astNode?.directives ?? [],
+          directive,
+        ),
       },
     });
   }
@@ -687,6 +796,11 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         addedDirectiveName: directive.name.value,
         fieldName: payload.field.name,
         typeName: payload.parentType.name,
+        addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(
+          payload.field.astNode?.directives ?? [],
+          directive,
+        ),
       },
     });
   }
@@ -697,6 +811,8 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         addedDirectiveName: directive.name.value,
         addedUnionMemberTypeName: payload.name,
         unionName: payload.name,
+        addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -707,6 +823,11 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
         enumName: payload.type.name,
         enumValueName: payload.value.name,
         addedDirectiveName: directive.name.value,
+        addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(
+          payload.value.astNode?.directives ?? [],
+          directive,
+        ),
       },
     });
   }
@@ -716,6 +837,8 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
       meta: {
         addedDirectiveName: directive.name.value,
         schemaTypeName: payload.getQueryType()?.name || '',
+        addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -725,11 +848,37 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
       meta: {
         scalarName: payload.name,
         addedDirectiveName: directive.name.value,
+        addedToNewType,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
 
   return {} as any;
+}
+
+/**
+ * Counts the number of times a directive with the same name
+ * exists in the directives array before the passed directive.
+ *
+ * This is important for repeatable directives because it
+ * determines which instance of the directive usage the change applies to.
+ */
+function directiveRepeatTimes(
+  directives: readonly ConstDirectiveNode[],
+  directive: ConstDirectiveNode,
+) {
+  const name = directive.name.value;
+  let repeats = 0;
+  for (const d of directives) {
+    if (d.name.value === name) {
+      repeats += 1;
+    }
+    if (d === directive) {
+      return repeats;
+    }
+  }
+  return 0;
 }
 
 export function directiveUsageRemoved<K extends keyof KindToPayload>(
@@ -745,6 +894,10 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
         argumentName: payload.argument.name,
         fieldName: payload.field.name,
         typeName: payload.type.name,
+        directiveRepeatedTimes: directiveRepeatTimes(
+          payload.argument.astNode?.directives ?? [],
+          directive,
+        ),
       },
     });
   }
@@ -755,6 +908,10 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
         removedDirectiveName: directive.name.value,
         inputFieldName: payload.field.name,
         inputObjectName: payload.type.name,
+        directiveRepeatedTimes: directiveRepeatTimes(
+          payload.field.astNode?.directives ?? [],
+          directive,
+        ),
       },
     });
   }
@@ -767,6 +924,7 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
         removedInputFieldType: payload.name,
         inputObjectName: payload.name,
         isRemovedInputFieldTypeNullable: kind === Kind.INPUT_VALUE_DEFINITION,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -776,6 +934,7 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
       meta: {
         removedDirectiveName: directive.name.value,
         interfaceName: payload.name,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -785,6 +944,7 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
       meta: {
         objectName: payload.name,
         removedDirectiveName: directive.name.value,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -794,6 +954,21 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
       meta: {
         enumName: payload.name,
         removedDirectiveName: directive.name.value,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
+      },
+    });
+  }
+  if (isOfKind(kind, Kind.FIELD, payload)) {
+    return directiveUsageFieldRemovedFromMeta({
+      type: ChangeType.DirectiveUsageFieldRemoved,
+      meta: {
+        removedDirectiveName: directive.name.value,
+        fieldName: payload.field.name,
+        typeName: payload.parentType.name,
+        directiveRepeatedTimes: directiveRepeatTimes(
+          payload.field.astNode?.directives ?? [],
+          directive,
+        ),
       },
     });
   }
@@ -804,6 +979,10 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
         removedDirectiveName: directive.name.value,
         fieldName: payload.field.name,
         typeName: payload.parentType.name,
+        directiveRepeatedTimes: directiveRepeatTimes(
+          payload.field.astNode?.directives ?? [],
+          directive,
+        ),
       },
     });
   }
@@ -814,6 +993,7 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
         removedDirectiveName: directive.name.value,
         removedUnionMemberTypeName: payload.name,
         unionName: payload.name,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -824,6 +1004,10 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
         enumName: payload.type.name,
         enumValueName: payload.value.name,
         removedDirectiveName: directive.name.value,
+        directiveRepeatedTimes: directiveRepeatTimes(
+          payload.value.astNode?.directives ?? [],
+          directive,
+        ),
       },
     });
   }
@@ -833,6 +1017,7 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
       meta: {
         removedDirectiveName: directive.name.value,
         schemaTypeName: payload.getQueryType()?.name || '',
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -842,6 +1027,7 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
       meta: {
         scalarName: payload.name,
         removedDirectiveName: directive.name.value,
+        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -855,4 +1041,168 @@ function isOfKind<K extends keyof KindToPayload>(
   _value: any,
 ): _value is KindToPayload[K]['input'] {
   return kind === expectedKind;
+}
+
+export function directiveUsageArgumentAddedFromMeta(
+  args: DirectiveUsageArgumentAddedChange,
+): Change {
+  return {
+    type: ChangeType.DirectiveUsageArgumentAdded,
+    criticality: {
+      level: CriticalityLevel.NonBreaking,
+    },
+    message: `Argument '${args.meta.addedArgumentName}' was added to '@${args.meta.directiveName}'`,
+    path: [
+      /** If the type is missing then this must be a directive on a schema */
+      args.meta.parentTypeName ?? '',
+      args.meta.parentFieldName ?? args.meta.parentEnumValueName,
+      args.meta.parentArgumentName,
+      `@${args.meta.directiveName}`,
+      args.meta.addedArgumentName,
+    ]
+      .filter(p => p !== null)
+      .join('.'),
+    meta: args.meta,
+  };
+}
+
+export function directiveUsageArgumentRemovedFromMeta(
+  args: DirectiveUsageArgumentRemovedChange,
+): Change {
+  return {
+    type: ChangeType.DirectiveUsageArgumentRemoved,
+    criticality: {
+      level: CriticalityLevel.Dangerous,
+      reason: `Changing an argument on a directive can change runtime behavior.`,
+    },
+    message: `Argument '${args.meta.removedArgumentName}' was removed from '@${args.meta.directiveName}'`,
+    path: [
+      /** If the type is missing then this must be a directive on a schema */
+      args.meta.parentTypeName ?? '',
+      args.meta.parentFieldName ?? args.meta.parentEnumValueName,
+      args.meta.parentArgumentName,
+      `@${args.meta.directiveName}`,
+      args.meta.removedArgumentName,
+    ]
+      .filter(a => a !== null)
+      .join('.'),
+    meta: args.meta,
+  };
+}
+
+export function directiveUsageChanged(
+  oldDirective: ConstDirectiveNode | null,
+  newDirective: ConstDirectiveNode,
+  addChange: AddChange,
+  parentType?: GraphQLNamedType,
+  parentField?: GraphQLField<any, any> | GraphQLInputField,
+  parentArgument?: GraphQLArgument,
+  parentEnumValue?: GraphQLEnumValue,
+) {
+  compareLists(oldDirective?.arguments || [], newDirective.arguments || [], {
+    onAdded(argument) {
+      addChange(
+        directiveUsageArgumentAddedFromMeta({
+          type: ChangeType.DirectiveUsageArgumentAdded,
+          meta: {
+            addedArgumentName: argument.name.value,
+            addedArgumentValue: print(argument.value),
+            oldArgumentValue: null,
+            directiveName: newDirective.name.value,
+            parentTypeName: parentType?.name ?? null,
+            parentFieldName: parentField?.name ?? null,
+            parentArgumentName: parentArgument?.name ?? null,
+            parentEnumValueName: parentEnumValue?.name ?? null,
+            directiveRepeatedTimes:
+              // @todo should this lastly fall back to the GraphQLSchema?
+              directiveRepeatTimes(
+                (parentEnumValue || parentArgument || parentField || parentType)?.astNode
+                  ?.directives ?? [],
+                newDirective,
+              ),
+          },
+        }),
+      );
+    },
+
+    /** Treat a mutual change as a removal then addition. */
+    onMutual(argument) {
+      if (
+        argument.oldVersion &&
+        print(argument.oldVersion.value) === print(argument.newVersion.value)
+      ) {
+        return;
+      }
+
+      if (argument.oldVersion) {
+        addChange(
+          directiveUsageArgumentRemovedFromMeta({
+            type: ChangeType.DirectiveUsageArgumentRemoved,
+            meta: {
+              removedArgumentName: argument.oldVersion.name.value,
+              directiveName: newDirective.name.value,
+              parentTypeName: parentType?.name ?? null,
+              parentFieldName: parentField?.name ?? null,
+              parentArgumentName: parentArgument?.name ?? null,
+              parentEnumValueName: parentEnumValue?.name ?? null,
+              directiveRepeatedTimes:
+                // @todo should this lastly fall back to the GraphQLSchema?
+                directiveRepeatTimes(
+                  (parentEnumValue || parentArgument || parentField || parentType)?.astNode
+                    ?.directives ?? [],
+                  newDirective,
+                ),
+            },
+          }),
+        );
+      }
+
+      addChange(
+        directiveUsageArgumentAddedFromMeta({
+          type: ChangeType.DirectiveUsageArgumentAdded,
+          meta: {
+            addedArgumentName: argument.newVersion.name.value,
+            addedArgumentValue: print(argument.newVersion.value),
+            oldArgumentValue:
+              (argument.oldVersion?.value && print(argument.oldVersion.value)) ?? null,
+            directiveName: newDirective.name.value,
+            parentTypeName: parentType?.name ?? null,
+            parentFieldName: parentField?.name ?? null,
+            parentArgumentName: parentArgument?.name ?? null,
+            parentEnumValueName: parentEnumValue?.name ?? null,
+            directiveRepeatedTimes:
+              // @todo should this lastly fall back to the GraphQLSchema?
+              directiveRepeatTimes(
+                (parentEnumValue || parentArgument || parentField || parentType)?.astNode
+                  ?.directives ?? [],
+                newDirective,
+              ),
+          },
+        }),
+      );
+    },
+
+    onRemoved(argument) {
+      addChange(
+        directiveUsageArgumentRemovedFromMeta({
+          type: ChangeType.DirectiveUsageArgumentRemoved,
+          meta: {
+            removedArgumentName: argument.name.value,
+            directiveName: newDirective.name.value,
+            parentTypeName: parentType?.name ?? null,
+            parentFieldName: parentField?.name ?? null,
+            parentArgumentName: parentArgument?.name ?? null,
+            parentEnumValueName: parentEnumValue?.name ?? null,
+            directiveRepeatedTimes:
+              // @todo should this lastly fall back to the GraphQLSchema?
+              directiveRepeatTimes(
+                (parentEnumValue || parentArgument || parentField || parentType)?.astNode
+                  ?.directives ?? [],
+                newDirective,
+              ),
+          },
+        }),
+      );
+    },
+  });
 }

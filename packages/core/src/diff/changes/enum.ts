@@ -1,4 +1,4 @@
-import { GraphQLEnumType, GraphQLEnumValue } from 'graphql';
+import { GraphQLDeprecatedDirective, GraphQLEnumType, GraphQLEnumValue } from 'graphql';
 import { isDeprecated } from '../../utils/is-deprecated.js';
 import { fmt } from '../../utils/string.js';
 import {
@@ -55,11 +55,13 @@ function buildEnumValueAddedMessage(args: EnumValueAddedChange) {
 const enumValueAddedCriticalityDangerousReason = `Adding an enum value may break existing clients that were not programming defensively against an added case when querying an enum.`;
 
 export function enumValueAddedFromMeta(args: EnumValueAddedChange) {
+  /** Dangerous is there was a previous enum value */
+  const isSafe = args.meta.addedToNewType;
   return {
     type: ChangeType.EnumValueAdded,
     criticality: {
-      level: CriticalityLevel.Dangerous,
-      reason: enumValueAddedCriticalityDangerousReason,
+      level: isSafe ? CriticalityLevel.NonBreaking : CriticalityLevel.Dangerous,
+      reason: isSafe ? undefined : enumValueAddedCriticalityDangerousReason,
     },
     message: buildEnumValueAddedMessage(args),
     meta: args.meta,
@@ -68,14 +70,17 @@ export function enumValueAddedFromMeta(args: EnumValueAddedChange) {
 }
 
 export function enumValueAdded(
-  newEnum: GraphQLEnumType,
+  type: GraphQLEnumType,
   value: GraphQLEnumValue,
+  addedToNewType: boolean,
 ): Change<typeof ChangeType.EnumValueAdded> {
   return enumValueAddedFromMeta({
     type: ChangeType.EnumValueAdded,
     meta: {
-      enumName: newEnum.name,
+      enumName: type.name,
       addedEnumValueName: value.name,
+      addedToNewType,
+      addedDirectiveDescription: value.description ?? null,
     },
   });
 }
@@ -104,15 +109,15 @@ export function enumValueDescriptionChangedFromMeta(
 
 export function enumValueDescriptionChanged(
   newEnum: GraphQLEnumType,
-  oldValue: GraphQLEnumValue,
+  oldValue: GraphQLEnumValue | null,
   newValue: GraphQLEnumValue,
 ): Change<typeof ChangeType.EnumValueDescriptionChanged> {
   return enumValueDescriptionChangedFromMeta({
     type: ChangeType.EnumValueDescriptionChanged,
     meta: {
       enumName: newEnum.name,
-      enumValueName: oldValue.name,
-      oldEnumValueDescription: oldValue.description ?? null,
+      enumValueName: newValue.name,
+      oldEnumValueDescription: oldValue?.description ?? null,
       newEnumValueDescription: newValue.description ?? null,
     },
   });
@@ -135,7 +140,9 @@ export function enumValueDeprecationReasonChangedFromMeta(
     },
     type: ChangeType.EnumValueDeprecationReasonChanged,
     message: buildEnumValueDeprecationChangedMessage(args.meta),
-    path: [args.meta.enumName, args.meta.enumValueName].join('.'),
+    path: [args.meta.enumName, args.meta.enumValueName, `@${GraphQLDeprecatedDirective.name}`].join(
+      '.',
+    ),
     meta: args.meta,
   } as const;
 }
@@ -172,21 +179,23 @@ export function enumValueDeprecationReasonAddedFromMeta(
     },
     type: ChangeType.EnumValueDeprecationReasonAdded,
     message: buildEnumValueDeprecationReasonAddedMessage(args.meta),
-    path: [args.meta.enumName, args.meta.enumValueName].join('.'),
+    path: [args.meta.enumName, args.meta.enumValueName, `@${GraphQLDeprecatedDirective.name}`].join(
+      '.',
+    ),
     meta: args.meta,
   } as const;
 }
 
 export function enumValueDeprecationReasonAdded(
   newEnum: GraphQLEnumType,
-  oldValue: GraphQLEnumValue,
+  _oldValue: GraphQLEnumValue | null,
   newValue: GraphQLEnumValue,
 ): Change<typeof ChangeType.EnumValueDeprecationReasonAdded> {
   return enumValueDeprecationReasonAddedFromMeta({
     type: ChangeType.EnumValueDeprecationReasonAdded,
     meta: {
       enumName: newEnum.name,
-      enumValueName: oldValue.name,
+      enumValueName: newValue.name,
       addedValueDeprecationReason: newValue.deprecationReason ?? '',
     },
   });

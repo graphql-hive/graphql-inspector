@@ -9,21 +9,33 @@ import {
   directiveDescriptionChanged,
   directiveLocationAdded,
   directiveLocationRemoved,
+  directiveRepeatableAdded,
+  directiveRepeatableRemoved,
 } from './changes/directive.js';
 import { AddChange } from './schema.js';
 
 export function changesInDirective(
-  oldDirective: GraphQLDirective,
+  oldDirective: GraphQLDirective | null,
   newDirective: GraphQLDirective,
   addChange: AddChange,
 ) {
-  if (isNotEqual(oldDirective.description, newDirective.description)) {
+  if (isNotEqual(oldDirective?.description, newDirective.description)) {
     addChange(directiveDescriptionChanged(oldDirective, newDirective));
   }
 
+  // repeatable removed
+  if (!newDirective.isRepeatable && oldDirective?.isRepeatable) {
+    addChange(directiveRepeatableRemoved(newDirective));
+  }
+
+  // repeatable added
+  if (newDirective.isRepeatable && !oldDirective?.isRepeatable) {
+    addChange(directiveRepeatableAdded(newDirective));
+  }
+
   const locations = {
-    added: diffArrays(newDirective.locations, oldDirective.locations),
-    removed: diffArrays(oldDirective.locations, newDirective.locations),
+    added: diffArrays(newDirective.locations, oldDirective?.locations ?? []),
+    removed: diffArrays(oldDirective?.locations ?? [], newDirective.locations),
   };
 
   // locations added
@@ -32,17 +44,17 @@ export function changesInDirective(
 
   // locations removed
   for (const location of locations.removed)
-    addChange(directiveLocationRemoved(oldDirective, location as any));
+    addChange(directiveLocationRemoved(newDirective, location as any));
 
-  compareLists(oldDirective.args, newDirective.args, {
+  compareLists(oldDirective?.args ?? [], newDirective.args, {
     onAdded(arg) {
-      addChange(directiveArgumentAdded(newDirective, arg));
+      addChange(directiveArgumentAdded(newDirective, arg, oldDirective === null));
     },
     onRemoved(arg) {
-      addChange(directiveArgumentRemoved(oldDirective, arg));
+      addChange(directiveArgumentRemoved(newDirective, arg));
     },
     onMutual(arg) {
-      changesInDirectiveArgument(oldDirective, arg.oldVersion, arg.newVersion, addChange);
+      changesInDirectiveArgument(newDirective, arg.oldVersion!, arg.newVersion, addChange);
     },
   });
 }
@@ -53,11 +65,11 @@ function changesInDirectiveArgument(
   newArg: GraphQLArgument,
   addChange: AddChange,
 ) {
-  if (isNotEqual(oldArg.description, newArg.description)) {
+  if (isNotEqual(oldArg?.description, newArg.description)) {
     addChange(directiveArgumentDescriptionChanged(directive, oldArg, newArg));
   }
 
-  if (isNotEqual(oldArg.defaultValue, newArg.defaultValue)) {
+  if (isNotEqual(oldArg?.defaultValue, newArg.defaultValue)) {
     addChange(directiveArgumentDefaultValueChanged(directive, oldArg, newArg));
   }
 

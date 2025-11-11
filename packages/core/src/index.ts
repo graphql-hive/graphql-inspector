@@ -58,6 +58,8 @@ export {
   directiveUsageSchemaRemovedFromMeta,
   directiveUsageUnionMemberAddedFromMeta,
   directiveUsageUnionMemberRemovedFromMeta,
+  directiveUsageArgumentRemovedFromMeta,
+  directiveUsageArgumentAddedFromMeta,
 } from './diff/changes/directive-usage.js';
 export {
   directiveRemovedFromMeta,
@@ -180,7 +182,6 @@ export {
   SerializableChange,
   DirectiveUsageArgumentDefinitionAddedChange,
   DirectiveUsageArgumentDefinitionRemovedChange,
-  DirectiveUsageArgumentDefinitionChange,
   DirectiveUsageEnumAddedChange,
   DirectiveUsageEnumRemovedChange,
   DirectiveUsageEnumValueAddedChange,
@@ -203,4 +204,6 @@ export {
   DirectiveUsageSchemaRemovedChange,
   DirectiveUsageUnionMemberAddedChange,
   DirectiveUsageUnionMemberRemovedChange,
+  DirectiveUsageArgumentAddedChange,
+  DirectiveUsageArgumentRemovedChange,
 } from './diff/changes/change.js';

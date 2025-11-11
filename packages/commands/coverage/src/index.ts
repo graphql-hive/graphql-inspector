@@ -106,6 +106,7 @@ export default createCommand<
       const silent = args.silent;
       const { headers, token } = parseGlobalArgs(args);
       const apolloFederation = args.federation || false;
+      const apolloFederationV2 = args.federationV2 || false;
       const aws = args.aws || false;
       const method = args.method?.toUpperCase() || 'POST';
 
@@ -117,6 +118,7 @@ export default createCommand<
           method,
         },
         apolloFederation,
+        apolloFederationV2,
         aws,
       );
       const documents = await loaders.loadDocuments(args.documents);

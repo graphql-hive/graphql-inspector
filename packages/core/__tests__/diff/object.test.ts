@@ -31,11 +31,18 @@ describe('object', () => {
       }
     `);
 
-    const change = findFirstChangeByPath(await diff(a, b), 'B');
-    const mutation = findFirstChangeByPath(await diff(a, b), 'Mutation');
+    const changes = await diff(a, b);
+    expect(changes).toHaveLength(5);
+
+    const change = findFirstChangeByPath(changes, 'B');
+    const mutation = findFirstChangeByPath(changes, 'Mutation');
 
     expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
     expect(mutation.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+    expect(change.meta).toMatchObject({
+      addedTypeKind: 'ObjectTypeDefinition',
+      addedTypeName: 'B',
+    });
   });
 
   describe('interfaces', () => {
@@ -63,7 +70,8 @@ describe('object', () => {
           b: String!
         }
 
-        interface C {
+        interface C implements B {
+          b: String!
           c: String!
         }
 
@@ -74,11 +82,43 @@ describe('object', () => {
         }
       `);
 
-      const change = findFirstChangeByPath(await diff(a, b), 'Foo');
+      const changes = await diff(a, b);
 
-      expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
-      expect(change.type).toEqual('OBJECT_TYPE_INTERFACE_ADDED');
-      expect(change.message).toEqual("'Foo' object implements 'C' interface");
+      {
+        const change = findFirstChangeByPath(changes, 'Foo');
+        expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
+        expect(change.type).toEqual('OBJECT_TYPE_INTERFACE_ADDED');
+        expect(change.message).toEqual("'Foo' object implements 'C' interface");
+        expect(change.meta).toMatchObject({
+          addedInterfaceName: 'C',
+          objectTypeName: 'Foo',
+        });
+      }
+
+      const cChanges = findChangesByPath(changes, 'C');
+      expect(cChanges).toHaveLength(2);
+      {
+        const change = cChanges[0];
+        expect(change.type).toEqual('TYPE_ADDED');
+        expect(change.meta).toMatchObject({
+          addedTypeKind: 'InterfaceTypeDefinition',
+          addedTypeName: 'C',
+        });
+      }
+
+      {
+        const change = cChanges[1];
+        expect(change.type).toEqual('OBJECT_TYPE_INTERFACE_ADDED');
+        expect(change.meta).toMatchObject({
+          addedInterfaceName: 'B',
+          objectTypeName: 'C',
+        });
+      }
+
+      {
+        const change = findFirstChangeByPath(changes, 'C.b');
+        expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      }
     });
 
     test('removed', async () => {
@@ -289,25 +329,25 @@ describe('object', () => {
 
       const changes = await diff(a, b);
       const change = {
-        a: findFirstChangeByPath(changes, 'Foo.a'),
-        b: findChangesByPath(changes, 'Foo.b')[1],
-        c: findChangesByPath(changes, 'Foo.c')[1],
+        a: findFirstChangeByPath(changes, 'Foo.a.@deprecated'),
+        b: findFirstChangeByPath(changes, 'Foo.b.@deprecated'),
+        c: findFirstChangeByPath(changes, 'Foo.c.@deprecated'),
       };
 
       // Changed
-      expect(change.a.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.a.type).toEqual('FIELD_DEPRECATION_REASON_CHANGED');
+      expect(change.a.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.a.message).toEqual(
         "Deprecation reason on field 'Foo.a' has changed from 'OLD' to 'NEW'",
       );
       // Removed
+      expect(change.b.type).toEqual('FIELD_DEPRECATION_REMOVED');
       expect(change.b.criticality.level).toEqual(CriticalityLevel.NonBreaking);
-      expect(change.b.type).toEqual('FIELD_DEPRECATION_REASON_REMOVED');
-      expect(change.b.message).toEqual("Deprecation reason was removed from field 'Foo.b'");
+      expect(change.b.message).toEqual("Field 'Foo.b' is no longer deprecated");
       // Added
+      expect(change.c.type).toEqual('FIELD_DEPRECATION_ADDED');
       expect(change.c.criticality.level).toEqual(CriticalityLevel.NonBreaking);
-      expect(change.c.type).toEqual('FIELD_DEPRECATION_REASON_ADDED');
-      expect(change.c.message).toEqual("Field 'Foo.c' has deprecation reason 'CCC'");
+      expect(change.c.message).toEqual("Field 'Foo.c' is deprecated");
     });
 
     test('deprecation added / removed', async () => {
@@ -326,12 +366,12 @@ describe('object', () => {
 
       const changes = await diff(a, b);
       const change = {
-        a: findFirstChangeByPath(changes, 'Foo.a'),
-        b: findFirstChangeByPath(changes, 'Foo.b'),
+        a: findFirstChangeByPath(changes, 'Foo.a.@deprecated'),
+        b: findFirstChangeByPath(changes, 'Foo.b.@deprecated'),
       };
 
       // Changed
-      expect(change.a.criticality.level).toEqual(CriticalityLevel.Dangerous);
+      expect(change.a.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.a.type).toEqual('FIELD_DEPRECATION_REMOVED');
       expect(change.a.message).toEqual("Field 'Foo.a' is no longer deprecated");
       // Removed

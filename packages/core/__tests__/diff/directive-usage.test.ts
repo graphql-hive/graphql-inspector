@@ -2,12 +2,435 @@ import { buildSchema } from 'graphql';
 import {
   CriticalityLevel,
   diff,
+  DiffRule,
   directiveUsageFieldAddedFromMeta,
   directiveUsageFieldRemovedFromMeta,
 } from '../../src/index.js';
 import { findFirstChangeByPath } from '../../utils/testing.js';
 
 describe('directive-usage', () => {
+  describe('repeatable directives', () => {
+    test('adding with no args', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag @tag
+        }
+      `);
+
+      const changes = await diff(a, b);
+      expect(changes).toHaveLength(1);
+      expect(changes).toMatchInlineSnapshot(`
+        [
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was added to field 'a'",
+            },
+            "message": "Directive 'tag' was added to field 'Query.a'",
+            "meta": {
+              "addedDirectiveName": "tag",
+              "addedToNewType": false,
+              "directiveRepeatedTimes": 2,
+              "fieldName": "a",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED",
+          },
+        ]
+      `);
+    });
+
+    test('adding multiple times', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag @tag(name: "second") @tag
+        }
+      `);
+
+      const changes = await diff(a, b);
+      expect(changes).toHaveLength(4);
+      expect(changes).toMatchInlineSnapshot(`
+        [
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was added to field 'a'",
+            },
+            "message": "Directive 'tag' was added to field 'Query.a'",
+            "meta": {
+              "addedDirectiveName": "tag",
+              "addedToNewType": false,
+              "directiveRepeatedTimes": 1,
+              "fieldName": "a",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED",
+          },
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was added to field 'a'",
+            },
+            "message": "Directive 'tag' was added to field 'Query.a'",
+            "meta": {
+              "addedDirectiveName": "tag",
+              "addedToNewType": false,
+              "directiveRepeatedTimes": 2,
+              "fieldName": "a",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED",
+          },
+          {
+            "criticality": {
+              "level": "NON_BREAKING",
+            },
+            "message": "Argument 'name' was added to '@tag'",
+            "meta": {
+              "addedArgumentName": "name",
+              "addedArgumentValue": ""second"",
+              "directiveName": "tag",
+              "directiveRepeatedTimes": 2,
+              "oldArgumentValue": null,
+              "parentArgumentName": null,
+              "parentEnumValueName": null,
+              "parentFieldName": "a",
+              "parentTypeName": "Query",
+            },
+            "path": "Query.a.@tag.name",
+            "type": "DIRECTIVE_USAGE_ARGUMENT_ADDED",
+          },
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was added to field 'a'",
+            },
+            "message": "Directive 'tag' was added to field 'Query.a'",
+            "meta": {
+              "addedDirectiveName": "tag",
+              "addedToNewType": false,
+              "directiveRepeatedTimes": 3,
+              "fieldName": "a",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED",
+          },
+        ]
+      `);
+    });
+
+    test('adding with different args', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag(name: "foo")
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag(name: "foo") @tag(name: "bar")
+        }
+      `);
+
+      const changes = await diff(a, b);
+      expect(changes).toHaveLength(2);
+      expect(changes).toMatchInlineSnapshot(`
+        [
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was added to field 'a'",
+            },
+            "message": "Directive 'tag' was added to field 'Query.a'",
+            "meta": {
+              "addedDirectiveName": "tag",
+              "addedToNewType": false,
+              "directiveRepeatedTimes": 2,
+              "fieldName": "a",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED",
+          },
+          {
+            "criticality": {
+              "level": "NON_BREAKING",
+            },
+            "message": "Argument 'name' was added to '@tag'",
+            "meta": {
+              "addedArgumentName": "name",
+              "addedArgumentValue": ""bar"",
+              "directiveName": "tag",
+              "directiveRepeatedTimes": 2,
+              "oldArgumentValue": null,
+              "parentArgumentName": null,
+              "parentEnumValueName": null,
+              "parentFieldName": "a",
+              "parentTypeName": "Query",
+            },
+            "path": "Query.a.@tag.name",
+            "type": "DIRECTIVE_USAGE_ARGUMENT_ADDED",
+          },
+        ]
+      `);
+    });
+
+    test('changing arguments of the second usage', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag(name: "foo") @tag(name: "foo2")
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag(name: "foo") @tag(name: "bar")
+        }
+      `);
+
+      const changes = await diff(a, b);
+      expect(changes).toHaveLength(2);
+      expect(changes).toMatchInlineSnapshot(`
+        [
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Changing an argument on a directive can change runtime behavior.",
+            },
+            "message": "Argument 'name' was removed from '@tag'",
+            "meta": {
+              "directiveName": "tag",
+              "directiveRepeatedTimes": 2,
+              "parentArgumentName": null,
+              "parentEnumValueName": null,
+              "parentFieldName": "a",
+              "parentTypeName": "Query",
+              "removedArgumentName": "name",
+            },
+            "path": "Query.a.@tag.name",
+            "type": "DIRECTIVE_USAGE_ARGUMENT_REMOVED",
+          },
+          {
+            "criticality": {
+              "level": "NON_BREAKING",
+            },
+            "message": "Argument 'name' was added to '@tag'",
+            "meta": {
+              "addedArgumentName": "name",
+              "addedArgumentValue": ""bar"",
+              "directiveName": "tag",
+              "directiveRepeatedTimes": 2,
+              "oldArgumentValue": ""foo2"",
+              "parentArgumentName": null,
+              "parentEnumValueName": null,
+              "parentFieldName": "a",
+              "parentTypeName": "Query",
+            },
+            "path": "Query.a.@tag.name",
+            "type": "DIRECTIVE_USAGE_ARGUMENT_ADDED",
+          },
+        ]
+      `);
+    });
+
+    test('removing with different args', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag(name: "foo") @tag(name: "bar")
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag(name: "foo")
+        }
+      `);
+
+      const changes = await diff(a, b);
+      expect(changes).toHaveLength(1);
+      expect(changes).toMatchInlineSnapshot(`
+        [
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was removed from field 'a'",
+            },
+            "message": "Directive 'tag' was removed from field 'Query.a'",
+            "meta": {
+              "directiveRepeatedTimes": 2,
+              "fieldName": "a",
+              "removedDirectiveName": "tag",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_REMOVED",
+          },
+        ]
+      `);
+    });
+
+    test('removing in from beginning and end', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag(name: "start") @tag(name: "mid") @tag(name: "end")
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag(name: "mid")
+        }
+      `);
+
+      const changes = await diff(a, b);
+      expect(changes).toHaveLength(4);
+      expect(changes).toMatchInlineSnapshot(`
+        [
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was removed from field 'a'",
+            },
+            "message": "Directive 'tag' was removed from field 'Query.a'",
+            "meta": {
+              "directiveRepeatedTimes": 2,
+              "fieldName": "a",
+              "removedDirectiveName": "tag",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_REMOVED",
+          },
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was removed from field 'a'",
+            },
+            "message": "Directive 'tag' was removed from field 'Query.a'",
+            "meta": {
+              "directiveRepeatedTimes": 3,
+              "fieldName": "a",
+              "removedDirectiveName": "tag",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_REMOVED",
+          },
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Changing an argument on a directive can change runtime behavior.",
+            },
+            "message": "Argument 'name' was removed from '@tag'",
+            "meta": {
+              "directiveName": "tag",
+              "directiveRepeatedTimes": 1,
+              "parentArgumentName": null,
+              "parentEnumValueName": null,
+              "parentFieldName": "a",
+              "parentTypeName": "Query",
+              "removedArgumentName": "name",
+            },
+            "path": "Query.a.@tag.name",
+            "type": "DIRECTIVE_USAGE_ARGUMENT_REMOVED",
+          },
+          {
+            "criticality": {
+              "level": "NON_BREAKING",
+            },
+            "message": "Argument 'name' was added to '@tag'",
+            "meta": {
+              "addedArgumentName": "name",
+              "addedArgumentValue": ""mid"",
+              "directiveName": "tag",
+              "directiveRepeatedTimes": 1,
+              "oldArgumentValue": ""start"",
+              "parentArgumentName": null,
+              "parentEnumValueName": null,
+              "parentFieldName": "a",
+              "parentTypeName": "Query",
+            },
+            "path": "Query.a.@tag.name",
+            "type": "DIRECTIVE_USAGE_ARGUMENT_ADDED",
+          },
+        ]
+      `);
+    });
+
+    test('removing with no args', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag @tag
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+        type Query {
+          a: String @tag
+        }
+      `);
+
+      const changes = await diff(a, b);
+      expect(changes).toHaveLength(1);
+      expect(changes).toMatchInlineSnapshot(`
+        [
+          {
+            "criticality": {
+              "level": "DANGEROUS",
+              "reason": "Directive 'tag' was removed from field 'a'",
+            },
+            "message": "Directive 'tag' was removed from field 'Query.a'",
+            "meta": {
+              "directiveRepeatedTimes": 2,
+              "fieldName": "a",
+              "removedDirectiveName": "tag",
+              "typeName": "Query",
+            },
+            "path": "Query.a.@tag",
+            "type": "DIRECTIVE_USAGE_FIELD_DEFINITION_REMOVED",
+          },
+        ]
+      `);
+    });
+  });
+
   describe('field-level directives', () => {
     test('added directive', async () => {
       const a = buildSchema(/* GraphQL */ `
@@ -26,9 +449,32 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Query.a.external');
+      const change = findFirstChangeByPath(changes, 'Query.a.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
+      expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED');
+      expect(change.message).toEqual("Directive 'external' was added to field 'Query.a'");
+    });
+
+    test('added directive on added field', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        type Query {
+          _: String
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @external on FIELD_DEFINITION
+
+        type Query {
+          _: String
+          a: String @external
+        }
+      `);
+
+      const changes = await diff(a, b);
+      const change = findFirstChangeByPath(changes, 'Query.a.@external');
+
+      expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED');
       expect(change.message).toEqual("Directive 'external' was added to field 'Query.a'");
     });
@@ -49,7 +495,7 @@ describe('directive-usage', () => {
         }
       `);
 
-      const change = findFirstChangeByPath(await diff(a, b), 'Query.a.external');
+      const change = findFirstChangeByPath(await diff(a, b), 'Query.a.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_DEFINITION_REMOVED');
@@ -73,7 +519,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Query.a.oneOf');
+      const change = findFirstChangeByPath(changes, 'Query.a.@oneOf');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED');
@@ -96,7 +542,7 @@ describe('directive-usage', () => {
         }
       `);
 
-      const change = findFirstChangeByPath(await diff(a, b), 'Query.a.oneOf');
+      const change = findFirstChangeByPath(await diff(a, b), 'Query.a.@oneOf');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_DEFINITION_REMOVED');
@@ -133,7 +579,7 @@ describe('directive-usage', () => {
         union Foo @external = A | B
       `);
 
-      const change = findFirstChangeByPath(await diff(a, b), 'Foo.external');
+      const change = findFirstChangeByPath(await diff(a, b), 'Foo.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_UNION_MEMBER_ADDED');
@@ -169,7 +615,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, 'Foo.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_UNION_MEMBER_REMOVED');
@@ -204,7 +650,7 @@ describe('directive-usage', () => {
         union Foo @oneOf = A | B
       `);
 
-      const change = findFirstChangeByPath(await diff(a, b), 'Foo.oneOf');
+      const change = findFirstChangeByPath(await diff(a, b), 'Foo.@oneOf');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.type).toEqual('DIRECTIVE_USAGE_UNION_MEMBER_ADDED');
@@ -240,7 +686,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.oneOf');
+      const change = findFirstChangeByPath(changes, 'Foo.@oneOf');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.type).toEqual('DIRECTIVE_USAGE_UNION_MEMBER_REMOVED');
@@ -275,7 +721,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'enumA.external');
+      const change = findFirstChangeByPath(changes, 'enumA.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.criticality.reason).toBeDefined();
@@ -307,7 +753,7 @@ describe('directive-usage', () => {
         }
       `);
 
-      const change = findFirstChangeByPath(await diff(a, b), 'enumA.external');
+      const change = findFirstChangeByPath(await diff(a, b), 'enumA.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_ENUM_REMOVED');
@@ -343,7 +789,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'enumA.B.external');
+      const change = findFirstChangeByPath(changes, 'enumA.B.@external');
 
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
@@ -378,7 +824,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'enumA.A.external');
+      const change = findFirstChangeByPath(changes, 'enumA.A.@external');
 
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
@@ -405,7 +851,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, 'Foo.@external');
 
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
@@ -429,7 +875,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, 'Foo.@external');
 
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
@@ -456,7 +902,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.a.external');
+      const change = findFirstChangeByPath(changes, 'Foo.a.@external');
 
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
@@ -482,7 +928,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.a.external');
+      const change = findFirstChangeByPath(changes, 'Foo.a.@external');
 
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
@@ -505,7 +951,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, 'Foo.@external');
 
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
@@ -523,7 +969,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, 'Foo.@external');
 
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
@@ -548,7 +994,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, 'Foo.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_OBJECT_ADDED');
@@ -569,7 +1015,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, 'Foo.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_OBJECT_REMOVED');
@@ -593,7 +1039,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, 'Foo.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_INTERFACE_ADDED');
@@ -615,7 +1061,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, 'Foo.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_INTERFACE_REMOVED');
@@ -639,7 +1085,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.a.a.external');
+      const change = findFirstChangeByPath(changes, 'Foo.a.a.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_ARGUMENT_DEFINITION_ADDED');
@@ -663,7 +1109,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.a.a.external');
+      const change = findFirstChangeByPath(changes, 'Foo.a.a.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_ARGUMENT_DEFINITION_REMOVED');
@@ -695,7 +1141,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, '.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_SCHEMA_ADDED');
@@ -722,7 +1168,7 @@ describe('directive-usage', () => {
       `);
 
       const changes = await diff(a, b);
-      const change = findFirstChangeByPath(changes, 'Foo.external');
+      const change = findFirstChangeByPath(changes, '.@external');
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_SCHEMA_REMOVED');

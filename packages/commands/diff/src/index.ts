@@ -32,22 +32,29 @@ export async function handler(input: {
     ? resolveCompletionHandler(input.onComplete)
     : failOnBreakingChanges;
 
-  const rules = input.rules
-    ? await Promise.all(
-        input.rules
-          .filter(isString)
-          .map(async (name): Promise<Rule> => {
-            const rule = await resolveRule(name);
+  let verboseChanges = false;
+  const rules = await Promise.all(
+    [...(input.rules ?? [])]
+      .filter(isString)
+      .map(async (name): Promise<Rule> | undefined => {
+        if (name === 'verboseChanges') {
+          verboseChanges = true;
+          return;
+        }
 
-            if (!rule) {
-              throw new Error(`Rule '${name}' does not exist!\n`);
-            }
+        const rule = await resolveRule(name);
 
-            return rule;
-          })
-          .filter(f => f),
-      )
-    : [];
+        if (!rule) {
+          throw new Error(`Rule '${name}' does not exist!\n`);
+        }
+
+        return rule;
+      })
+      .filter((f): f is NonNullable<typeof f> => !!f)
+  );
+  if (!verboseChanges) {
+    rules.push(DiffRule.simplifyChanges);
+  }
 
   const changes = await diffSchema(input.oldSchema, input.newSchema, rules, {
     checkUsage: input.onUsage ? resolveUsageHandler(input.onUsage) : undefined,
@@ -132,6 +139,7 @@ export default createCommand<
         const oldSchemaPointer = args.oldSchema;
         const newSchemaPointer = args.newSchema;
         const apolloFederation = args.federation || false;
+        const apolloFederationV2 = args.federationV2 || false;
         const aws = args.aws || false;
         const method = args.method?.toUpperCase() || 'POST';
         const { headers, leftHeaders, rightHeaders, token } = parseGlobalArgs(args);
@@ -153,6 +161,7 @@ export default createCommand<
             method,
           },
           apolloFederation,
+          apolloFederationV2,
           aws,
         );
         const newSchema = await loaders.loadSchema(
@@ -163,6 +172,7 @@ export default createCommand<
             method,
           },
           apolloFederation,
+          apolloFederationV2,
           aws,
         );
 

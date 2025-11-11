@@ -278,6 +278,8 @@ export default createCommand<
       const apollo = args.apollo || false;
       const aws = args.aws || false;
       const apolloFederation = args.federation || false;
+      const apolloFederationV2 = args.federationV2 || false;
+
       const method = args.method?.toUpperCase() || 'POST';
       const maxDepth = args.maxDepth == null ? undefined : args.maxDepth;
       const maxAliasCount = args.maxAliasCount == null ? undefined : args.maxAliasCount;
@@ -311,6 +313,7 @@ export default createCommand<
           method,
         },
         apolloFederation,
+        apolloFederationV2,
         aws,
       );
       const documents = await loaders.loadDocuments(args.documents, {
