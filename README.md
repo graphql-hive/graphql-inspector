@@ -1,7 +1,4 @@
-[![GraphQLConf 2024 Banner: September 10-12, San Francisco. Hosted by the GraphQL Foundation](https://github.com/user-attachments/assets/bdb8cd5d-5186-4ece-b06b-b00a499b7868)](https://graphql.org/conf/2024/?utm_source=github&utm_medium=graphql_inspector&utm_campaign=readme)
-
-<!-- Uncomment when we remove GraphQL Conf banner -->
-<!-- [![Inspector](https://user-images.githubusercontent.com/25294569/64163641-50cc9f80-ce4a-11e9-89b0-248c7d12142f.gif)](https://graphql-inspector.com/) -->
+[![Inspector](https://user-images.githubusercontent.com/25294569/64163641-50cc9f80-ce4a-11e9-89b0-248c7d12142f.gif)](https://graphql-inspector.com/)
 
 [![npm version](https://badge.fury.io/js/%40graphql-inspector%2Fcli.svg)](https://npmjs.com/package/@graphql-inspector/cli)
 [![Docker Pulls](https://img.shields.io/docker/pulls/kamilkisiela/graphql-inspector)](https://hub.docker.com/r/kamilkisiela/graphql-inspector)
