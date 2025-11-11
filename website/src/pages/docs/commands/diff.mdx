@@ -195,6 +195,24 @@ Now, you can use that module as a rule:
 graphql-inspector diff https://api.com/graphql schema.graphql --rule './custom-rule.js'
 ```
 
+You can also write rules in TypeScript to take advantage of strict typing available in the package.
+
+```ts filename="custom-rule.ts"
+import type { Rule } from '@graphql-inspector/core'
+
+const rule: Rule = ({ changes }) => {
+  return changes.filter(myCustomFilter)
+}
+
+export default rule
+```
+
+You can then also use this module as a rule:
+
+```sh
+graphql-inspector diff https://api.com/graphql schema.graphql --rule './custom-rule.ts'
+```
+
 ### Passing different headers to multiple remote schemas
 
 If you want to do a diff between multiple remote schemas, each with a different set of

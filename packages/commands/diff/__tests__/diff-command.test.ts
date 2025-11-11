@@ -119,7 +119,7 @@ describe('diff', () => {
   });
 
   test('should load typescript rules with local path from fs', async () => {
-    await mockCommand(diff, 'diff old.graphql new.graphql --rule ./assets/rule.ts --register ts-node/register');
+    await mockCommand(diff, 'diff old.graphql new.graphql --rule ./assets/rule.ts');
 
     expect(spyReporter).not.toHaveBeenCalledNormalized('does not exist');
   });
