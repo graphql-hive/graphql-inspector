@@ -1,5 +1,5 @@
-import { Rule } from "@graphql-inspector/core";
+import { Rule } from '@graphql-inspector/core';
 
-const rule: Rule = ({ changes }) => changes
+const rule: Rule = ({ changes }) => changes;
 
 export default rule;

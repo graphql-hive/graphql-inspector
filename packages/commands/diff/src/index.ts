@@ -33,18 +33,20 @@ export async function handler(input: {
     : failOnBreakingChanges;
 
   const rules = input.rules
-    ? await Promise.all(input.rules
-        .filter(isString)
-        .map(async (name): Promise<Rule> => {
-          const rule = await resolveRule(name);
+    ? await Promise.all(
+        input.rules
+          .filter(isString)
+          .map(async (name): Promise<Rule> => {
+            const rule = await resolveRule(name);
 
-          if (!rule) {
-            throw new Error(`Rule '${name}' does not exist!\n`);
-          }
+            if (!rule) {
+              throw new Error(`Rule '${name}' does not exist!\n`);
+            }
 
-          return rule;
-        })
-        .filter(f => f))
+            return rule;
+          })
+          .filter(f => f),
+      )
     : [];
 
   const changes = await diffSchema(input.oldSchema, input.newSchema, rules, {

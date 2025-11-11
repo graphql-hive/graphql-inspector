@@ -69,6 +69,9 @@
     "@graphql-inspector/logger": "workspace:*",
     "tslib": "2.6.2"
   },
+  "devDependencies": {
+    "ts-node": "10.9.2"
+  },
   "publishConfig": {
     "directory": "dist",
     "access": "public"
@@ -76,8 +79,5 @@
   "sideEffects": false,
   "typescript": {
     "definition": "dist/typings/index.d.ts"
-  },
-  "devDependencies": {
-    "ts-node": "10.9.2"
   }
 }
