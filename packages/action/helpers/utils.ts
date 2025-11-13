@@ -112,6 +112,9 @@ export function parseEndpoint(endpoint: Endpoint): {
     return {
       url: endpoint,
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     };
   }
 
