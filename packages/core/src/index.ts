@@ -72,6 +72,8 @@ export {
   directiveArgumentDescriptionChangedFromMeta,
   directiveArgumentDefaultValueChangedFromMeta,
   directiveArgumentTypeChangedFromMeta,
+  directiveRepeatableRemovedFromMeta,
+  directiveRepeatableAddedFromMeta,
 } from './diff/changes/directive.js';
 export {
   enumValueRemovedFromMeta,
