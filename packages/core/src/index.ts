@@ -140,6 +140,8 @@ export {
   DirectiveArgumentDescriptionChangedChange,
   DirectiveArgumentDefaultValueChangedChange,
   DirectiveArgumentTypeChangedChange,
+  DirectiveRepeatableAddedChange,
+  DirectiveRepeatableRemovedChange,
   EnumValueRemovedChange,
   EnumValueAddedChange,
   EnumValueDescriptionChangedChange,
