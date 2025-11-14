@@ -117,7 +117,7 @@ function buildDirectiveRepeatableAddedMessage(args: DirectiveRepeatableAddedChan
   return `Directive '${args.directiveName}' added repeatable.`;
 }
 
-function directiveRepeatableAddedFromMeta(
+export function directiveRepeatableAddedFromMeta(
   args: DirectiveRepeatableAddedChange,
 ): Change<typeof ChangeType.DirectiveRepeatableAdded> {
   return {
@@ -144,7 +144,7 @@ function buildDirectiveRepeatableRemovedMessage(args: DirectiveRepeatableAddedCh
   return `Directive '${args.directiveName}' removed repeatable.`;
 }
 
-function directiveRepeatableRemovedFromMeta(
+export function directiveRepeatableRemovedFromMeta(
   args: DirectiveRepeatableRemovedChange,
 ): Change<typeof ChangeType.DirectiveRepeatableRemoved> {
   return {
