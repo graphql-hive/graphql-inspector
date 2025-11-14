@@ -1,6 +1,6 @@
 {
   "name": "@graphql-inspector/similar-command",
-  "version": "5.0.13",
+  "version": "5.0.14",
   "type": "module",
   "description": "Find similar types in GraphQL Schema",
   "repository": {
