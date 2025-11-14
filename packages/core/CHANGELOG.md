@@ -1,5 +1,14 @@
 # @graphql-inspector/core
 
+## 7.0.1
+
+### Patch Changes
+
+- [#2916](https://github.com/graphql-hive/graphql-inspector/pull/2916)
+  [`91b8450`](https://github.com/graphql-hive/graphql-inspector/commit/91b8450d9fd8176f948e1d759e07df04bf94c57f)
+  Thanks [@jdolle](https://github.com/jdolle)! - export DirectiveRepeatableAddedChange and
+  DirectiveRepeatableRemovedChange
+
 ## 7.0.0
 
 ### Major Changes
