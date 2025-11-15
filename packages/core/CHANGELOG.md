@@ -1,5 +1,15 @@
 # @graphql-inspector/core
 
+## 7.0.3
+
+### Patch Changes
+
+- [#2921](https://github.com/graphql-hive/graphql-inspector/pull/2921)
+  [`088cd4f`](https://github.com/graphql-hive/graphql-inspector/commit/088cd4f584f30b96d82be0ffabdae097160c7f1c)
+  Thanks [@jdolle](https://github.com/jdolle)! - Fix simplifyChanges for sibling changes. E.g. if
+  User.foo and User.bar were added, then the later would be filtered out when it shouldn't be
+  filtered.
+
 ## 7.0.2
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @graphql-inspector/audit-command
 
+## 5.0.15
+
+### Patch Changes
+
+- Updated dependencies
+  [[`088cd4f`](https://github.com/graphql-hive/graphql-inspector/commit/088cd4f584f30b96d82be0ffabdae097160c7f1c)]:
+  - @graphql-inspector/core@7.0.3
+
 ## 5.0.14
 
 ### Patch Changes
