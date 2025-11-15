@@ -287,7 +287,6 @@ describe('simplifyChanges rule', () => {
         email: String!
         role: UserRole
       }
-
     `);
 
     const b = buildSchema(/* GraphQL */ `
@@ -307,7 +306,6 @@ describe('simplifyChanges rule', () => {
         address: String
         role: UserRole!
       }
-
     `);
 
     const changes = await diff(a, b, [simplifyChanges]);
@@ -376,5 +374,5 @@ describe('simplifyChanges rule', () => {
         },
       ]
     `);
-  })
+  });
 });

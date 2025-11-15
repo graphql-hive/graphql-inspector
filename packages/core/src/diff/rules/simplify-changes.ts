@@ -55,7 +55,9 @@ export const simplifyChanges: Rule = ({ changes }) => {
       const parent = parentPath(path);
       // check if parent or the current node was changed using a
       // "simple change" (aka a change that encapsulates a group of changes)
-      const matches = changePaths.filter(matchedPath => matchedPath === parent || matchedPath === path);
+      const matches = changePaths.filter(
+        matchedPath => matchedPath === parent || matchedPath === path,
+      );
       const hasChangedParent = matches.length > 0;
 
       if (simpleChangeTypes.has(type)) {
