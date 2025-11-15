@@ -53,7 +53,9 @@ export const simplifyChanges: Rule = ({ changes }) => {
   const filteredChanges = changes.filter(({ path, type }) => {
     if (path) {
       const parent = parentPath(path);
-      const matches = changePaths.filter(matchedPath => matchedPath.startsWith(parent));
+      // check if parent or the current node was changed using a
+      // "simple change" (aka a change that encapsulates a group of changes)
+      const matches = changePaths.filter(matchedPath => matchedPath === parent || matchedPath === path);
       const hasChangedParent = matches.length > 0;
 
       if (simpleChangeTypes.has(type)) {

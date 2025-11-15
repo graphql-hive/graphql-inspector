@@ -269,4 +269,112 @@ describe('simplifyChanges rule', () => {
     expect(change.type).toEqual('FIELD_DEPRECATION_REMOVED');
     expect(change.message).toEqual("Field 'Foo.bar' is no longer deprecated");
   });
+
+  test('same node contains multiple changes', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      type Query {
+        users: [User!]
+      }
+
+      enum UserRole {
+        ADMIN
+        EDITOR
+      }
+
+      type User {
+        id: ID!
+        name: String!
+        email: String!
+        role: UserRole
+      }
+
+    `);
+
+    const b = buildSchema(/* GraphQL */ `
+      type Query {
+        users: [User!]
+      }
+
+      enum UserRole {
+        ADMIN
+        EDITOR
+        VIEWER
+      }
+
+      type User {
+        id: ID!
+        name: String!
+        address: String
+        role: UserRole!
+      }
+
+    `);
+
+    const changes = await diff(a, b, [simplifyChanges]);
+    // `User` has 3 fields that change
+    expect(changes).toHaveLength(4);
+    expect(changes).toMatchInlineSnapshot(`
+      [
+        {
+          "criticality": {
+            "level": "DANGEROUS",
+            "reason": "Adding an enum value may break existing clients that were not programming defensively against an added case when querying an enum.",
+          },
+          "message": "Enum value 'VIEWER' was added to enum 'UserRole'",
+          "meta": {
+            "addedDirectiveDescription": null,
+            "addedEnumValueName": "VIEWER",
+            "addedToNewType": false,
+            "enumName": "UserRole",
+          },
+          "path": "UserRole.VIEWER",
+          "type": "ENUM_VALUE_ADDED",
+        },
+        {
+          "criticality": {
+            "level": "BREAKING",
+            "reason": "Removing a field is a breaking change. It is preferable to deprecate the field before removing it. This applies to removed union fields as well, since removal breaks client operations that contain fragments that reference the removed type through direct (... on RemovedType) or indirect means such as __typename in the consumers.",
+          },
+          "message": "Field 'email' was removed from object type 'User'",
+          "meta": {
+            "isRemovedFieldDeprecated": false,
+            "removedFieldName": "email",
+            "typeName": "User",
+            "typeType": "object type",
+          },
+          "path": "User.email",
+          "type": "FIELD_REMOVED",
+        },
+        {
+          "criticality": {
+            "level": "NON_BREAKING",
+          },
+          "message": "Field 'address' was added to object type 'User'",
+          "meta": {
+            "addedFieldName": "address",
+            "addedFieldReturnType": "String",
+            "typeName": "User",
+            "typeType": "object type",
+          },
+          "path": "User.address",
+          "type": "FIELD_ADDED",
+        },
+        {
+          "criticality": {
+            "level": "NON_BREAKING",
+          },
+          "message": "Field 'User.role' changed type from 'UserRole' to 'UserRole!'",
+          "meta": {
+            "fieldName": "role",
+            "isSafeFieldTypeChange": true,
+            "newFieldType": "UserRole!",
+            "oldFieldType": "UserRole",
+            "typeName": "User",
+          },
+          "path": "User.role",
+          "type": "FIELD_TYPE_CHANGED",
+        },
+      ]
+    `);
+  })
 });
