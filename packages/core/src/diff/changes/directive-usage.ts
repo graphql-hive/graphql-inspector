@@ -108,7 +108,7 @@ type KindToPayload = {
     change: DirectiveUsageEnumValueAddedChange | DirectiveUsageEnumValueRemovedChange;
   };
   [Kind.SCHEMA_DEFINITION]: {
-    input: GraphQLSchema;
+    input: GraphQLSchema | null;
     change: DirectiveUsageSchemaAddedChange | DirectiveUsageSchemaRemovedChange;
   };
   [Kind.SCALAR_TYPE_DEFINITION]: {
@@ -836,9 +836,9 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
       type: ChangeType.DirectiveUsageSchemaAdded,
       meta: {
         addedDirectiveName: directive.name.value,
-        schemaTypeName: payload.getQueryType()?.name || '',
+        schemaTypeName: payload?.getQueryType()?.name || '',
         addedToNewType,
-        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
+        directiveRepeatedTimes: directiveRepeatTimes(payload?.astNode?.directives ?? [], directive),
       },
     });
   }
@@ -1016,8 +1016,8 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
       type: ChangeType.DirectiveUsageSchemaRemoved,
       meta: {
         removedDirectiveName: directive.name.value,
-        schemaTypeName: payload.getQueryType()?.name || '',
-        directiveRepeatedTimes: directiveRepeatTimes(payload.astNode?.directives ?? [], directive),
+        schemaTypeName: payload?.getQueryType()?.name || '',
+        directiveRepeatedTimes: directiveRepeatTimes(payload?.astNode?.directives ?? [], directive),
       },
     });
   }

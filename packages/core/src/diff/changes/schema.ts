@@ -27,11 +27,11 @@ export function schemaQueryTypeChangedFromMeta(args: SchemaQueryTypeChangedChang
 }
 
 export function schemaQueryTypeChanged(
-  oldSchema: GraphQLSchema,
-  newSchema: GraphQLSchema,
+  oldSchema: GraphQLSchema | null,
+  newSchema: GraphQLSchema | null,
 ): Change<typeof ChangeType.SchemaQueryTypeChanged> {
-  const oldName = (oldSchema.getQueryType() || ({} as any)).name || 'unknown';
-  const newName = (newSchema.getQueryType() || ({} as any)).name || 'unknown';
+  const oldName = (oldSchema?.getQueryType() || ({} as any)).name || 'unknown';
+  const newName = (newSchema?.getQueryType() || ({} as any)).name || 'unknown';
 
   return schemaQueryTypeChangedFromMeta({
     type: ChangeType.SchemaQueryTypeChanged,
@@ -63,11 +63,11 @@ export function schemaMutationTypeChangedFromMeta(args: SchemaMutationTypeChange
 }
 
 export function schemaMutationTypeChanged(
-  oldSchema: GraphQLSchema,
-  newSchema: GraphQLSchema,
+  oldSchema: GraphQLSchema | null,
+  newSchema: GraphQLSchema | null,
 ): Change<typeof ChangeType.SchemaMutationTypeChanged> {
-  const oldName = (oldSchema.getMutationType() || ({} as any)).name || 'unknown';
-  const newName = (newSchema.getMutationType() || ({} as any)).name || 'unknown';
+  const oldName = (oldSchema?.getMutationType() || ({} as any)).name || 'unknown';
+  const newName = (newSchema?.getMutationType() || ({} as any)).name || 'unknown';
 
   return schemaMutationTypeChangedFromMeta({
     type: ChangeType.SchemaMutationTypeChanged,
@@ -99,11 +99,11 @@ export function schemaSubscriptionTypeChangedFromMeta(args: SchemaSubscriptionTy
 }
 
 export function schemaSubscriptionTypeChanged(
-  oldSchema: GraphQLSchema,
-  newSchema: GraphQLSchema,
+  oldSchema: GraphQLSchema | null,
+  newSchema: GraphQLSchema | null,
 ): Change<typeof ChangeType.SchemaSubscriptionTypeChanged> {
-  const oldName = (oldSchema.getSubscriptionType() || ({} as any)).name || 'unknown';
-  const newName = (newSchema.getSubscriptionType() || ({} as any)).name || 'unknown';
+  const oldName = (oldSchema?.getSubscriptionType() || ({} as any)).name || 'unknown';
+  const newName = (newSchema?.getSubscriptionType() || ({} as any)).name || 'unknown';
 
   return schemaSubscriptionTypeChangedFromMeta({
     type: ChangeType.SchemaSubscriptionTypeChanged,

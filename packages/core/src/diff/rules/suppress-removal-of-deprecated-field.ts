@@ -12,7 +12,7 @@ export const suppressRemovalOfDeprecatedField: Rule = ({ changes, oldSchema, new
       change.path
     ) {
       const [typeName, fieldName] = parsePath(change.path);
-      const type = oldSchema.getType(typeName);
+      const type = oldSchema?.getType(typeName);
 
       if (isObjectType(type) || isInterfaceType(type)) {
         const field = type.getFields()[fieldName];
@@ -35,7 +35,7 @@ export const suppressRemovalOfDeprecatedField: Rule = ({ changes, oldSchema, new
       change.path
     ) {
       const [enumName, enumItem] = parsePath(change.path);
-      const type = oldSchema.getType(enumName);
+      const type = oldSchema?.getType(enumName);
 
       if (isEnumType(type)) {
         const item = type.getValue(enumItem);
@@ -58,7 +58,7 @@ export const suppressRemovalOfDeprecatedField: Rule = ({ changes, oldSchema, new
       change.path
     ) {
       const [inputName, inputItem] = parsePath(change.path);
-      const type = oldSchema.getType(inputName);
+      const type = oldSchema?.getType(inputName);
 
       if (isInputObjectType(type)) {
         const item = type.getFields()[inputItem];
@@ -81,7 +81,7 @@ export const suppressRemovalOfDeprecatedField: Rule = ({ changes, oldSchema, new
       change.path
     ) {
       const [typeName] = parsePath(change.path);
-      const type = newSchema.getType(typeName);
+      const type = newSchema?.getType(typeName);
 
       if (!type) {
         return {

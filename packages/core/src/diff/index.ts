@@ -11,8 +11,8 @@ export * from './onComplete/types.js';
 export type { UsageHandler } from './rules/consider-usage.js';
 
 export function diff(
-  oldSchema: GraphQLSchema,
-  newSchema: GraphQLSchema,
+  oldSchema: GraphQLSchema | null,
+  newSchema: GraphQLSchema | null,
   rules: Rule[] = [],
   config?: rules.ConsiderUsageConfig,
 ): Promise<Change[]> {
