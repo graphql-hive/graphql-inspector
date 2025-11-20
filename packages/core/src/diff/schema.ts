@@ -43,7 +43,10 @@ import { changesInUnion } from './union.js';
 
 export type AddChange = (change: Change) => void;
 
-export function diffSchema(oldSchema: GraphQLSchema | null, newSchema: GraphQLSchema | null): Change[] {
+export function diffSchema(
+  oldSchema: GraphQLSchema | null,
+  newSchema: GraphQLSchema | null,
+): Change[] {
   const changes: Change[] = [];
 
   function addChange(change: Change) {
@@ -53,8 +56,12 @@ export function diffSchema(oldSchema: GraphQLSchema | null, newSchema: GraphQLSc
   changesInSchema(oldSchema, newSchema, addChange);
 
   compareLists(
-    Object.values(oldSchema?.getTypeMap() ?? {}).filter(t => !isPrimitive(t) && !isForIntrospection(t)),
-    Object.values(newSchema?.getTypeMap() ?? {}).filter(t => !isPrimitive(t) && !isForIntrospection(t)),
+    Object.values(oldSchema?.getTypeMap() ?? {}).filter(
+      t => !isPrimitive(t) && !isForIntrospection(t),
+    ),
+    Object.values(newSchema?.getTypeMap() ?? {}).filter(
+      t => !isPrimitive(t) && !isForIntrospection(t),
+    ),
     {
       onAdded(type) {
         addChange(typeAdded(type));
@@ -73,35 +80,44 @@ export function diffSchema(oldSchema: GraphQLSchema | null, newSchema: GraphQLSc
     (oldSchema?.getDirectives() ?? []).filter(t => !isSpecifiedDirective(t)),
     (newSchema?.getDirectives() ?? []).filter(t => !isSpecifiedDirective(t)),
     {
-    onAdded(directive) {
-      addChange(directiveAdded(directive));
-      changesInDirective(null, directive, addChange);
+      onAdded(directive) {
+        addChange(directiveAdded(directive));
+        changesInDirective(null, directive, addChange);
+      },
+      onRemoved(directive) {
+        addChange(directiveRemoved(directive));
+      },
+      onMutual(directive) {
+        changesInDirective(directive.oldVersion, directive.newVersion, addChange);
+      },
     },
-    onRemoved(directive) {
-      addChange(directiveRemoved(directive));
-    },
-    onMutual(directive) {
-      changesInDirective(directive.oldVersion, directive.newVersion, addChange);
-    },
-  });
+  );
 
-  compareDirectiveLists(oldSchema?.astNode?.directives || [], newSchema?.astNode?.directives || [], {
-    onAdded(directive) {
-      addChange(directiveUsageAdded(Kind.SCHEMA_DEFINITION, directive, newSchema, false));
-      directiveUsageChanged(null, directive, addChange);
+  compareDirectiveLists(
+    oldSchema?.astNode?.directives || [],
+    newSchema?.astNode?.directives || [],
+    {
+      onAdded(directive) {
+        addChange(directiveUsageAdded(Kind.SCHEMA_DEFINITION, directive, newSchema, false));
+        directiveUsageChanged(null, directive, addChange);
+      },
+      onMutual(directive) {
+        directiveUsageChanged(directive.oldVersion, directive.newVersion, addChange);
+      },
+      onRemoved(directive) {
+        addChange(directiveUsageRemoved(Kind.SCHEMA_DEFINITION, directive, oldSchema));
+      },
     },
-    onMutual(directive) {
-      directiveUsageChanged(directive.oldVersion, directive.newVersion, addChange);
-    },
-    onRemoved(directive) {
-      addChange(directiveUsageRemoved(Kind.SCHEMA_DEFINITION, directive, oldSchema));
-    },
-  });
+  );
 
   return changes;
 }
 
-function changesInSchema(oldSchema: GraphQLSchema | null, newSchema: GraphQLSchema | null, addChange: AddChange) {
+function changesInSchema(
+  oldSchema: GraphQLSchema | null,
+  newSchema: GraphQLSchema | null,
+  addChange: AddChange,
+) {
   const oldRoot = {
     query: (oldSchema?.getQueryType() || ({} as GraphQLObjectType)).name,
     mutation: (oldSchema?.getMutationType() || ({} as GraphQLObjectType)).name,
