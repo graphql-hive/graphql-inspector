@@ -4,7 +4,7 @@ import { CriticalityLevel } from '../changes/change.js';
 import { Rule } from './types.js';
 
 export const safeUnreachable: Rule = ({ changes, oldSchema }) => {
-  const reachable = getReachableTypes(oldSchema);
+  const reachable = oldSchema ? getReachableTypes(oldSchema) : new Set();
 
   return changes.map(change => {
     if (change.criticality.level === CriticalityLevel.Breaking && change.path) {
