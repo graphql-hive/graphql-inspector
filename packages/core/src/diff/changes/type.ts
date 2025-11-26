@@ -8,6 +8,7 @@ import {
   type GraphQLNamedType,
 } from 'graphql';
 import { getKind } from '../../utils/graphql.js';
+import { fmt } from '../../utils/string.js';
 import {
   Change,
   ChangeType,
@@ -134,7 +135,9 @@ export function typeKindChanged(
 }
 
 function buildTypeDescriptionChangedMessage(args: TypeDescriptionChangedChange['meta']): string {
-  return `Description '${args.oldTypeDescription}' on type '${args.typeName}' has changed to '${args.newTypeDescription}'`;
+  const oldDesc = fmt(args.oldTypeDescription);
+  const newDesc = fmt(args.newTypeDescription);
+  return `Description '${oldDesc}' on type '${args.typeName}' has changed to '${newDesc}'`;
 }
 
 export function typeDescriptionChangedFromMeta(args: TypeDescriptionChangedChange) {
@@ -164,7 +167,8 @@ export function typeDescriptionChanged(
 }
 
 function buildTypeDescriptionRemoved(args: TypeDescriptionRemovedChange['meta']): string {
-  return `Description '${args.removedTypeDescription}' was removed from object type '${args.typeName}'`;
+  const desc = fmt(args.removedTypeDescription);
+  return `Description '${desc}' was removed from object type '${args.typeName}'`;
 }
 
 export function typeDescriptionRemovedFromMeta(args: TypeDescriptionRemovedChange) {
@@ -192,7 +196,8 @@ export function typeDescriptionRemoved(
 }
 
 function buildTypeDescriptionAddedMessage(args: TypeDescriptionAddedChange['meta']): string {
-  return `Object type '${args.typeName}' has description '${args.addedTypeDescription}'`;
+  const desc = fmt(args.addedTypeDescription);
+  return `Object type '${args.typeName}' has description '${desc}'`;
 }
 
 export function typeDescriptionAddedFromMeta(args: TypeDescriptionAddedChange) {

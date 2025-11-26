@@ -1,6 +1,6 @@
 import { DirectiveLocationEnum, GraphQLArgument, GraphQLDirective, isNonNullType } from 'graphql';
 import { safeChangeForInputValue } from '../../utils/graphql.js';
-import { safeString } from '../../utils/string.js';
+import { fmt, safeString } from '../../utils/string.js';
 import {
   Change,
   ChangeType,
@@ -82,9 +82,9 @@ export function directiveAdded(
 function buildDirectiveDescriptionChangedMessage(
   args: DirectiveDescriptionChangedChange['meta'],
 ): string {
-  return `Directive '${args.directiveName}' description changed from '${
-    args.oldDirectiveDescription ?? 'undefined'
-  }' to '${args.newDirectiveDescription ?? 'undefined'}'`;
+  const oldDesc = fmt(args.oldDirectiveDescription ?? 'undefined');
+  const newDesc = fmt(args.newDirectiveDescription ?? 'undefined');
+  return `Directive '${args.directiveName}' description changed from '${oldDesc}' to '${newDesc}'`;
 }
 
 export function directiveDescriptionChangedFromMeta(args: DirectiveDescriptionChangedChange) {
@@ -314,7 +314,9 @@ export function directiveArgumentRemoved(
 function buildDirectiveArgumentDescriptionChangedMessage(
   args: DirectiveArgumentDescriptionChangedChange['meta'],
 ): string {
-  return `Description for argument '${args.directiveArgumentName}' on directive '${args.directiveName}' changed from '${args.oldDirectiveArgumentDescription}' to '${args.newDirectiveArgumentDescription}'`;
+  const oldDesc = fmt(args.oldDirectiveArgumentDescription ?? 'undefined');
+  const newDesc = fmt(args.newDirectiveArgumentDescription ?? 'undefined');
+  return `Description for argument '${args.directiveArgumentName}' on directive '${args.directiveName}' changed from '${oldDesc}' to '${newDesc}'`;
 }
 
 export function directiveArgumentDescriptionChangedFromMeta(

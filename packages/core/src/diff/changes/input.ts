@@ -1,7 +1,7 @@
 import { GraphQLInputField, GraphQLInputObjectType, isNonNullType } from 'graphql';
 import { safeChangeForInputValue } from '../../utils/graphql.js';
 import { isDeprecated } from '../../utils/is-deprecated.js';
-import { safeString } from '../../utils/string.js';
+import { fmt, safeString } from '../../utils/string.js';
 import {
   Change,
   ChangeType,
@@ -95,7 +95,8 @@ export function inputFieldAdded(
 }
 
 function buildInputFieldDescriptionAddedMessage(args: InputFieldDescriptionAddedChange['meta']) {
-  return `Input field '${args.inputName}.${args.inputFieldName}' has description '${args.addedInputFieldDescription}'`;
+  const desc = fmt(args.addedInputFieldDescription);
+  return `Input field '${args.inputName}.${args.inputFieldName}' has description '${desc}'`;
 }
 
 export function inputFieldDescriptionAddedFromMeta(args: InputFieldDescriptionAddedChange) {
@@ -127,7 +128,8 @@ export function inputFieldDescriptionAdded(
 function buildInputFieldDescriptionRemovedMessage(
   args: InputFieldDescriptionRemovedChange['meta'],
 ) {
-  return `Description '${args.removedDescription}' was removed from input field '${args.inputName}.${args.inputFieldName}'`;
+  const desc = fmt(args.removedDescription);
+  return `Description '${desc}' was removed from input field '${args.inputName}.${args.inputFieldName}'`;
 }
 
 export function inputFieldDescriptionRemovedFromMeta(args: InputFieldDescriptionRemovedChange) {
@@ -159,7 +161,9 @@ export function inputFieldDescriptionRemoved(
 function buildInputFieldDescriptionChangedMessage(
   args: InputFieldDescriptionChangedChange['meta'],
 ) {
-  return `Input field '${args.inputName}.${args.inputFieldName}' description changed from '${args.oldInputFieldDescription}' to '${args.newInputFieldDescription}'`;
+  const oldDesc = fmt(args.oldInputFieldDescription);
+  const newDesc = fmt(args.newInputFieldDescription);
+  return `Input field '${args.inputName}.${args.inputFieldName}' description changed from '${oldDesc}' to '${newDesc}'`;
 }
 
 export function inputFieldDescriptionChangedFromMeta(args: InputFieldDescriptionChangedChange) {

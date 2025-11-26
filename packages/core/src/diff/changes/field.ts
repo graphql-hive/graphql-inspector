@@ -8,6 +8,7 @@ import {
   isNonNullType,
 } from 'graphql';
 import { safeChangeForField } from '../../utils/graphql.js';
+import { fmt } from '../../utils/string.js';
 import {
   Change,
   ChangeType,
@@ -97,7 +98,9 @@ export function fieldAdded(
 }
 
 function buildFieldDescriptionChangedMessage(args: FieldDescriptionChangedChange['meta']) {
-  return `Field '${args.typeName}.${args.fieldName}' description changed from '${args.oldDescription}' to '${args.newDescription}'`;
+  const oldDesc = fmt(args.oldDescription || 'undefined');
+  const newDesc = fmt(args.newDescription || 'undefined');
+  return `Field '${args.typeName}.${args.fieldName}' description changed from '${oldDesc}' to '${newDesc}'`;
 }
 
 export function fieldDescriptionChangedFromMeta(args: FieldDescriptionChangedChange) {
@@ -129,7 +132,8 @@ export function fieldDescriptionChanged(
 }
 
 function buildFieldDescriptionAddedMessage(args: FieldDescriptionAddedChange['meta']) {
-  return `Field '${args.typeName}.${args.fieldName}' has description '${args.addedDescription}'`;
+  const desc = fmt(args.addedDescription);
+  return `Field '${args.typeName}.${args.fieldName}' has description '${desc}'`;
 }
 
 export function fieldDescriptionAddedFromMeta(args: FieldDescriptionAddedChange) {
@@ -249,7 +253,9 @@ export function fieldDeprecationRemoved(
 function buildFieldDeprecationReasonChangedMessage(
   args: FieldDeprecationReasonChangedChange['meta'],
 ) {
-  return `Deprecation reason on field '${args.typeName}.${args.fieldName}' has changed from '${args.oldDeprecationReason}' to '${args.newDeprecationReason}'`;
+  const oldReason = fmt(args.oldDeprecationReason);
+  const newReason = fmt(args.newDeprecationReason);
+  return `Deprecation reason on field '${args.typeName}.${args.fieldName}' has changed from '${oldReason}' to '${newReason}'`;
 }
 
 export function fieldDeprecationReasonChangedFromMeta(args: FieldDeprecationReasonChangedChange) {
@@ -283,7 +289,8 @@ export function fieldDeprecationReasonChanged(
 }
 
 function buildFieldDeprecationReasonAddedMessage(args: FieldDeprecationReasonAddedChange['meta']) {
-  return `Field '${args.typeName}.${args.fieldName}' has deprecation reason '${args.addedDeprecationReason}'`;
+  const reason = fmt(args.addedDeprecationReason);
+  return `Field '${args.typeName}.${args.fieldName}' has deprecation reason '${reason}'`;
 }
 
 export function fieldDeprecationReasonAddedFromMeta(args: FieldDeprecationReasonAddedChange) {

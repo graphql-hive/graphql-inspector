@@ -1,6 +1,6 @@
 import { GraphQLArgument, GraphQLField, GraphQLInterfaceType, GraphQLObjectType } from 'graphql';
 import { safeChangeForInputValue } from '../../utils/graphql.js';
-import { safeString } from '../../utils/string.js';
+import { fmt, safeString } from '../../utils/string.js';
 import {
   Change,
   ChangeType,
@@ -13,7 +13,9 @@ import {
 function buildFieldArgumentDescriptionChangedMessage(
   args: FieldArgumentDescriptionChangedChange['meta'],
 ): string {
-  return `Description for argument '${args.argumentName}' on field '${args.typeName}.${args.fieldName}' changed from '${args.oldDescription}' to '${args.newDescription}'`;
+  const oldDesc = fmt(args.oldDescription ?? 'undefined');
+  const newDesc = fmt(args.newDescription ?? 'undefined');
+  return `Description for argument '${args.argumentName}' on field '${args.typeName}.${args.fieldName}' changed from '${oldDesc}' to '${newDesc}'`;
 }
 
 export function fieldArgumentDescriptionChangedFromMeta(
