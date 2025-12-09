@@ -90,11 +90,11 @@ describe('directive', () => {
     // added
     expect(change.b.criticality.level).toEqual(CriticalityLevel.NonBreaking);
     expect(change.b.type).toEqual('DIRECTIVE_DESCRIPTION_CHANGED');
-    expect(change.b.message).toEqual(`Directive 'b' description changed from 'undefined' to 'Bbb'`);
+    expect(change.b.message).toEqual(`Directive 'b' description 'Bbb' was added`);
     // removed
     expect(change.c.criticality.level).toEqual(CriticalityLevel.NonBreaking);
     expect(change.c.type).toEqual('DIRECTIVE_DESCRIPTION_CHANGED');
-    expect(change.c.message).toEqual(`Directive 'c' description changed from 'Ccc' to 'undefined'`);
+    expect(change.c.message).toEqual(`Directive 'c' description 'Ccc' was removed`);
   });
 
   describe('location', () => {

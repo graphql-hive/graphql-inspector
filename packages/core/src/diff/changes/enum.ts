@@ -86,11 +86,13 @@ export function enumValueAdded(
 }
 
 function buildEnumValueDescriptionChangedMessage(args: EnumValueDescriptionChangedChange['meta']) {
-  const oldDesc = fmt(args.oldEnumValueDescription ?? 'undefined');
-  const newDesc = fmt(args.newEnumValueDescription ?? 'undefined');
-  return args.oldEnumValueDescription === null
-    ? `Description '${newDesc}' was added to enum value '${args.enumName}.${args.enumValueName}'`
-    : `Description for enum value '${args.enumName}.${args.enumValueName}' changed from '${oldDesc}' to '${newDesc}'`;
+  if (args.oldEnumValueDescription === null && args.newEnumValueDescription !== null) {
+    return `Description '${fmt(args.newEnumValueDescription)}' was added to enum value '${args.enumName}.${args.enumValueName}'`;
+  }
+  if (args.newEnumValueDescription === null && args.oldEnumValueDescription !== null) {
+    return `Description '${fmt(args.oldEnumValueDescription)}' was removed from enum value '${args.enumName}.${args.enumValueName}'`;
+  }
+  return `Description for enum value '${args.enumName}.${args.enumValueName}' changed from '${fmt(args.oldEnumValueDescription ?? '')}' to '${fmt(args.newEnumValueDescription ?? '')}'`;
 }
 
 export function enumValueDescriptionChangedFromMeta(

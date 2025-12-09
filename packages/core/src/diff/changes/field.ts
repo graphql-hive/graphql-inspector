@@ -98,9 +98,13 @@ export function fieldAdded(
 }
 
 function buildFieldDescriptionChangedMessage(args: FieldDescriptionChangedChange['meta']) {
-  const oldDesc = fmt(args.oldDescription || 'undefined');
-  const newDesc = fmt(args.newDescription || 'undefined');
-  return `Field '${args.typeName}.${args.fieldName}' description changed from '${oldDesc}' to '${newDesc}'`;
+  if (!args.oldDescription && args.newDescription) {
+    return `Field '${args.typeName}.${args.fieldName}' description '${fmt(args.newDescription)}' was added`;
+  }
+  if (!args.newDescription && args.oldDescription) {
+    return `Field '${args.typeName}.${args.fieldName}' description '${fmt(args.oldDescription)}' was removed`;
+  }
+  return `Field '${args.typeName}.${args.fieldName}' description changed from '${fmt(args.oldDescription)}' to '${fmt(args.newDescription)}'`;
 }
 
 export function fieldDescriptionChangedFromMeta(args: FieldDescriptionChangedChange) {

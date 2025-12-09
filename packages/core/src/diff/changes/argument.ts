@@ -13,9 +13,13 @@ import {
 function buildFieldArgumentDescriptionChangedMessage(
   args: FieldArgumentDescriptionChangedChange['meta'],
 ): string {
-  const oldDesc = fmt(args.oldDescription ?? 'undefined');
-  const newDesc = fmt(args.newDescription ?? 'undefined');
-  return `Description for argument '${args.argumentName}' on field '${args.typeName}.${args.fieldName}' changed from '${oldDesc}' to '${newDesc}'`;
+  if (args.oldDescription === null && args.newDescription !== null) {
+    return `Description '${fmt(args.newDescription)}' was added to argument '${args.argumentName}' on field '${args.typeName}.${args.fieldName}'`;
+  }
+  if (args.newDescription === null && args.oldDescription !== null) {
+    return `Description '${fmt(args.oldDescription)}' was removed from argument '${args.argumentName}' on field '${args.typeName}.${args.fieldName}'`;
+  }
+  return `Description for argument '${args.argumentName}' on field '${args.typeName}.${args.fieldName}' changed from '${fmt(args.oldDescription ?? '')}' to '${fmt(args.newDescription ?? '')}'`;
 }
 
 export function fieldArgumentDescriptionChangedFromMeta(
