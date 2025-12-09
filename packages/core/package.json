@@ -1,6 +1,6 @@
 {
   "name": "@graphql-inspector/core",
-  "version": "7.0.3",
+  "version": "7.0.4",
   "type": "module",
   "description": "Tooling for GraphQL. Compare GraphQL Schemas, check documents, find breaking changes, find similar types.",
   "repository": {

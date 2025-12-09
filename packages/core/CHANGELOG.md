@@ -1,5 +1,17 @@
 # @graphql-inspector/core
 
+## 7.0.4
+
+### Patch Changes
+
+- [#2924](https://github.com/graphql-hive/graphql-inspector/pull/2924)
+  [`74fcea7`](https://github.com/graphql-hive/graphql-inspector/commit/74fcea7ad01f72382a887033f4b3594b4f50e9c9)
+  Thanks [@adambenhassen](https://github.com/adambenhassen)! - Escape single quotes in diff change
+  messages for descriptions and deprecation reasons
+
+  Improve description change messages to show "was added" or "was removed" instead of "changed from
+  'undefined' to X"
+
 ## 7.0.3
 
 ### Patch Changes
