@@ -1,5 +1,19 @@
 # @graphql-inspector/core
 
+## 7.1.0
+
+### Minor Changes
+
+- [#2923](https://github.com/graphql-hive/graphql-inspector/pull/2923)
+  [`9bfc094`](https://github.com/graphql-hive/graphql-inspector/commit/9bfc094ab3e3529f6ed4e68ecd250d496b88e23e)
+  Thanks [@jdolle](https://github.com/jdolle)! - Adjust SCHEMA\_\*\_TYPE_CHANGED changes to use null
+  instead of 'unknown' when these types are not defined and improve the change messages.
+
+- [#2923](https://github.com/graphql-hive/graphql-inspector/pull/2923)
+  [`9bfc094`](https://github.com/graphql-hive/graphql-inspector/commit/9bfc094ab3e3529f6ed4e68ecd250d496b88e23e)
+  Thanks [@jdolle](https://github.com/jdolle)! - diff can be passed null schemas. This lets it
+  output the full list of additions on the new schema.
+
 ## 7.0.4
 
 ### Patch Changes

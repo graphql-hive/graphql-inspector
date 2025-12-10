@@ -1,5 +1,14 @@
 # @graphql-inspector/patch
 
+## 0.1.0
+
+### Minor Changes
+
+- [#2923](https://github.com/graphql-hive/graphql-inspector/pull/2923)
+  [`9bfc094`](https://github.com/graphql-hive/graphql-inspector/commit/9bfc094ab3e3529f6ed4e68ecd250d496b88e23e)
+  Thanks [@jdolle](https://github.com/jdolle)! - Adjust SCHEMA\_\*\_TYPE_CHANGED changes to use null
+  instead of 'unknown' when these types are not defined and improve the change messages.
+
 ## 0.0.1
 
 ### Patch Changes

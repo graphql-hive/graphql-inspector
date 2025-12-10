@@ -1,6 +1,6 @@
 {
   "name": "@graphql-inspector/cli",
-  "version": "6.0.4",
+  "version": "6.0.5",
   "type": "module",
   "description": "Tooling for GraphQL. Compare GraphQL Schemas, check documents, find breaking changes, find similar types.",
   "repository": {

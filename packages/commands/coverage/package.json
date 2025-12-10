@@ -1,6 +1,6 @@
 {
   "name": "@graphql-inspector/coverage-command",
-  "version": "6.1.10",
+  "version": "6.1.11",
   "type": "module",
   "description": "Schema Coverage in GraphQL Inspector",
   "repository": {

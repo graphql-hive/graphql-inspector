@@ -1,5 +1,14 @@
 # @graphql-inspector/coverage-command
 
+## 6.1.11
+
+### Patch Changes
+
+- Updated dependencies
+  [[`9bfc094`](https://github.com/graphql-hive/graphql-inspector/commit/9bfc094ab3e3529f6ed4e68ecd250d496b88e23e),
+  [`9bfc094`](https://github.com/graphql-hive/graphql-inspector/commit/9bfc094ab3e3529f6ed4e68ecd250d496b88e23e)]:
+  - @graphql-inspector/core@7.1.0
+
 ## 6.1.10
 
 ### Patch Changes
