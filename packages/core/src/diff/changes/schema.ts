@@ -9,7 +9,13 @@ import {
 } from './change.js';
 
 function buildSchemaQueryTypeChangedMessage(args: SchemaQueryTypeChangedChange['meta']): string {
-  return `Schema query root has changed from '${args.oldQueryTypeName}' to '${args.newQueryTypeName}'`;
+  if (args.oldQueryTypeName === null) {
+    return `Schema query root type was set to '${args.newQueryTypeName}'.`;
+  }
+  if (args.newQueryTypeName === null) {
+    return `Schema query root type '${args.oldQueryTypeName}' was removed.`;
+  }
+  return `Schema query root type was changed from '${args.oldQueryTypeName}' to '${args.newQueryTypeName}'`;
 }
 
 export function schemaQueryTypeChangedFromMeta(args: SchemaQueryTypeChangedChange) {
@@ -45,7 +51,13 @@ export function schemaQueryTypeChanged(
 function buildSchemaMutationTypeChangedMessage(
   args: SchemaMutationTypeChangedChange['meta'],
 ): string {
-  return `Schema mutation root has changed from '${args.oldMutationTypeName}' to '${args.newMutationTypeName}'`;
+  if (args.oldMutationTypeName === null) {
+    return `Schema mutation type was set to '${args.newMutationTypeName}'.`;
+  }
+  if (args.newMutationTypeName === null) {
+    return `Schema mutation type '${args.oldMutationTypeName}' was removed.`;
+  }
+  return `Schema mutation type was changed from '${args.oldMutationTypeName}' to '${args.newMutationTypeName}'`;
 }
 
 export function schemaMutationTypeChangedFromMeta(args: SchemaMutationTypeChangedChange) {
@@ -81,7 +93,13 @@ export function schemaMutationTypeChanged(
 function buildSchemaSubscriptionTypeChangedMessage(
   args: SchemaSubscriptionTypeChangedChange['meta'],
 ): string {
-  return `Schema subscription root has changed from '${args.oldSubscriptionTypeName}' to '${args.newSubscriptionTypeName}'`;
+  if (args.oldSubscriptionTypeName === null) {
+    return `Schema subscription type was set to '${args.newSubscriptionTypeName}'.`;
+  }
+  if (args.newSubscriptionTypeName === null) {
+    return `Schema subscription type '${args.oldSubscriptionTypeName}' was removed.`;
+  }
+  return `Schema subscription type was changed from '${args.oldSubscriptionTypeName}' to '${args.newSubscriptionTypeName}'`;
 }
 
 export function schemaSubscriptionTypeChangedFromMeta(args: SchemaSubscriptionTypeChangedChange) {

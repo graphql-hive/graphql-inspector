@@ -67,7 +67,7 @@ test('renamed query', async () => {
 
   expect(changed).toBeDefined();
   expect(changed.criticality.level).toEqual(CriticalityLevel.Breaking);
-  expect(changed.message).toEqual(`Schema query root has changed from 'Query' to 'RootQuery'`);
+  expect(changed.message).toEqual(`Schema query root type was changed from 'Query' to 'RootQuery'`);
 });
 
 test('new field and field changed', async () => {
@@ -765,7 +765,7 @@ test('adding root type should not be breaking', async () => {
         "criticality": {
           "level": "NON_BREAKING",
         },
-        "message": "Schema subscription root has changed from 'null' to 'Subscription'",
+        "message": "Schema subscription type was set to 'Subscription'.",
         "meta": {
           "newSubscriptionTypeName": "Subscription",
           "oldSubscriptionTypeName": null,
@@ -822,7 +822,7 @@ test('null old schema', async () => {
         "criticality": {
           "level": "NON_BREAKING",
         },
-        "message": "Schema query root has changed from 'null' to 'Query'",
+        "message": "Schema query root type was set to 'Query'.",
         "meta": {
           "newQueryTypeName": "Query",
           "oldQueryTypeName": null,
@@ -833,7 +833,7 @@ test('null old schema', async () => {
         "criticality": {
           "level": "NON_BREAKING",
         },
-        "message": "Schema subscription root has changed from 'null' to 'Subscription'",
+        "message": "Schema subscription type was set to 'Subscription'.",
         "meta": {
           "newSubscriptionTypeName": "Subscription",
           "oldSubscriptionTypeName": null,
@@ -916,7 +916,7 @@ test('null new schema', async () => {
         "criticality": {
           "level": "BREAKING",
         },
-        "message": "Schema query root has changed from 'Query' to 'null'",
+        "message": "Schema query root type 'Query' was removed.",
         "meta": {
           "newQueryTypeName": null,
           "oldQueryTypeName": "Query",
@@ -927,7 +927,7 @@ test('null new schema', async () => {
         "criticality": {
           "level": "BREAKING",
         },
-        "message": "Schema subscription root has changed from 'Subscription' to 'null'",
+        "message": "Schema subscription type 'Subscription' was removed.",
         "meta": {
           "newSubscriptionTypeName": null,
           "oldSubscriptionTypeName": "Subscription",
