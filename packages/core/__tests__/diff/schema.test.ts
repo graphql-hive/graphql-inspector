@@ -765,10 +765,10 @@ test('adding root type should not be breaking', async () => {
         "criticality": {
           "level": "NON_BREAKING",
         },
-        "message": "Schema subscription root has changed from 'unknown' to 'Subscription'",
+        "message": "Schema subscription root has changed from 'null' to 'Subscription'",
         "meta": {
           "newSubscriptionTypeName": "Subscription",
-          "oldSubscriptionTypeName": "unknown",
+          "oldSubscriptionTypeName": null,
         },
         "type": "SCHEMA_SUBSCRIPTION_TYPE_CHANGED",
       },
@@ -822,10 +822,10 @@ test('null old schema', async () => {
         "criticality": {
           "level": "NON_BREAKING",
         },
-        "message": "Schema query root has changed from 'unknown' to 'Query'",
+        "message": "Schema query root has changed from 'null' to 'Query'",
         "meta": {
           "newQueryTypeName": "Query",
-          "oldQueryTypeName": "unknown",
+          "oldQueryTypeName": null,
         },
         "type": "SCHEMA_QUERY_TYPE_CHANGED",
       },
@@ -833,10 +833,10 @@ test('null old schema', async () => {
         "criticality": {
           "level": "NON_BREAKING",
         },
-        "message": "Schema subscription root has changed from 'unknown' to 'Subscription'",
+        "message": "Schema subscription root has changed from 'null' to 'Subscription'",
         "meta": {
           "newSubscriptionTypeName": "Subscription",
-          "oldSubscriptionTypeName": "unknown",
+          "oldSubscriptionTypeName": null,
         },
         "type": "SCHEMA_SUBSCRIPTION_TYPE_CHANGED",
       },
@@ -916,9 +916,9 @@ test('null new schema', async () => {
         "criticality": {
           "level": "BREAKING",
         },
-        "message": "Schema query root has changed from 'Query' to 'unknown'",
+        "message": "Schema query root has changed from 'Query' to 'null'",
         "meta": {
-          "newQueryTypeName": "unknown",
+          "newQueryTypeName": null,
           "oldQueryTypeName": "Query",
         },
         "type": "SCHEMA_QUERY_TYPE_CHANGED",
@@ -927,9 +927,9 @@ test('null new schema', async () => {
         "criticality": {
           "level": "BREAKING",
         },
-        "message": "Schema subscription root has changed from 'Subscription' to 'unknown'",
+        "message": "Schema subscription root has changed from 'Subscription' to 'null'",
         "meta": {
-          "newSubscriptionTypeName": "unknown",
+          "newSubscriptionTypeName": null,
           "oldSubscriptionTypeName": "Subscription",
         },
         "type": "SCHEMA_SUBSCRIPTION_TYPE_CHANGED",

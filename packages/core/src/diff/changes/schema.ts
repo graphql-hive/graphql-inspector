@@ -17,7 +17,7 @@ export function schemaQueryTypeChangedFromMeta(args: SchemaQueryTypeChangedChang
     type: ChangeType.SchemaQueryTypeChanged,
     criticality: {
       level:
-        args.meta.oldQueryTypeName === 'unknown'
+        args.meta.oldQueryTypeName === null
           ? CriticalityLevel.NonBreaking
           : CriticalityLevel.Breaking,
     },
@@ -30,8 +30,8 @@ export function schemaQueryTypeChanged(
   oldSchema: GraphQLSchema | null,
   newSchema: GraphQLSchema | null,
 ): Change<typeof ChangeType.SchemaQueryTypeChanged> {
-  const oldName = (oldSchema?.getQueryType() || ({} as any)).name || 'unknown';
-  const newName = (newSchema?.getQueryType() || ({} as any)).name || 'unknown';
+  const oldName = oldSchema?.getQueryType()?.name || null;
+  const newName = newSchema?.getQueryType()?.name || null;
 
   return schemaQueryTypeChangedFromMeta({
     type: ChangeType.SchemaQueryTypeChanged,
@@ -53,7 +53,7 @@ export function schemaMutationTypeChangedFromMeta(args: SchemaMutationTypeChange
     type: ChangeType.SchemaMutationTypeChanged,
     criticality: {
       level:
-        args.meta.oldMutationTypeName === 'unknown'
+        args.meta.oldMutationTypeName === null
           ? CriticalityLevel.NonBreaking
           : CriticalityLevel.Breaking,
     },
@@ -66,8 +66,8 @@ export function schemaMutationTypeChanged(
   oldSchema: GraphQLSchema | null,
   newSchema: GraphQLSchema | null,
 ): Change<typeof ChangeType.SchemaMutationTypeChanged> {
-  const oldName = (oldSchema?.getMutationType() || ({} as any)).name || 'unknown';
-  const newName = (newSchema?.getMutationType() || ({} as any)).name || 'unknown';
+  const oldName = oldSchema?.getMutationType()?.name || null;
+  const newName = newSchema?.getMutationType()?.name || null;
 
   return schemaMutationTypeChangedFromMeta({
     type: ChangeType.SchemaMutationTypeChanged,
@@ -89,7 +89,7 @@ export function schemaSubscriptionTypeChangedFromMeta(args: SchemaSubscriptionTy
     type: ChangeType.SchemaSubscriptionTypeChanged,
     criticality: {
       level:
-        args.meta.oldSubscriptionTypeName === 'unknown'
+        args.meta.oldSubscriptionTypeName === null
           ? CriticalityLevel.NonBreaking
           : CriticalityLevel.Breaking,
     },
@@ -102,8 +102,8 @@ export function schemaSubscriptionTypeChanged(
   oldSchema: GraphQLSchema | null,
   newSchema: GraphQLSchema | null,
 ): Change<typeof ChangeType.SchemaSubscriptionTypeChanged> {
-  const oldName = (oldSchema?.getSubscriptionType() || ({} as any)).name || 'unknown';
-  const newName = (newSchema?.getSubscriptionType() || ({} as any)).name || 'unknown';
+  const oldName = oldSchema?.getSubscriptionType()?.name || null;
+  const newName = newSchema?.getSubscriptionType()?.name || null;
 
   return schemaSubscriptionTypeChangedFromMeta({
     type: ChangeType.SchemaSubscriptionTypeChanged,

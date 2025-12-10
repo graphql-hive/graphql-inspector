@@ -16,27 +16,25 @@ export function schemaMutationTypeChanged(
       ({ operation }) => operation === OperationTypeNode.MUTATION,
     );
     if (!mutation) {
-      if (change.meta.oldMutationTypeName !== 'unknown') {
+      if (change.meta.oldMutationTypeName !== null) {
         config.onError(
-          new ValueMismatchError(
-            Kind.SCHEMA_DEFINITION,
-            change.meta.oldMutationTypeName,
-            'unknown',
-          ),
+          new ValueMismatchError(Kind.SCHEMA_DEFINITION, change.meta.oldMutationTypeName, null),
           change,
         );
       }
-      (schemaNode.operationTypes as OperationTypeDefinitionNode[]) = [
-        ...(schemaNode.operationTypes ?? []),
-        {
-          kind: Kind.OPERATION_TYPE_DEFINITION,
-          operation: OperationTypeNode.MUTATION,
-          type: {
-            kind: Kind.NAMED_TYPE,
-            name: nameNode(change.meta.newMutationTypeName),
+      if (change.meta.newMutationTypeName) {
+        (schemaNode.operationTypes as OperationTypeDefinitionNode[]) = [
+          ...(schemaNode.operationTypes ?? []),
+          {
+            kind: Kind.OPERATION_TYPE_DEFINITION,
+            operation: OperationTypeNode.MUTATION,
+            type: {
+              kind: Kind.NAMED_TYPE,
+              name: nameNode(change.meta.newMutationTypeName),
+            },
           },
-        },
-      ];
+        ];
+      }
     } else {
       if (mutation.type.name.value !== change.meta.oldMutationTypeName) {
         config.onError(
@@ -47,6 +45,13 @@ export function schemaMutationTypeChanged(
           ),
           change,
         );
+      }
+      if (change.meta.newMutationTypeName === null) {
+        (schemaNode.operationTypes as OperationTypeDefinitionNode[] | undefined) =
+          schemaNode.operationTypes?.filter(
+            ({ operation }) => operation !== OperationTypeNode.MUTATION,
+          );
+        return;
       }
       (mutation.type.name as NameNode) = nameNode(change.meta.newMutationTypeName);
     }
@@ -64,23 +69,25 @@ export function schemaQueryTypeChanged(
       ({ operation }) => operation === OperationTypeNode.MUTATION,
     );
     if (!query) {
-      if (change.meta.oldQueryTypeName !== 'unknown') {
+      if (change.meta.oldQueryTypeName !== null) {
         config.onError(
-          new ValueMismatchError(Kind.SCHEMA_DEFINITION, change.meta.oldQueryTypeName, 'unknown'),
+          new ValueMismatchError(Kind.SCHEMA_DEFINITION, change.meta.oldQueryTypeName, null),
           change,
         );
       }
-      (schemaNode.operationTypes as OperationTypeDefinitionNode[]) = [
-        ...(schemaNode.operationTypes ?? []),
-        {
-          kind: Kind.OPERATION_TYPE_DEFINITION,
-          operation: OperationTypeNode.QUERY,
-          type: {
-            kind: Kind.NAMED_TYPE,
-            name: nameNode(change.meta.newQueryTypeName),
+      if (change.meta.newQueryTypeName) {
+        (schemaNode.operationTypes as OperationTypeDefinitionNode[]) = [
+          ...(schemaNode.operationTypes ?? []),
+          {
+            kind: Kind.OPERATION_TYPE_DEFINITION,
+            operation: OperationTypeNode.QUERY,
+            type: {
+              kind: Kind.NAMED_TYPE,
+              name: nameNode(change.meta.newQueryTypeName),
+            },
           },
-        },
-      ];
+        ];
+      }
     } else {
       if (query.type.name.value !== change.meta.oldQueryTypeName) {
         config.onError(
@@ -91,6 +98,13 @@ export function schemaQueryTypeChanged(
           ),
           change,
         );
+      }
+      if (change.meta.newQueryTypeName === null) {
+        (schemaNode.operationTypes as OperationTypeDefinitionNode[] | undefined) =
+          schemaNode.operationTypes?.filter(
+            ({ operation }) => operation !== OperationTypeNode.QUERY,
+          );
+        return;
       }
       (query.type.name as NameNode) = nameNode(change.meta.newQueryTypeName);
     }
@@ -108,27 +122,25 @@ export function schemaSubscriptionTypeChanged(
       ({ operation }) => operation === OperationTypeNode.SUBSCRIPTION,
     );
     if (!sub) {
-      if (change.meta.oldSubscriptionTypeName !== 'unknown') {
+      if (change.meta.oldSubscriptionTypeName !== null) {
         config.onError(
-          new ValueMismatchError(
-            Kind.SCHEMA_DEFINITION,
-            change.meta.oldSubscriptionTypeName,
-            'unknown',
-          ),
+          new ValueMismatchError(Kind.SCHEMA_DEFINITION, change.meta.oldSubscriptionTypeName, null),
           change,
         );
       }
-      (schemaNode.operationTypes as OperationTypeDefinitionNode[]) = [
-        ...(schemaNode.operationTypes ?? []),
-        {
-          kind: Kind.OPERATION_TYPE_DEFINITION,
-          operation: OperationTypeNode.QUERY,
-          type: {
-            kind: Kind.NAMED_TYPE,
-            name: nameNode(change.meta.newSubscriptionTypeName),
+      if (change.meta.newSubscriptionTypeName) {
+        (schemaNode.operationTypes as OperationTypeDefinitionNode[]) = [
+          ...(schemaNode.operationTypes ?? []),
+          {
+            kind: Kind.OPERATION_TYPE_DEFINITION,
+            operation: OperationTypeNode.QUERY,
+            type: {
+              kind: Kind.NAMED_TYPE,
+              name: nameNode(change.meta.newSubscriptionTypeName),
+            },
           },
-        },
-      ];
+        ];
+      }
     } else {
       if (sub.type.name.value !== change.meta.oldSubscriptionTypeName) {
         config.onError(
@@ -139,6 +151,13 @@ export function schemaSubscriptionTypeChanged(
           ),
           change,
         );
+      }
+      if (change.meta.newSubscriptionTypeName === null) {
+        (schemaNode.operationTypes as OperationTypeDefinitionNode[] | undefined) =
+          schemaNode.operationTypes?.filter(
+            ({ operation }) => operation !== OperationTypeNode.SUBSCRIPTION,
+          );
+        return;
       }
       (sub.type.name as NameNode) = nameNode(change.meta.newSubscriptionTypeName);
     }

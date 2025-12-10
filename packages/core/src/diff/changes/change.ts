@@ -564,24 +564,24 @@ export type ObjectTypeInterfaceRemovedChange = {
 export type SchemaQueryTypeChangedChange = {
   type: typeof ChangeType.SchemaQueryTypeChanged;
   meta: {
-    oldQueryTypeName: string;
-    newQueryTypeName: string;
+    oldQueryTypeName: string | null;
+    newQueryTypeName: string | null;
   };
 };
 
 export type SchemaMutationTypeChangedChange = {
   type: typeof ChangeType.SchemaMutationTypeChanged;
   meta: {
-    oldMutationTypeName: string;
-    newMutationTypeName: string;
+    oldMutationTypeName: string | null;
+    newMutationTypeName: string | null;
   };
 };
 
 export type SchemaSubscriptionTypeChangedChange = {
   type: typeof ChangeType.SchemaSubscriptionTypeChanged;
   meta: {
-    oldSubscriptionTypeName: string;
-    newSubscriptionTypeName: string;
+    oldSubscriptionTypeName: string | null;
+    newSubscriptionTypeName: string | null;
   };
 };
 
