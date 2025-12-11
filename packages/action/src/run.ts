@@ -7,7 +7,7 @@ import { diff } from '../helpers/diff.js';
 import { printSchemaFromEndpoint } from '../helpers/loaders.js';
 import { produceSchema } from '../helpers/schema.js';
 import { CheckConclusion } from '../helpers/types.js';
-import { createSummary } from '../helpers/utils.js';
+import { createSummary, splitChangesIntoGroups } from '../helpers/utils.js';
 import { updateCheckRun } from './checks.js';
 import { fileLoader } from './files.js';
 import { getAssociatedPullRequest, getCurrentCommitSha } from './git.js';
@@ -41,6 +41,7 @@ export async function run() {
   const approveLabel: string = core.getInput('approve-label') || 'approved-breaking-change';
   const rulesList = getInputAsArray('rules') || [];
   const onUsage = core.getInput('onUsage');
+  const createActionCheck = castToBoolean(core.getInput('create-action-check'), true);
 
   const octokit = github.getOctokit(token);
 
@@ -50,19 +51,26 @@ export async function run() {
   // pull request
   const pullRequest = await getAssociatedPullRequest(octokit, commitSha);
 
-  core.info(`Creating a check named "${checkName}"`);
+  let checkId = null;
+  let seeCheckURL = '';
+  if (createActionCheck) {
+    core.info(`Creating a check named "${checkName}"`);
 
-  const check = await octokit.rest.checks.create({
-    owner,
-    repo,
-    name: checkName,
-    head_sha: commitSha,
-    status: 'in_progress',
-  });
+    const check = await octokit.rest.checks.create({
+      owner,
+      repo,
+      name: checkName,
+      head_sha: commitSha,
+      status: 'in_progress',
+    });
 
-  const checkId = check.data.id;
+    checkId = check.data.id;
+    seeCheckURL = ' For more info see: ' + check.data.html_url;
 
-  core.info(`Check ID: ${checkId}`);
+    core.info(`Check ID: ${checkId}`);
+  } else {
+    core.info('Skipping check creation - disabled by input option');
+  }
 
   const schemaPointer = core.getInput('schema', { required: true });
 
@@ -188,8 +196,20 @@ export async function run() {
   let annotations = action.annotations || [];
   const changes = action.changes || [];
 
+  const groupedChanges = splitChangesIntoGroups(changes);
   core.setOutput('changes', String(changes.length || 0));
-  core.info(`Changes: ${changes.length || 0}`);
+  core.setOutput(
+    'breaking-changes',
+    groupedChanges.breaking.map(c => c.message),
+  );
+  core.setOutput(
+    'dangerous-changes',
+    groupedChanges.dangerous.map(c => c.message),
+  );
+  core.setOutput(
+    'safe-changes',
+    groupedChanges.safe.map(c => c.message),
+  );
 
   const hasApprovedBreakingChangeLabel = pullRequest?.labels?.some(
     (label: any) => label.name === approveLabel,
@@ -204,20 +224,26 @@ export async function run() {
     conclusion = CheckConclusion.Success;
   }
 
+  const title =
+    conclusion === CheckConclusion.Failure
+      ? 'Something is wrong with your schema.' + seeCheckURL // add Check URL to navigate users to Check from action.
+      : 'Everything looks good';
+  core.info(`Conclusion: ${conclusion}`);
+
+  // Action Check is disabled
+  if (checkId === null) {
+    core.info('Github Action Check is disabled, use outputs to determine errors');
+    if (conclusion === CheckConclusion.Failure) {
+      core.setFailed(conclusion);
+    }
+    return;
+  }
+
   if (useAnnotations === false || isNewSchemaUrl) {
     core.info(`Anotations are disabled. Skipping annotations...`);
     annotations = [];
   }
-
   const summary = createSummary(changes, 100, false);
-
-  const title =
-    conclusion === CheckConclusion.Failure
-      ? 'Something is wrong with your schema'
-      : 'Everything looks good';
-
-  core.info(`Conclusion: ${conclusion}`);
-
   try {
     return await updateCheckRun(octokit, checkId, {
       conclusion,
