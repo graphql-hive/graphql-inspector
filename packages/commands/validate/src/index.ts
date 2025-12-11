@@ -369,7 +369,7 @@ function printInvalidDocuments(
   }
 
   for (const doc of invalidDocuments) {
-    if (doc.errors.length) {
+    if (doc[listKey].length) {
       for (const line of renderErrors(doc.source.name, doc[listKey], isError)) {
         Logger.log(line);
       }
