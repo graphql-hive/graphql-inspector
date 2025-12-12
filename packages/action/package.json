@@ -76,7 +76,7 @@
     "@graphql-inspector/commands": "workspace:*",
     "@graphql-inspector/core": "workspace:*",
     "dataloader": "2.2.2",
-    "js-yaml": "4.1.0",
+    "js-yaml": "4.1.1",
     "probot": "13.2.2",
     "tslib": "2.6.2"
   },
