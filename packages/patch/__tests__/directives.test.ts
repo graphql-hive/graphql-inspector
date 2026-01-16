@@ -418,4 +418,23 @@ describe('repeat directives', () => {
     `;
     await expectDiffAndPatchToMatch(before, after);
   });
+
+  test('Definition and Repeated Usage Added', async () => {
+    const before = /* GraphQL */ `
+      type Pancake {
+        radius: Int!
+      }
+    `;
+    const after = /* GraphQL */ `
+      directive @flavor(flavor: String!) repeatable on OBJECT
+      type Pancake
+        @flavor(flavor: "sweet")
+        @flavor(flavor: "bread")
+        @flavor(flavor: "chocolate")
+        @flavor(flavor: "strawberry") {
+        radius: Int!
+      }
+    `;
+    await expectDiffAndPatchToMatch(before, after);
+  });
 });

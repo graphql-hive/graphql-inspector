@@ -53,6 +53,25 @@ export function diffSchema(
     changes.push(change);
   }
 
+  // important for directives to come first so that any directive usages that come
+  // later are able to find the directive definitions that were added.
+  compareLists(
+    (oldSchema?.getDirectives() ?? []).filter(t => !isSpecifiedDirective(t)),
+    (newSchema?.getDirectives() ?? []).filter(t => !isSpecifiedDirective(t)),
+    {
+      onAdded(directive) {
+        addChange(directiveAdded(directive));
+        changesInDirective(null, directive, addChange);
+      },
+      onRemoved(directive) {
+        addChange(directiveRemoved(directive));
+      },
+      onMutual(directive) {
+        changesInDirective(directive.oldVersion, directive.newVersion, addChange);
+      },
+    },
+  );
+
   changesInSchema(oldSchema, newSchema, addChange);
 
   compareLists(
@@ -72,23 +91,6 @@ export function diffSchema(
       },
       onMutual(type) {
         changesInType(type.oldVersion, type.newVersion, addChange);
-      },
-    },
-  );
-
-  compareLists(
-    (oldSchema?.getDirectives() ?? []).filter(t => !isSpecifiedDirective(t)),
-    (newSchema?.getDirectives() ?? []).filter(t => !isSpecifiedDirective(t)),
-    {
-      onAdded(directive) {
-        addChange(directiveAdded(directive));
-        changesInDirective(null, directive, addChange);
-      },
-      onRemoved(directive) {
-        addChange(directiveRemoved(directive));
-      },
-      onMutual(directive) {
-        changesInDirective(directive.oldVersion, directive.newVersion, addChange);
       },
     },
   );
