@@ -30,7 +30,9 @@ export async function expectDiffAndPatchToMatch(
   after: string,
 ): Promise<GraphQLSchema> {
   const patched = await buildDiffPatch(before, after);
-  expect(printSortedSchema(patched)).toBe(printSortedSchema(buildSchema(after)));
+  expect(printSortedSchema(patched)).toBe(
+    printSortedSchema(buildSchema(after, { assumeValid: true, assumeValidSDL: true })),
+  );
   return patched;
 }
 

@@ -437,4 +437,43 @@ describe('repeat directives', () => {
     `;
     await expectDiffAndPatchToMatch(before, after);
   });
+
+  test('Definition and Repeated Usage Added: Federated directives', async () => {
+    const before = /* GraphQL */ `
+      schema @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key"]) {
+        query: Query
+      }
+      type Query {
+        pancake(id: ID!): Pancake
+      }
+      type Pancake @key(fields: "id") {
+        id: ID!
+        radius: Int!
+      }
+    `;
+    const after = /* GraphQL */ `
+      schema @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key"]) {
+        query: Query
+      }
+      type Query {
+        pancake(id: ID!): Pancake
+      }
+      scalar FieldSet
+      directive @key(fields: FieldSet!, resolvable: Boolean) repeatable on INTERFACE | OBJECT
+
+      directive @flavor(flavor: String!) repeatable on OBJECT
+      type Pancake
+        @key(fields: "id")
+        @flavor(flavor: "sweet")
+        @flavor(flavor: "bread")
+        @flavor(flavor: "chocolate")
+        @flavor(flavor: "strawberry")
+        @key(fields: "invoice") {
+        id: ID!
+        invoid: ID
+        radius: Int!
+      }
+    `;
+    await expectDiffAndPatchToMatch(before, after);
+  });
 });
