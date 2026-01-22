@@ -1,5 +1,14 @@
 # @graphql-inspector/patch
 
+## 0.1.1
+
+### Patch Changes
+
+- [#2930](https://github.com/graphql-hive/graphql-inspector/pull/2930)
+  [`4a37c05`](https://github.com/graphql-hive/graphql-inspector/commit/4a37c05a03e5c8755550a69e9fe23bd83b2cd0c9)
+  Thanks [@jdolle](https://github.com/jdolle)! - Add directive definition changes first; adjust
+  adding repeat directive change
+
 ## 0.1.0
 
 ### Minor Changes

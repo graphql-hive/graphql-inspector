@@ -1,5 +1,13 @@
 # @graphql-inspector/action
 
+## 5.0.18
+
+### Patch Changes
+
+- Updated dependencies
+  [[`4a37c05`](https://github.com/graphql-hive/graphql-inspector/commit/4a37c05a03e5c8755550a69e9fe23bd83b2cd0c9)]:
+  - @graphql-inspector/core@7.1.1
+
 ## 5.0.17
 
 ### Patch Changes
