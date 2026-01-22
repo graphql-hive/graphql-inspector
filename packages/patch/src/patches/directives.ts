@@ -44,8 +44,12 @@ export function directiveAdded(
     const node: DirectiveDefinitionNode = {
       kind: Kind.DIRECTIVE_DEFINITION,
       name: nameNode(change.meta.addedDirectiveName),
-      repeatable: change.meta.addedDirectiveRepeatable,
-      locations: change.meta.addedDirectiveLocations.map(l => nameNode(l)),
+      // Let "DirectiveRepeatableAdded" event set this instead of
+      // using "change.meta.addedDirectiveRepeatable"
+      repeatable: false,
+      // Let "DirectiveLocationAdded" set this attribute instead of
+      // using "change.meta.addedDirectiveLocations.map(l => nameNode(l))"
+      locations: [],
       description: change.meta.addedDirectiveDescription
         ? stringNode(change.meta.addedDirectiveDescription)
         : undefined,
