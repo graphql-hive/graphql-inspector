@@ -610,6 +610,58 @@ describe('directiveUsages: added', () => {
     `;
     await expectDiffAndPatchToMatch(before, after);
   });
+
+  test('directiveSchemaUsageAdded', async () => {
+    const before = baseSchema;
+    const after = /* GraphQL */ `
+      ${baseSchema}
+
+      extend schema @meta(name: "feeling", content: "ok")
+    `;
+    await expectDiffAndPatchToMatch(before, after);
+  });
+
+  test('directiveSchemaUsageAdded without another schema definition', async () => {
+    const before = /* GraphQL */ `
+      directive @meta(
+        name: String!
+        value: String!
+      ) on SCHEMA | SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | INTERFACE | UNION | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+
+      type Query {
+        foo: Boolean
+      }
+    `;
+    const after = /* GraphQL */ `
+      ${before}
+
+      extend schema @meta(name: "feeling", content: "ok")
+    `;
+    await expectDiffAndPatchToMatch(before, after);
+  });
+
+  test('directiveSchemaUsageAdded without another schema definition, with a Query and Mutation definition', async () => {
+    const before = /* GraphQL */ `
+      directive @meta(
+        name: String!
+        value: String!
+      ) on SCHEMA | SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | INTERFACE | UNION | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+
+      type Query {
+        foo: Boolean
+      }
+
+      type Mutation {
+        doFoo: Boolean
+      }
+    `;
+    const after = /* GraphQL */ `
+      ${before}
+
+      extend schema @meta(name: "feeling", content: "ok")
+    `;
+    await expectDiffAndPatchToMatch(before, after);
+  });
 });
 
 describe('directiveUsages: removed', () => {

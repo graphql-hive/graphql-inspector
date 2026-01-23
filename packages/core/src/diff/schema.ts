@@ -112,6 +112,34 @@ export function diffSchema(
     },
   );
 
+  /**
+   * Extracting directives from the schema definition requires using the AST. But the AST does not combine the
+   * definition and extensions like the GraphQL Type System. Therefore, the extensions must be looped over as well.
+   **/
+  for (
+    let e = 0;
+    e <
+    Math.max(oldSchema?.extensionASTNodes.length ?? 0, newSchema?.extensionASTNodes.length ?? 0);
+    e++
+  ) {
+    compareDirectiveLists(
+      oldSchema?.extensionASTNodes[e]?.directives || [],
+      newSchema?.extensionASTNodes[e]?.directives || [],
+      {
+        onAdded(directive) {
+          addChange(directiveUsageAdded(Kind.SCHEMA_DEFINITION, directive, newSchema, false));
+          directiveUsageChanged(null, directive, addChange);
+        },
+        onMutual(directive) {
+          directiveUsageChanged(directive.oldVersion, directive.newVersion, addChange);
+        },
+        onRemoved(directive) {
+          addChange(directiveUsageRemoved(Kind.SCHEMA_DEFINITION, directive, oldSchema));
+        },
+      },
+    );
+  }
+
   return changes;
 }
 

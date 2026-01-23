@@ -959,3 +959,76 @@ test('null new schema', async () => {
     ]
   `);
 });
+
+test('adding directive using extend schema', async () => {
+  const schemaA = buildSchema(/* GraphQL */ `
+    directive @foo on SCHEMA
+    type Query {
+      foo: String
+    }
+  `);
+
+  const schemaB = buildSchema(/* GraphQL */ `
+    directive @foo on SCHEMA
+    extend schema @foo
+    type Query {
+      foo: String
+    }
+  `);
+
+  const changes = await diff(schemaA, schemaB);
+  expect(changes).toMatchInlineSnapshot(`
+    [
+      {
+        "criticality": {
+          "level": "DANGEROUS",
+          "reason": "Directive 'foo' was added to schema",
+        },
+        "message": "Directive 'foo' was added to schema",
+        "meta": {
+          "addedDirectiveName": "foo",
+          "addedToNewType": false,
+          "directiveRepeatedTimes": 0,
+        },
+        "path": ".@foo",
+        "type": "DIRECTIVE_USAGE_SCHEMA_ADDED",
+      },
+    ]
+  `);
+});
+
+test('removing directive using extend schema', async () => {
+  const schemaA = buildSchema(/* GraphQL */ `
+    directive @foo on SCHEMA
+    extend schema @foo
+    type Query {
+      foo: String
+    }
+  `);
+
+  const schemaB = buildSchema(/* GraphQL */ `
+    directive @foo on SCHEMA
+    type Query {
+      foo: String
+    }
+  `);
+
+  const changes = await diff(schemaA, schemaB);
+  expect(changes).toMatchInlineSnapshot(`
+    [
+      {
+        "criticality": {
+          "level": "DANGEROUS",
+          "reason": "Directive 'foo' was removed from schema",
+        },
+        "message": "Directive 'foo' was removed from schema",
+        "meta": {
+          "directiveRepeatedTimes": 0,
+          "removedDirectiveName": "foo",
+        },
+        "path": ".@foo",
+        "type": "DIRECTIVE_USAGE_SCHEMA_REMOVED",
+      },
+    ]
+  `);
+});

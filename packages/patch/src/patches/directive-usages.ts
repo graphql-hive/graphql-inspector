@@ -1,4 +1,13 @@
-import { ArgumentNode, ASTNode, DirectiveNode, Kind, parseValue, print, ValueNode } from 'graphql';
+import {
+  ArgumentNode,
+  ASTNode,
+  DirectiveNode,
+  Kind,
+  OperationTypeNode,
+  parseValue,
+  print,
+  ValueNode,
+} from 'graphql';
 import { Change, ChangeType } from '@graphql-inspector/core';
 import {
   AddedAttributeAlreadyExistsError,
@@ -12,7 +21,7 @@ import {
   DeletedAttributeNotFoundError,
   ValueMismatchError,
 } from '../errors.js';
-import { nameNode } from '../node-templates.js';
+import { namedTypeNode, nameNode } from '../node-templates.js';
 import { PatchConfig, PatchContext, SchemaNode } from '../types.js';
 import { findNamedNode, parentPath } from '../utils.js';
 
@@ -167,10 +176,51 @@ function schemaDirectiveUsageDefinitionAdded(
     kind: Kind.DIRECTIVE,
     name: nameNode(change.meta.addedDirectiveName),
   };
+  if (!schemaNodes[0]) {
+    // since no schema definition is defined -- assume the default operation type names
+    const hasQueryType = nodeByPath.get('Query');
+    const hasMutationType = nodeByPath.get('Mutation');
+    const hasSubscriptionType = nodeByPath.get('Subscription');
+    schemaNodes.push({
+      kind: Kind.SCHEMA_DEFINITION,
+      operationTypes: [
+        ...(hasQueryType
+          ? [
+              {
+                kind: Kind.OPERATION_TYPE_DEFINITION,
+                operation: OperationTypeNode.QUERY,
+                type: namedTypeNode('Query'),
+              } as const,
+            ]
+          : []),
+        ...(hasMutationType
+          ? [
+              {
+                kind: Kind.OPERATION_TYPE_DEFINITION,
+                operation: OperationTypeNode.MUTATION,
+                type: namedTypeNode('Mutation'),
+              } as const,
+            ]
+          : []),
+        ...(hasSubscriptionType
+          ? [
+              {
+                kind: Kind.OPERATION_TYPE_DEFINITION,
+                operation: OperationTypeNode.SUBSCRIPTION,
+                type: namedTypeNode('Subscription'),
+              } as const,
+            ]
+          : []),
+      ],
+    });
+    nodeByPath.set('', schemaNodes[0]);
+  }
   (schemaNodes[0].directives as DirectiveNode[] | undefined) = [
-    ...(schemaNodes[0].directives ?? []),
+    ...(schemaNodes[0]?.directives ?? []),
     directiveNode,
   ];
+
+  nodeByPath.set(change.path, directiveNode);
 }
 
 function schemaDirectiveUsageDefinitionRemoved(
