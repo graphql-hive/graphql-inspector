@@ -112,8 +112,8 @@ importers:
         specifier: 0.13.4
         version: 0.13.4(eslint@8.57.1)(typescript@5.5.4)
       '@theguild/prettier-config':
-        specifier: 2.0.7
-        version: 2.0.7(prettier@3.3.3)
+        specifier: 3.0.1
+        version: 3.0.1(prettier@3.3.3)
       '@types/body-parser':
         specifier: 1.19.5
         version: 1.19.5
@@ -1318,8 +1318,8 @@ packages:
     resolution: {integrity: sha512-93zYdMES/c1D69yZiKDBj0V24vqNzB/koF26KPaagAfd3P/4gUlh3Dys5ogAK+Exi9QyzlD8x/08Zt7wIKcDcA==}
     deprecated: Use @eslint/object-schema instead
 
-  '@ianvs/prettier-plugin-sort-imports@4.3.1':
-    resolution: {integrity: sha512-ZHwbyjkANZOjaBm3ZosADD2OUYGFzQGxfy67HmGZU94mHqe7g1LCMA7YYKB1Cq+UTPCBqlAYapY0KXAjKEw8Sg==}
+  '@ianvs/prettier-plugin-sort-imports@4.4.1':
+    resolution: {integrity: sha512-F0/Hrcfpy8WuxlQyAWJTEren/uxKhYonOGY4OyWmwRdeTvkh9mMSCxowZLjNkhwi/2ipqCgtXwwOk7tW0mWXkA==}
     peerDependencies:
       '@vue/compiler-sfc': 2.7.x || 3.x
       prettier: 2 || 3
@@ -2248,8 +2248,8 @@ packages:
       eslint: ^8 || ^9
       typescript: ^5
 
-  '@theguild/prettier-config@2.0.7':
-    resolution: {integrity: sha512-FqpgGAaAFbYHFQmkWEZjIhqmk+Oow82/t+0k408qoBd9RsB4QTwSQSDDbNSgFa/K7c8Dcwau5z3XbHUR/ksKqw==}
+  '@theguild/prettier-config@3.0.1':
+    resolution: {integrity: sha512-qSSAHGwIg2cCIyXim5MUe/Icw+DmGEqZz1TtGR55ayZc2BtXme/hV8J068lx19dzJvodDJgYSyWw7Jsu4F05OA==}
     peerDependencies:
       prettier: ^3
 
@@ -5690,6 +5690,7 @@ packages:
   next@14.2.26:
     resolution: {integrity: sha512-b81XSLihMwCfwiUVRRja3LphLo4uBBMZEzBBWMaISbKTwOmq3wPknIETy/8000tr7Gq4WmbuFYPS7jOYIf+ZJw==}
     engines: {node: '>=18.17.0'}
+    deprecated: This version has a security vulnerability. Please upgrade to a patched version. See https://nextjs.org/blog/security-update-2025-12-11 for more details.
     hasBin: true
     peerDependencies:
       '@opentelemetry/api': ^1.1.0
@@ -6355,8 +6356,8 @@ packages:
     peerDependencies:
       prettier: ^3.0.0
 
-  prettier-plugin-sh@0.14.0:
-    resolution: {integrity: sha512-hfXulj5+zEl/ulrO5kMuuTPKmXvOg0bnLHY1hKFNN/N+/903iZbNp8NyZBTsgI8dtkSgFfAEIQq0IQTyP1ZVFQ==}
+  prettier-plugin-sh@0.15.0:
+    resolution: {integrity: sha512-U0PikJr/yr2bzzARl43qI0mApBj0C1xdAfA04AZa6LnvIKawXHhuy2fFo6LNA7weRzGlAiNbaEFfKMFo0nZr/A==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       prettier: ^3.0.3
@@ -6837,8 +6838,8 @@ packages:
   setprototypeof@1.2.0:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
 
-  sh-syntax@0.4.1:
-    resolution: {integrity: sha512-MW/ZsCYTu11EIYYTSZcfAgMFszAodCmQVB27XssHoIN6L4EG0KSA3h32x8whaSOKuYBX5wz9EybfnPBUFQMCKA==}
+  sh-syntax@0.4.2:
+    resolution: {integrity: sha512-/l2UZ5fhGZLVZa16XQM9/Vq/hezGGbdHeVEA01uWjOL1+7Ek/gt6FquW0iKKws4a9AYPYvlz6RyVvjh3JxOteg==}
     engines: {node: '>=16.0.0'}
 
   sha.js@2.4.11:
@@ -8668,9 +8669,8 @@ snapshots:
 
   '@humanwhocodes/object-schema@2.0.3': {}
 
-  '@ianvs/prettier-plugin-sort-imports@4.3.1(prettier@3.3.3)':
+  '@ianvs/prettier-plugin-sort-imports@4.4.1(prettier@3.3.3)':
     dependencies:
-      '@babel/core': 7.26.10
       '@babel/generator': 7.26.10
       '@babel/parser': 7.26.10
       '@babel/traverse': 7.26.10
@@ -9748,12 +9748,12 @@ snapshots:
       - is-bun-module
       - supports-color
 
-  '@theguild/prettier-config@2.0.7(prettier@3.3.3)':
+  '@theguild/prettier-config@3.0.1(prettier@3.3.3)':
     dependencies:
-      '@ianvs/prettier-plugin-sort-imports': 4.3.1(prettier@3.3.3)
+      '@ianvs/prettier-plugin-sort-imports': 4.4.1(prettier@3.3.3)
       prettier: 3.3.3
       prettier-plugin-pkg: 0.18.0(prettier@3.3.3)
-      prettier-plugin-sh: 0.14.0(prettier@3.3.3)
+      prettier-plugin-sh: 0.15.0(prettier@3.3.3)
     transitivePeerDependencies:
       - '@vue/compiler-sfc'
       - supports-color
@@ -14874,11 +14874,11 @@ snapshots:
     dependencies:
       prettier: 3.3.3
 
-  prettier-plugin-sh@0.14.0(prettier@3.3.3):
+  prettier-plugin-sh@0.15.0(prettier@3.3.3):
     dependencies:
       mvdan-sh: 0.10.1
       prettier: 3.3.3
-      sh-syntax: 0.4.1
+      sh-syntax: 0.4.2
 
   prettier@2.8.8: {}
 
@@ -15566,7 +15566,7 @@ snapshots:
 
   setprototypeof@1.2.0: {}
 
-  sh-syntax@0.4.1:
+  sh-syntax@0.4.2:
     dependencies:
       tslib: 2.6.2
 
