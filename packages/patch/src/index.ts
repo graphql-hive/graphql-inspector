@@ -169,13 +169,11 @@ export function groupByCoordinateAST(ast: DocumentNode): [SchemaNode[], Map<stri
         }
         case Kind.SCHEMA_EXTENSION:
         case Kind.SCHEMA_DEFINITION: {
-          // @todo There can be only one. Replace `schemaNodes` with using `nodesByCoordinate.get('')`.
           schemaNodes.push(node);
           nodesByCoordinate.set('', node);
           break;
         }
         // default: {
-
         //   // by definition this things like return types, names, named nodes...
         //   // it's nothing we want to collect.
         //   return false;

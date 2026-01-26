@@ -5,7 +5,7 @@ import {
   lexicographicSortSchema,
   parse,
 } from 'graphql';
-import { Change, diff } from '@graphql-inspector/core';
+import { diff } from '@graphql-inspector/core';
 import { printSchemaWithDirectives } from '@graphql-tools/utils';
 import { errors, patch } from '../src/index.js';
 

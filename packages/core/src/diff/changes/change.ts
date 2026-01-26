@@ -830,7 +830,6 @@ export type DirectiveUsageSchemaAddedChange = {
   type: typeof ChangeType.DirectiveUsageSchemaAdded;
   meta: {
     addedDirectiveName: string;
-    schemaTypeName: string;
     addedToNewType: boolean;
     directiveRepeatedTimes: number;
   };
@@ -840,7 +839,6 @@ export type DirectiveUsageSchemaRemovedChange = {
   type: typeof ChangeType.DirectiveUsageSchemaRemoved;
   meta: {
     removedDirectiveName: string;
-    schemaTypeName: string;
     directiveRepeatedTimes: number;
   };
 };

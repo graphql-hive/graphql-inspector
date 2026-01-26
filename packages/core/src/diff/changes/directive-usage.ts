@@ -543,7 +543,7 @@ export function directiveUsageEnumValueRemovedFromMeta(args: DirectiveUsageEnumV
 function buildDirectiveUsageSchemaAddedMessage(
   args: DirectiveUsageSchemaAddedChange['meta'],
 ): string {
-  return `Directive '${args.addedDirectiveName}' was added to schema '${args.schemaTypeName}'`;
+  return `Directive '${args.addedDirectiveName}' was added to schema`;
 }
 
 export function directiveUsageSchemaAddedFromMeta(args: DirectiveUsageSchemaAddedChange) {
@@ -552,7 +552,7 @@ export function directiveUsageSchemaAddedFromMeta(args: DirectiveUsageSchemaAdde
       level: args.meta.addedToNewType
         ? CriticalityLevel.NonBreaking
         : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.addedDirectiveName}' was added to schema '${args.meta.schemaTypeName}'`,
+      reason: `Directive '${args.meta.addedDirectiveName}' was added to schema`,
     },
     type: ChangeType.DirectiveUsageSchemaAdded,
     message: buildDirectiveUsageSchemaAddedMessage(args.meta),
@@ -564,14 +564,14 @@ export function directiveUsageSchemaAddedFromMeta(args: DirectiveUsageSchemaAdde
 function buildDirectiveUsageSchemaRemovedMessage(
   args: DirectiveUsageSchemaRemovedChange['meta'],
 ): string {
-  return `Directive '${args.removedDirectiveName}' was removed from schema '${args.schemaTypeName}'`;
+  return `Directive '${args.removedDirectiveName}' was removed from schema`;
 }
 
 export function directiveUsageSchemaRemovedFromMeta(args: DirectiveUsageSchemaRemovedChange) {
   return {
     criticality: {
       level: removedSpecialDirective(args.meta.removedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.removedDirectiveName}' was removed from schema '${args.meta.schemaTypeName}'`,
+      reason: `Directive '${args.meta.removedDirectiveName}' was removed from schema`,
     },
     type: ChangeType.DirectiveUsageSchemaRemoved,
     message: buildDirectiveUsageSchemaRemovedMessage(args.meta),
@@ -836,7 +836,6 @@ export function directiveUsageAdded<K extends keyof KindToPayload>(
       type: ChangeType.DirectiveUsageSchemaAdded,
       meta: {
         addedDirectiveName: directive.name.value,
-        schemaTypeName: payload?.getQueryType()?.name || '',
         addedToNewType,
         directiveRepeatedTimes: directiveRepeatTimes(payload?.astNode?.directives ?? [], directive),
       },
@@ -1016,7 +1015,6 @@ export function directiveUsageRemoved<K extends keyof KindToPayload>(
       type: ChangeType.DirectiveUsageSchemaRemoved,
       meta: {
         removedDirectiveName: directive.name.value,
-        schemaTypeName: payload?.getQueryType()?.name || '',
         directiveRepeatedTimes: directiveRepeatTimes(payload?.astNode?.directives ?? [], directive),
       },
     });

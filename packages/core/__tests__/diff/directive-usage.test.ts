@@ -1145,7 +1145,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_SCHEMA_ADDED');
-      expect(change.message).toEqual("Directive 'external' was added to schema 'Foo'");
+      expect(change.message).toEqual("Directive 'external' was added to schema");
     });
     test('removed directive', async () => {
       const a = buildSchema(/* GraphQL */ `
@@ -1172,7 +1172,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_SCHEMA_REMOVED');
-      expect(change.message).toEqual("Directive 'external' was removed from schema 'Foo'");
+      expect(change.message).toEqual("Directive 'external' was removed from schema");
     });
   });
 
