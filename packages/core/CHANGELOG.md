@@ -1,5 +1,15 @@
 # @graphql-inspector/core
 
+## 7.1.2
+
+### Patch Changes
+
+- [#2934](https://github.com/graphql-hive/graphql-inspector/pull/2934)
+  [`14b4410`](https://github.com/graphql-hive/graphql-inspector/commit/14b4410d68e71275f3468e764442e11618103a02)
+  Thanks [@jdolle](https://github.com/jdolle)! - Add support for "extend schema" syntax to
+  `@graphql-inspector/core`'s `diff` function and `@graphql/inspector/patch`. This allows directives
+  to be defined on the schema such as `extend schema @link(...)` for federation
+
 ## 7.1.1
 
 ### Patch Changes
