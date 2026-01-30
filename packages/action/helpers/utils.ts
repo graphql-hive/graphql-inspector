@@ -1,5 +1,6 @@
 import { Change, CriticalityLevel } from '@graphql-inspector/core';
 import { Endpoint } from './config.js';
+import { GroupedChanges } from './types.js';
 
 export function bolderize(msg: string): string {
   return quotesTransformer(msg, '**');
@@ -28,17 +29,23 @@ export function filterChangesByLevel(level: CriticalityLevel) {
   return (change: Change) => change.criticality.level === level;
 }
 
+export function splitChangesIntoGroups(changes: Change[]): GroupedChanges {
+  return {
+    breaking: changes.filter(filterChangesByLevel(CriticalityLevel.Breaking)),
+    dangerous: changes.filter(filterChangesByLevel(CriticalityLevel.Dangerous)),
+    safe: changes.filter(filterChangesByLevel(CriticalityLevel.NonBreaking)),
+  };
+}
+
 export function createSummary(changes: Change[], summaryLimit: number, isLegacyConfig = false) {
-  const breakingChanges = changes.filter(filterChangesByLevel(CriticalityLevel.Breaking));
-  const dangerousChanges = changes.filter(filterChangesByLevel(CriticalityLevel.Dangerous));
-  const safeChanges = changes.filter(filterChangesByLevel(CriticalityLevel.NonBreaking));
+  const groupedChanges = splitChangesIntoGroups(changes);
 
   const summary: string[] = [
     `# Found ${changes.length} change${changes.length > 1 ? 's' : ''}`,
     '',
-    `Breaking: ${breakingChanges.length}`,
-    `Dangerous: ${dangerousChanges.length}`,
-    `Safe: ${safeChanges.length}`,
+    `Breaking: ${groupedChanges.breaking.length}`,
+    `Dangerous: ${groupedChanges.dangerous.length}`,
+    `Safe: ${groupedChanges.safe.length}`,
   ];
 
   if (isLegacyConfig) {
@@ -74,16 +81,16 @@ export function createSummary(changes: Change[], summaryLimit: number, isLegacyC
     summaryLimit -= changes.length;
   }
 
-  if (breakingChanges.length) {
-    addChangesToSummary('Breaking', breakingChanges);
+  if (groupedChanges.breaking.length) {
+    addChangesToSummary('Breaking', groupedChanges.breaking);
   }
 
-  if (dangerousChanges.length) {
-    addChangesToSummary('Dangerous', dangerousChanges);
+  if (groupedChanges.dangerous.length) {
+    addChangesToSummary('Dangerous', groupedChanges.dangerous);
   }
 
-  if (safeChanges.length) {
-    addChangesToSummary('Safe', safeChanges);
+  if (groupedChanges.safe.length) {
+    addChangesToSummary('Safe', groupedChanges.safe);
   }
 
   summary.push(
