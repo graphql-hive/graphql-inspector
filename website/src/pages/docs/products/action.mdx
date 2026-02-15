@@ -76,6 +76,19 @@ Use annotation (`true` by default).
     annotations: false
 ```
 
+### `create-action-check`
+
+Create Github Action check with summary. When disabled, annotations are disabled too. (`true` by default)
+
+It can be useful to disable, when running on master branch or similar. And when subsequent step is using output and annotations nor check is required.
+
+```yaml
+- uses: graphql-hive/graphql-inspector@master
+  with:
+    schema: 'master:schema.graphql'
+    create-action-check: false
+```
+
 ### `fail-on-breaking`
 
 Fail on breaking changes (`true` by default).
@@ -160,6 +173,20 @@ to see how to use outputs.
 ### `changes`
 
 Total number of changes
+
+### `breaking-changes`
+
+List of breaking changes. Each item is message string.
+
+Example: ```["Type `Abc` was removed", "Field `Xyz` was removed from object type `Abc`"]```
+
+### `dangerous-changes`
+
+List of dangerous changes. Each item is message string, see `breaking-changes` for example.
+
+### `safe-changes`
+
+List of safe changes. Each item is message string, see `breaking-changes` for example.
 
 ![Summary](/assets/img/github/summary.jpg)
 
