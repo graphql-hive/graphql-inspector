@@ -57,7 +57,7 @@
   "dependencies": {
     "chalk": "4.1.2",
     "figures": "3.2.0",
-    "log-symbols": "4.1.0",
+    "log-symbols": "7.0.0",
     "std-env": "3.7.0",
     "tslib": "2.6.2"
   },
