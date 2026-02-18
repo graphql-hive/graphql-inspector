@@ -258,4 +258,98 @@ describe('Inspector Action', () => {
       });
     });
   });
+
+  describe('messages', () => {
+    it('should accept a success message', async () => {
+      vi.spyOn(core, 'getInput').mockImplementation((name: string, _options) => {
+        switch (name) {
+          case 'github-token':
+            return 'MOCK_GITHUB_TOKEN';
+          case 'schema':
+            return 'master:schema.graphql';
+          case 'rules':
+            return `
+        suppressRemovalOfDeprecatedField
+        `;
+          case 'success-title':
+            return 'Your schema is good to go!!!';
+          default:
+            return '';
+        }
+      });
+
+      mockLoadFile
+        .mockResolvedValueOnce(/* GraphQL */ `
+          type Query {
+            oldQuery: OldType @deprecated(reason: "use newQuery")
+            newQuery: Int!
+          }
+
+          type OldType {
+            field: String!
+          }
+        `)
+        .mockResolvedValueOnce(/* GraphQL */ `
+          type Query {
+            newQuery: Int!
+          }
+        `);
+
+      await run();
+
+      expect(mockUpdateCheckRun).toBeCalledWith(expect.anything(), '2', {
+        conclusion: CheckConclusion.Success,
+        output: expect.objectContaining({
+          title: 'Your schema is good to go!!!'
+         }),
+      });
+    });
+
+    it('should accept a failure message', async () => {
+      vi.spyOn(core, 'getInput').mockImplementation((name: string, _options) => {
+        switch (name) {
+          case 'github-token':
+            return 'MOCK_GITHUB_TOKEN';
+          case 'schema':
+            return 'master:schema.graphql';
+          case 'rules':
+            return `
+        suppressRemovalOfDeprecatedField
+        `;
+          case 'failure-title':
+            return 'Your schema is broken!!!';
+          default:
+            return '';
+        }
+      });
+
+      mockLoadFile
+        .mockResolvedValueOnce(/* GraphQL */ `
+          type Query {
+            oldQuery: OldType
+            newQuery: Int!
+          }
+
+          type OldType {
+            field: String!
+          }
+        `)
+        .mockResolvedValueOnce(/* GraphQL */ `
+          type Query {
+            newQuery: Int!
+          }
+        `);
+
+      await run();
+
+      expect(mockUpdateCheckRun).toBeCalledWith(expect.anything(), '2', {
+        conclusion: CheckConclusion.Failure,
+        output:  expect.objectContaining({
+          title: 'Your schema is broken!!!'
+         }),
+      });
+    });
+    
+  });
+
 });
