@@ -47,7 +47,7 @@
     "@whatwg-node/fetch": "0.10.3",
     "husky": "9.0.11",
     "immer": "10.1.1",
-    "js-yaml": "4.1.0",
+    "js-yaml": "4.1.1",
     "probot": "13.2.2",
     "shelljs": "0.8.5",
     "vite-tsconfig-paths": "5.1.4",
@@ -87,7 +87,7 @@
     "graphql-config": "5.1.0",
     "jsesc": "3.0.2",
     "lint-staged": "15.2.8",
-    "lodash": "4.17.21",
+    "lodash": "4.17.23",
     "nock": "14.0.1",
     "prettier": "3.3.3",
     "rimraf": "5.0.10",
@@ -95,7 +95,7 @@
     "strip-ansi": "7.1.0",
     "typescript": "5.5.4",
     "vitest": "3.0.9",
-    "wrangler": "4.2.0"
+    "wrangler": "4.59.1"
   },
   "sideEffects": false,
   "lint-staged": {
