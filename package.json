@@ -82,7 +82,7 @@
     "@types/yargs": "17.0.33",
     "@vercel/ncc": "0.38.3",
     "bob-the-bundler": "7.0.1",
-    "eslint": "8.57.1",
+    "eslint": "10.0.1",
     "graphql": "16.10.0",
     "graphql-config": "5.1.0",
     "jsesc": "3.0.2",
