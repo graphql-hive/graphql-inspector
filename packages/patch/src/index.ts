@@ -530,7 +530,12 @@ export function patchCoordinatesAST(
     // filter out the non-definition nodes (e.g. field definitions)
     definitions: [
       ...schemaNodes,
-      ...Array.from(nodesByCoordinate.values()).filter(isDefinitionNode),
+      ...Array.from(nodesByCoordinate.values()).filter(
+        n =>
+          isDefinitionNode(n) &&
+          n.kind !== Kind.SCHEMA_EXTENSION &&
+          n.kind !== Kind.SCHEMA_DEFINITION,
+      ),
     ],
   };
 }
