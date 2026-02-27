@@ -1,5 +1,13 @@
 # @graphql-inspector/patch
 
+## 0.1.3
+
+### Patch Changes
+
+- [#2937](https://github.com/graphql-hive/graphql-inspector/pull/2937)
+  [`5a9d276`](https://github.com/graphql-hive/graphql-inspector/commit/5a9d276c6cb90d46d626df68ea00cc8728eb528e)
+  Thanks [@jdolle](https://github.com/jdolle)! - Fix duplicated schema definitions
+
 ## 0.1.2
 
 ### Patch Changes

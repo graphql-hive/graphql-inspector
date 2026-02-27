@@ -1,6 +1,6 @@
 {
   "name": "@graphql-inspector/patch",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "type": "module",
   "description": "Applies changes output from @graphql-inspect/diff",
   "repository": {
