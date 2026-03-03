@@ -493,6 +493,20 @@ importers:
         version: 16.10.0
     publishDirectory: dist
 
+  packages/compare-changes:
+    dependencies:
+      tslib:
+        specifier: 2.6.2
+        version: 2.6.2
+    devDependencies:
+      '@graphql-inspector/core':
+        specifier: workspace:*
+        version: link:../core/dist
+      graphql:
+        specifier: 16.10.0
+        version: 16.10.0
+    publishDirectory: dist
+
   packages/config:
     dependencies:
       graphql:
