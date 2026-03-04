@@ -9,7 +9,7 @@ import type { Change, TypeOfChangeType } from '@graphql-inspector/core';
  * likely be deprecated from that change type to keep these changes discrete. Same goes for
  * directive locations.
  */
-const requiredMatchMetaMap: {
+export const requiredMatchMetaMap: {
   [changeType in TypeOfChangeType]: Array<keyof Change<changeType>['meta']>;
 } = {
   DIRECTIVE_ADDED: ['addedDirectiveName'],
