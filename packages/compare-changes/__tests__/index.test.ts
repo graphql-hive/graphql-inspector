@@ -1,6 +1,6 @@
+import { Kind } from 'graphql';
 import { CriticalityLevel, type Change, type TypeOfChangeType } from '@graphql-inspector/core';
 import { isChangeEqual, requiredMatchMetaMap } from '../src/index';
-import { Kind } from 'graphql';
 
 describe('isChangeEqual', () => {
   describe('Directive Changes', () => {
@@ -1030,11 +1030,13 @@ describe('isChangeEqual', () => {
       const a: Change<'INPUT_FIELD_DESCRIPTION_REMOVED'> = {
         type: 'INPUT_FIELD_DESCRIPTION_REMOVED',
         path: 'p',
-        meta: { inputFieldName: 'f', inputName: 'i', removedDescription: "Before removed" },
+        meta: { inputFieldName: 'f', inputName: 'i', removedDescription: 'Before removed' },
         message: 'Example',
         criticality: { level: CriticalityLevel.NonBreaking },
       };
-      expect(isChangeEqual(a, { ...a, meta: { ...a.meta, removedDescription: "Removed"}})).toBe(true);
+      expect(isChangeEqual(a, { ...a, meta: { ...a.meta, removedDescription: 'Removed' } })).toBe(
+        true,
+      );
     });
 
     test('INPUT_FIELD_REMOVED', () => {
@@ -1045,14 +1047,25 @@ describe('isChangeEqual', () => {
         message: 'Example',
         criticality: { level: CriticalityLevel.NonBreaking },
       };
-      expect(isChangeEqual(a, { ...a, meta: { ...a.meta, removedFieldName: 'x', isInputFieldDeprecated: true } })).toBe(false);
+      expect(
+        isChangeEqual(a, {
+          ...a,
+          meta: { ...a.meta, removedFieldName: 'x', isInputFieldDeprecated: true },
+        }),
+      ).toBe(false);
     });
 
     test('INPUT_FIELD_TYPE_CHANGED', () => {
       const a: Change<'INPUT_FIELD_TYPE_CHANGED'> = {
         type: 'INPUT_FIELD_TYPE_CHANGED',
         path: 'p',
-        meta: { inputFieldName: 'f', inputName: 'i', newInputFieldType: 't', isInputFieldTypeChangeSafe: true, oldInputFieldType: 'Foo' },
+        meta: {
+          inputFieldName: 'f',
+          inputName: 'i',
+          newInputFieldType: 't',
+          isInputFieldTypeChangeSafe: true,
+          oldInputFieldType: 'Foo',
+        },
         message: 'Example',
         criticality: { level: CriticalityLevel.NonBreaking },
       };
@@ -1080,7 +1093,9 @@ describe('isChangeEqual', () => {
         message: 'Example',
         criticality: { level: CriticalityLevel.NonBreaking },
       };
-      expect(isChangeEqual(a, { ...a, meta: { ...a.meta, removedInterfaceName: 'x' } })).toBe(false);
+      expect(isChangeEqual(a, { ...a, meta: { ...a.meta, removedInterfaceName: 'x' } })).toBe(
+        false,
+      );
     });
 
     test('TYPE_ADDED', () => {
