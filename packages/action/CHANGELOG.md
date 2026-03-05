@@ -1,5 +1,15 @@
 # @graphql-inspector/action
 
+## 5.0.20
+
+### Patch Changes
+
+- [#2918](https://github.com/graphql-hive/graphql-inspector/pull/2918)
+  [`0957ceb`](https://github.com/graphql-hive/graphql-inspector/commit/0957cebbbb97afb43a5f9a093df3c1ec745544fa)
+  Thanks [@renovate](https://github.com/apps/renovate)! - dependencies updates:
+  - Updated dependency [`js-yaml@4.1.1` ↗︎](https://www.npmjs.com/package/js-yaml/v/4.1.1) (from
+    `4.1.0`, in `dependencies`)
+
 ## 5.0.19
 
 ### Patch Changes
