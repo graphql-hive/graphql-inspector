@@ -56,5 +56,4 @@ if creating a merge conflict resolution UI.
 
 ## Remaining Work
 
-- [] Support type extensions
 - [] Fully support schema operation types
