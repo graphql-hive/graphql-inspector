@@ -112,7 +112,7 @@
       "cookie": "1.0.2",
       "dompurify": "3.2.4",
       "esbuild": "0.25.1",
-      "cross-spawn": "6.0.6",
+      "cross-spawn": "7.0.6",
       "micromatch": "4.0.8",
       "braces": "3.0.3",
       "@babel/runtime": "7.26.10"
