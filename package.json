@@ -110,7 +110,7 @@
       "graphql": "16.10.0",
       "eslint-plugin-unicorn": "56.0.1",
       "cookie": "1.0.2",
-      "dompurify": "3.2.4",
+      "dompurify": "3.3.2",
       "esbuild": "0.25.1",
       "cross-spawn": "6.0.6",
       "micromatch": "4.0.8",
