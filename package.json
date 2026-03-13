@@ -106,7 +106,7 @@
   },
   "pnpm": {
     "overrides": {
-      "@octokit/types": "13.10.0",
+      "@octokit/types": "16.0.0",
       "graphql": "16.10.0",
       "eslint-plugin-unicorn": "56.0.1",
       "cookie": "1.0.2",
