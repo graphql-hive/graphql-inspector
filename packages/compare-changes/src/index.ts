@@ -8,7 +8,7 @@ import type { Change, TypeOfChangeType } from '@graphql-inspector/core';
  * happening, but DIRECTIVE_ADDED does include metadata for repeatability... This should
  * likely be deprecated from that change type to keep these changes discrete. Same goes for
  * directive locations.
- * 
+ *
  * WARNING -- This list should never change or else the hash algorithm will produce different results.
  */
 export const requiredMatchMetaMap: {
@@ -190,11 +190,10 @@ export function isChangeEqual<T extends TypeOfChangeType, Y extends TypeOfChange
  * guaranteed to be unique so use `isChangeEqual` on match.
  */
 export function generateChangeHash<ChangeType extends TypeOfChangeType>(change: {
-    type: ChangeType;
-    meta: Change<ChangeType>['meta']
-    path?: string | null | undefined;
-  }
-) {
+  type: ChangeType;
+  meta: Change<ChangeType>['meta'];
+  path?: string | null | undefined;
+}) {
   const required = requiredMatchMetaMap[change.type];
   if (!required) {
     // this should not occur
@@ -202,7 +201,9 @@ export function generateChangeHash<ChangeType extends TypeOfChangeType>(change: 
   }
 
   // extract required match meta data values
-  const metaValues = required.map(fieldName => change.meta[fieldName as keyof Change<ChangeType>['meta']]);
+  const metaValues = required.map(
+    fieldName => change.meta[fieldName as keyof Change<ChangeType>['meta']],
+  );
   return `${change.type}:${change.path ?? ''}:${hashCode(metaValues.join('|'))}`;
 }
 
@@ -213,9 +214,9 @@ export function generateChangeHash<ChangeType extends TypeOfChangeType>(change: 
 function hashCode(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
-      let chr = str.charCodeAt(i);
-      hash = (hash << 5) - hash + chr;
-      hash |= 0;
+    let chr = str.charCodeAt(i);
+    hash = (hash << 5) - hash + chr;
+    hash |= 0;
   }
   return hash;
 }

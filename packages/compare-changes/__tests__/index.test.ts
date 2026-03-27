@@ -1331,7 +1331,9 @@ describe('generateChangeHash', () => {
       message: 'Example',
       criticality: { level: CriticalityLevel.NonBreaking },
     };
-    expect(generateChangeHash(change)).toBe(generateChangeHash({ ...change, meta: { ...change.meta } }));
+    expect(generateChangeHash(change)).toBe(
+      generateChangeHash({ ...change, meta: { ...change.meta } }),
+    );
   });
 
   // note that this is is not guaranteed because of the hashing algorithm, but it is highly likely
