@@ -8,9 +8,11 @@ import type { Change, TypeOfChangeType } from '@graphql-inspector/core';
  * happening, but DIRECTIVE_ADDED does include metadata for repeatability... This should
  * likely be deprecated from that change type to keep these changes discrete. Same goes for
  * directive locations.
+ * 
+ * WARNING -- This list should never change or else the hash algorithm will produce different results.
  */
 export const requiredMatchMetaMap: {
-  [changeType in TypeOfChangeType]: Array<keyof Change<changeType>['meta']>;
+  [ChangeType in TypeOfChangeType]: Array<keyof Change<ChangeType>['meta']>;
 } = {
   DIRECTIVE_ADDED: ['addedDirectiveName'],
   DIRECTIVE_ARGUMENT_ADDED: [
@@ -180,4 +182,40 @@ export function isChangeEqual<T extends TypeOfChangeType, Y extends TypeOfChange
     throw new Error('Unhandled change type found');
   }
   return required.every(key => a.meta[key] === b.meta[key]);
+}
+
+/**
+ * Computes a hash from the type, path, and metadata so that changes
+ * can be quickly looked up (i.e. in a database). Hashes are not
+ * guaranteed to be unique so use `isChangeEqual` on match.
+ */
+export function generateChangeHash<ChangeType extends TypeOfChangeType>(change: {
+    type: ChangeType;
+    meta: Change<ChangeType>['meta']
+    path?: string | null | undefined;
+  }
+) {
+  const required = requiredMatchMetaMap[change.type];
+  if (!required) {
+    // this should not occur
+    throw new Error('Unhandled change type found');
+  }
+
+  // extract required match meta data values
+  const metaValues = required.map(fieldName => change.meta[fieldName as keyof Change<ChangeType>['meta']]);
+  return `${change.type}:${change.path ?? ''}:${hashCode(metaValues.join('|'))}`;
+}
+
+/**
+ * Generates a non-secure 32bit integer hash from a string.
+ * This is fast but has a higher potential for collisions than cryptographic hashes.
+ */
+function hashCode(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+      let chr = str.charCodeAt(i);
+      hash = (hash << 5) - hash + chr;
+      hash |= 0;
+  }
+  return hash;
 }

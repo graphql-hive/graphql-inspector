@@ -1,6 +1,6 @@
 import { Kind } from 'graphql';
 import { CriticalityLevel, type Change, type TypeOfChangeType } from '@graphql-inspector/core';
-import { isChangeEqual, requiredMatchMetaMap } from '../src/index';
+import { generateChangeHash, isChangeEqual, requiredMatchMetaMap } from '../src/index';
 
 describe('isChangeEqual', () => {
   describe('Directive Changes', () => {
@@ -1308,5 +1308,60 @@ describe('isChangeEqual', () => {
         );
       });
     });
+  });
+});
+
+describe('generateChangeHash', () => {
+  it('generates a short hash', () => {
+    const a: Change<'TYPE_REMOVED'> = {
+      type: 'TYPE_REMOVED',
+      path: 'p',
+      meta: { removedTypeName: 'A' },
+      message: 'Example',
+      criticality: { level: CriticalityLevel.NonBreaking },
+    };
+    expect(generateChangeHash(a)).toMatchInlineSnapshot(`"TYPE_REMOVED:p:65"`);
+  });
+
+  it('should generate the same hash when given the same input', () => {
+    const change: Change<'TYPE_REMOVED'> = {
+      type: 'TYPE_REMOVED',
+      path: 'p',
+      meta: { removedTypeName: 'T' },
+      message: 'Example',
+      criticality: { level: CriticalityLevel.NonBreaking },
+    };
+    expect(generateChangeHash(change)).toBe(generateChangeHash({ ...change, meta: { ...change.meta } }));
+  });
+
+  // note that this is is not guaranteed because of the hashing algorithm, but it is highly likely
+  it('generates a different hash when critical metadata differs', () => {
+    const a: Change<'TYPE_REMOVED'> = {
+      type: 'TYPE_REMOVED',
+      path: 'p',
+      meta: { removedTypeName: 'A' },
+      message: 'Example',
+      criticality: { level: CriticalityLevel.NonBreaking },
+    };
+    const b: Change<'TYPE_REMOVED'> = {
+      ...a,
+      meta: { ...a.meta, removedTypeName: 'B' },
+    };
+    expect(generateChangeHash(a)).not.toBe(generateChangeHash(b));
+  });
+
+  it('generates a different hash when the path differs', () => {
+    const a: Change<'TYPE_REMOVED'> = {
+      type: 'TYPE_REMOVED',
+      path: 'p',
+      meta: { removedTypeName: 'A' },
+      message: 'Example',
+      criticality: { level: CriticalityLevel.NonBreaking },
+    };
+    const b: Change<'TYPE_REMOVED'> = {
+      ...a,
+      path: 'q',
+    };
+    expect(generateChangeHash(a)).not.toBe(generateChangeHash(b));
   });
 });
