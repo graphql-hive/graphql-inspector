@@ -1,4 +1,9 @@
-import { GraphQLInputField, GraphQLInputObjectType, isNonNullType } from 'graphql';
+import {
+  GraphQLDeprecatedDirective,
+  GraphQLInputField,
+  GraphQLInputObjectType,
+  isNonNullType,
+} from 'graphql';
 import { safeChangeForInputValue } from '../../utils/graphql.js';
 import { isDeprecated } from '../../utils/is-deprecated.js';
 import { fmt, safeString } from '../../utils/string.js';
@@ -8,6 +13,11 @@ import {
   CriticalityLevel,
   InputFieldAddedChange,
   InputFieldDefaultValueChangedChange,
+  InputFieldDeprecationAddedChange,
+  InputFieldDeprecationReasonAddedChange,
+  InputFieldDeprecationReasonChangedChange,
+  InputFieldDeprecationReasonRemovedChange,
+  InputFieldDeprecationRemovedChange,
   InputFieldDescriptionAddedChange,
   InputFieldDescriptionChangedChange,
   InputFieldDescriptionRemovedChange,
@@ -273,6 +283,167 @@ export function inputFieldTypeChanged(
       oldInputFieldType: oldField.type.toString(),
       newInputFieldType: newField.type.toString(),
       isInputFieldTypeChangeSafe: safeChangeForInputValue(oldField.type, newField.type),
+    },
+  });
+}
+
+function buildInputFieldDeprecatedAddedMessage(args: InputFieldDeprecationAddedChange['meta']) {
+  return `Input field '${args.inputName}.${args.inputFieldName}' is deprecated`;
+}
+
+export function inputFieldDeprecationAddedFromMeta(args: InputFieldDeprecationAddedChange) {
+  return {
+    type: ChangeType.InputFieldDeprecationAdded,
+    criticality: {
+      level: CriticalityLevel.NonBreaking,
+    },
+    message: buildInputFieldDeprecatedAddedMessage(args.meta),
+    meta: args.meta,
+    path: [args.meta.inputName, args.meta.inputFieldName, `@${GraphQLDeprecatedDirective.name}`].join(
+      '.',
+    ),
+  } as const;
+}
+
+export function inputFieldDeprecationAdded(
+  input: GraphQLInputObjectType,
+  field: GraphQLInputField,
+): Change<typeof ChangeType.InputFieldDeprecationAdded> {
+  return inputFieldDeprecationAddedFromMeta({
+    type: ChangeType.InputFieldDeprecationAdded,
+    meta: {
+      inputName: input.name,
+      inputFieldName: field.name,
+      deprecationReason: field.deprecationReason ?? '',
+    },
+  });
+}
+
+export function inputFieldDeprecationRemovedFromMeta(args: InputFieldDeprecationRemovedChange) {
+  return {
+    type: ChangeType.InputFieldDeprecationRemoved,
+    criticality: {
+      level: CriticalityLevel.NonBreaking,
+    },
+    message: `Input field '${args.meta.inputName}.${args.meta.inputFieldName}' is no longer deprecated`,
+    meta: args.meta,
+    path: [args.meta.inputName, args.meta.inputFieldName, `@${GraphQLDeprecatedDirective.name}`].join(
+      '.',
+    ),
+  } as const;
+}
+
+export function inputFieldDeprecationRemoved(
+  input: GraphQLInputObjectType,
+  field: GraphQLInputField,
+): Change<typeof ChangeType.InputFieldDeprecationRemoved> {
+  return inputFieldDeprecationRemovedFromMeta({
+    type: ChangeType.InputFieldDeprecationRemoved,
+    meta: {
+      inputFieldName: field.name,
+      inputName: input.name,
+    },
+  });
+}
+
+function buildInputFieldDeprecationReasonChangedMessage(
+  args: InputFieldDeprecationReasonChangedChange['meta'],
+) {
+  const oldReason = fmt(args.oldDeprecationReason);
+  const newReason = fmt(args.newDeprecationReason);
+  return `Deprecation reason on input field '${args.inputName}.${args.inputFieldName}' has changed from '${oldReason}' to '${newReason}'`;
+}
+
+export function inputFieldDeprecationReasonChangedFromMeta(
+  args: InputFieldDeprecationReasonChangedChange,
+) {
+  return {
+    type: ChangeType.InputFieldDeprecationReasonChanged,
+    criticality: {
+      level: CriticalityLevel.NonBreaking,
+    },
+    message: buildInputFieldDeprecationReasonChangedMessage(args.meta),
+    meta: args.meta,
+    path: [args.meta.inputName, args.meta.inputFieldName, `@${GraphQLDeprecatedDirective.name}`].join(
+      '.',
+    ),
+  } as const;
+}
+
+export function inputFieldDeprecationReasonChanged(
+  input: GraphQLInputObjectType,
+  oldField: GraphQLInputField,
+  newField: GraphQLInputField,
+): Change<typeof ChangeType.InputFieldDeprecationReasonChanged> {
+  return inputFieldDeprecationReasonChangedFromMeta({
+    type: ChangeType.InputFieldDeprecationReasonChanged,
+    meta: {
+      inputFieldName: newField.name,
+      inputName: input.name,
+      newDeprecationReason: newField.deprecationReason ?? '',
+      oldDeprecationReason: oldField.deprecationReason ?? '',
+    },
+  });
+}
+
+function buildInputFieldDeprecationReasonAddedMessage(
+  args: InputFieldDeprecationReasonAddedChange['meta'],
+) {
+  const reason = fmt(args.addedDeprecationReason);
+  return `Input field '${args.inputName}.${args.inputFieldName}' has deprecation reason '${reason}'`;
+}
+
+export function inputFieldDeprecationReasonAddedFromMeta(args: InputFieldDeprecationReasonAddedChange) {
+  return {
+    type: ChangeType.InputFieldDeprecationReasonAdded,
+    criticality: {
+      level: CriticalityLevel.NonBreaking,
+    },
+    message: buildInputFieldDeprecationReasonAddedMessage(args.meta),
+    meta: args.meta,
+    path: [args.meta.inputName, args.meta.inputFieldName, `@${GraphQLDeprecatedDirective.name}`].join(
+      '.',
+    ),
+  } as const;
+}
+
+export function inputFieldDeprecationReasonAdded(
+  input: GraphQLInputObjectType,
+  field: GraphQLInputField,
+): Change<typeof ChangeType.InputFieldDeprecationReasonAdded> {
+  return inputFieldDeprecationReasonAddedFromMeta({
+    type: ChangeType.InputFieldDeprecationReasonAdded,
+    meta: {
+      inputName: input.name,
+      inputFieldName: field.name,
+      addedDeprecationReason: field.deprecationReason ?? '',
+    },
+  });
+}
+
+export function inputFieldDeprecationReasonRemovedFromMeta(
+  args: InputFieldDeprecationReasonRemovedChange,
+) {
+  return {
+    type: ChangeType.InputFieldDeprecationReasonRemoved,
+    criticality: {
+      level: CriticalityLevel.NonBreaking,
+    },
+    message: `Deprecation reason was removed from input field '${args.meta.inputName}.${args.meta.inputFieldName}'`,
+    meta: args.meta,
+    path: [args.meta.inputName, args.meta.inputFieldName].join('.'),
+  } as const;
+}
+
+export function inputFieldDeprecationReasonRemoved(
+  input: GraphQLInputObjectType,
+  field: GraphQLInputField,
+): Change<typeof ChangeType.InputFieldDeprecationReasonRemoved> {
+  return inputFieldDeprecationReasonRemovedFromMeta({
+    type: ChangeType.InputFieldDeprecationReasonRemoved,
+    meta: {
+      inputName: input.name,
+      inputFieldName: field.name,
     },
   });
 }
