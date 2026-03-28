@@ -9,7 +9,8 @@ import type { Change, TypeOfChangeType } from '@graphql-inspector/core';
  * likely be deprecated from that change type to keep these changes discrete. Same goes for
  * directive locations.
  *
- * WARNING -- This list should never change or else the hash algorithm will produce different results.
+ * WARNING -- This list should be append only and the arrays should never change or else the
+ * hash algorithm will produce different results.
  */
 export const requiredMatchMetaMap: {
   [ChangeType in TypeOfChangeType]: Array<keyof Change<ChangeType>['meta']>;
