@@ -203,7 +203,7 @@ export function generateChangeHash<ChangeType extends TypeOfChangeType>(change: 
 
   // extract required match meta data values
   const metaValues = required.map(
-    fieldName => change.meta[fieldName as keyof Change<ChangeType>['meta']],
+    fieldName => String(change.meta[fieldName as keyof Change<ChangeType>['meta']]).trim(),
   );
   return `${change.type}:${change.path ?? ''}:${hashCode(metaValues.join('|'))}`;
 }

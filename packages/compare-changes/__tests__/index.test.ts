@@ -1352,6 +1352,21 @@ describe('generateChangeHash', () => {
     expect(generateChangeHash(a)).not.toBe(generateChangeHash(b));
   });
 
+  it('ignores starting and ending whitespace in metadata', () => {
+    const a: Change<'TYPE_REMOVED'> = {
+      type: 'TYPE_REMOVED',
+      path: 'p',
+      meta: { removedTypeName: 'A' },
+      message: 'Example',
+      criticality: { level: CriticalityLevel.NonBreaking },
+    };
+    const b: Change<'TYPE_REMOVED'> = {
+      ...a,
+      meta: { ...a.meta, removedTypeName: ' A ' },
+    };
+    expect(generateChangeHash(a)).toBe(generateChangeHash(b));
+  });
+
   it('generates a different hash when the path differs', () => {
     const a: Change<'TYPE_REMOVED'> = {
       type: 'TYPE_REMOVED',
