@@ -1309,6 +1309,20 @@ describe('isChangeEqual', () => {
       });
     });
   });
+
+  test('ignores starting and ending spaces in metadata', () => {
+    const meta = { argumentName: 'a', fieldName: 'f', newDefaultValue: 'v', typeName: 'T' };
+    const a: Change<'FIELD_ARGUMENT_DEFAULT_CHANGED'> = {
+      type: 'FIELD_ARGUMENT_DEFAULT_CHANGED',
+      path: 'p',
+      meta,
+      message: 'Example',
+      criticality: { level: CriticalityLevel.NonBreaking },
+    };
+    expect(
+      isChangeEqual(a, { ...a, meta: { ...meta, newDefaultValue: ` ${meta.newDefaultValue} ` } }),
+    ).toBe(true);
+  });
 });
 
 describe('generateChangeHash', () => {

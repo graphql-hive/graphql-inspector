@@ -182,7 +182,7 @@ export function isChangeEqual<T extends TypeOfChangeType, Y extends TypeOfChange
     // this should not occur
     throw new Error('Unhandled change type found');
   }
-  return required.every(key => a.meta[key] === b.meta[key]);
+  return required.every(key => String(a.meta[key]).trim() === String(b.meta[key]).trim());
 }
 
 /**
