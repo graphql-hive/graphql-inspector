@@ -53,7 +53,7 @@ describe('input', () => {
       `);
 
       const change = findFirstChangeByPath(await diff(a, b), 'Foo.b');
-      expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('INPUT_FIELD_ADDED');
       expect(change.meta).toMatchObject({
         addedFieldDefault: '"B"',
