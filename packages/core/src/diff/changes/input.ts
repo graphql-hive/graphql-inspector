@@ -81,7 +81,7 @@ export function inputFieldAddedFromMeta(args: InputFieldAddedChange) {
     criticality = {
       level: CriticalityLevel.Dangerous,
       reason:
-        'Adding a new field with a default value has the potential to break if using rolling deploys. The gateway may start passing the value before all subgraphs are updated.',
+        'Adding a field with a default value can change runtime behavior for clients that previously omitted it, and during rolling deploys consumers may receive the new default before producers are ready to handle it.',
     };
   }
 
