@@ -1,5 +1,15 @@
 # @graphql-inspector/core
 
+## 7.1.3
+
+### Patch Changes
+
+- [#2952](https://github.com/graphql-hive/graphql-inspector/pull/2952)
+  [`3b341d4`](https://github.com/graphql-hive/graphql-inspector/commit/3b341d44a4eb676919b3932ebeec1057aa09d633)
+  Thanks [@jdolle](https://github.com/jdolle)! - "INPUT_FIELD_ADDED" is now classified as Dangerous
+  (was NonBreaking) when the added field has a default value, since rolling deploys can expose
+  consumers to the default before producers are ready.
+
 ## 7.1.2
 
 ### Patch Changes

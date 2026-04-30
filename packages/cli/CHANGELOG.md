@@ -1,5 +1,17 @@
 # @graphql-inspector/cli
 
+## 6.0.8
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @graphql-inspector/audit-command@5.0.20
+  - @graphql-inspector/coverage-command@6.1.14
+  - @graphql-inspector/diff-command@6.0.8
+  - @graphql-inspector/introspect-command@5.0.20
+  - @graphql-inspector/similar-command@5.0.20
+  - @graphql-inspector/validate-command@5.0.20
+
 ## 6.0.7
 
 ### Patch Changes
