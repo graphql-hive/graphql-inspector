@@ -26,7 +26,7 @@
     "ui"
   ],
   "scripts": {
-    "action": "ncc build packages/action/src/action.ts --out action --minify --transpile-only",
+    "action": "ncc build packages/action/src/action.ts --out action --transpile-only && terser action/index.js --module --no-compress --mangle --output action/index.js",
     "build": "bob build",
     "bundle": "webpack",
     "check": "bob check",
