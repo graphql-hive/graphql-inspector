@@ -49,8 +49,8 @@ export function getInputAsArray(name: string, options?: core.InputOptions): stri
     .filter(x => x !== '');
 }
 
-export function resolveRule(name: string): Rule | undefined {
-  const filepath = ensureAbsolute(name);
+export function resolveRule(name: string, basepath?: string): Rule | undefined {
+  const filepath = ensureAbsolute(name, basepath);
 
   if (existsSync(filepath)) {
     return require(filepath);

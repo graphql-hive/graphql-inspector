@@ -4,6 +4,7 @@
 
 ### v4.0.0
 
+- **action**: Fix custom rule files not found when specified as relative paths
 - **action**: BREAKING CHANGE - Node engine in the action runner is now v24
   ([#2957](https://github.com/graphql-hive/graphql-inspector/pull/2957))
 

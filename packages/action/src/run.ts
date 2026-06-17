@@ -79,7 +79,7 @@ export async function run() {
 
   const rules = rulesList
     .map(r => {
-      const rule = resolveRule(r);
+      const rule = resolveRule(r, workspace);
 
       if (!rule) {
         core.error(`Rule ${r} is invalid. Did you specify the correct path?`);
