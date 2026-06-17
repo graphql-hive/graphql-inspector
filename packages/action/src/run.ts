@@ -97,7 +97,8 @@ export async function run() {
   let config;
 
   if (onUsage) {
-    const checkUsage = require(onUsage);
+    // ponytail: real runtime require so ncc doesn't try to resolve it from the bundle
+    const checkUsage = process.getBuiltinModule('module').createRequire(import.meta.url)(onUsage);
 
     if (checkUsage) {
       config = {

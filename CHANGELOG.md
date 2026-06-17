@@ -6,6 +6,10 @@
 
 - **action**: BREAKING CHANGE - Node engine in the action runner is now v24
   ([#2957](https://github.com/graphql-hive/graphql-inspector/pull/2957))
+- **action**: ncc rewrote the bare `require` to its bundler require, which cannot resolve files
+  outside the bundle; the action now uses a real runtime require via
+  `process.getBuiltinModule('module').createRequire` (not `import { createRequire } from 'module'`
+  because it ncc strips it)
 
 ### v3.4.0
 
