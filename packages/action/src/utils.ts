@@ -53,14 +53,7 @@ export function resolveRule(name: string): Rule | undefined {
   const filepath = ensureAbsolute(name);
 
   if (existsSync(filepath)) {
-    // ncc rewrites bare require to its bundler require, which can't load files
-    // outside the bundle. createRequire gives us a real runtime require.
-    return (
-      process
-        // @ts-expect-error getBuiltinModule exists starting node v20.16.0
-        .getBuiltinModule('module')
-        .createRequire(import.meta.url)(filepath)
-    );
+    return require(filepath);
   }
 
   return DiffRule[name as keyof typeof DiffRule];
