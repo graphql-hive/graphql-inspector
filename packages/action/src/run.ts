@@ -97,11 +97,7 @@ export async function run() {
   let config;
 
   if (onUsage) {
-    // real runtime require so ncc doesn't try to resolve it from the bundle
-    const checkUsage = process
-      // @ts-expect-error getBuiltinModule exists starting node v20.16.0
-      .getBuiltinModule('module')
-      .createRequire(import.meta.url)(onUsage);
+    const checkUsage = require(onUsage);
 
     if (checkUsage) {
       config = {
