@@ -2,6 +2,11 @@
 
 ### vNEXT
 
+### v4.0.0
+
+- **action**: BREAKING CHANGE - Node engine in the action runner is now v24
+  ([#2957](https://github.com/graphql-hive/graphql-inspector/pull/2957))
+
 ### v3.4.0
 
 - **cli**: New `audit` command [#2164](https://github.com/kamilkisiela/graphql-inspector/pull/2164)
