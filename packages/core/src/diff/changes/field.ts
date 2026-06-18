@@ -392,14 +392,24 @@ function buildFieldArgumentAddedMessage(args: FieldArgumentAddedChange['meta']) 
 }
 
 export function fieldArgumentAddedFromMeta(args: FieldArgumentAddedChange) {
+  let level: CriticalityLevel;
+  let reason: string | undefined;
+  if (args.meta.addedToNewField) {
+    level = CriticalityLevel.NonBreaking;
+  } else if (args.meta.isAddedFieldArgumentBreaking) {
+    level = CriticalityLevel.Breaking;
+    reason =
+      'Adding a required argument to an existing field is a breaking change because it will cause existing uses of this field to error.';
+  } else {
+    level = CriticalityLevel.Dangerous;
+    reason =
+      'Adding a new argument to an existing field may involve a change in resolve function logic that potentially may cause some side effects. Adding a default value does not solve this, and might cause another issue where the default value is sent to a microservice that is not yet ready to handle that argument.';
+  }
   return {
     type: ChangeType.FieldArgumentAdded,
     criticality: {
-      level: args.meta.addedToNewField
-        ? CriticalityLevel.NonBreaking
-        : args.meta.isAddedFieldArgumentBreaking
-          ? CriticalityLevel.Breaking
-          : CriticalityLevel.Dangerous,
+      level,
+      reason,
     },
     message: buildFieldArgumentAddedMessage(args.meta),
     meta: args.meta,
