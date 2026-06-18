@@ -26,6 +26,11 @@ export const ChangeType = {
   FieldArgumentDescriptionChanged: 'FIELD_ARGUMENT_DESCRIPTION_CHANGED',
   FieldArgumentDefaultChanged: 'FIELD_ARGUMENT_DEFAULT_CHANGED',
   FieldArgumentTypeChanged: 'FIELD_ARGUMENT_TYPE_CHANGED',
+  FieldArgumentDeprecationAdded: 'FIELD_ARGUMENT_DEPRECATION_ADDED',
+  FieldArgumentDeprecationRemoved: 'FIELD_ARGUMENT_DEPRECATION_REMOVED',
+  FieldArgumentDeprecationReasonChanged: 'FIELD_ARGUMENT_DEPRECATION_REASON_CHANGED',
+  FieldArgumentDeprecationReasonAdded: 'FIELD_ARGUMENT_DEPRECATION_REASON_ADDED',
+  FieldArgumentDeprecationReasonRemoved: 'FIELD_ARGUMENT_DEPRECATION_REASON_REMOVED',
   // Directive
   DirectiveRemoved: 'DIRECTIVE_REMOVED',
   DirectiveAdded: 'DIRECTIVE_ADDED',
@@ -68,6 +73,11 @@ export const ChangeType = {
   InputFieldDescriptionChanged: 'INPUT_FIELD_DESCRIPTION_CHANGED',
   InputFieldDefaultValueChanged: 'INPUT_FIELD_DEFAULT_VALUE_CHANGED',
   InputFieldTypeChanged: 'INPUT_FIELD_TYPE_CHANGED',
+  InputFieldDeprecationAdded: 'INPUT_FIELD_DEPRECATION_ADDED',
+  InputFieldDeprecationRemoved: 'INPUT_FIELD_DEPRECATION_REMOVED',
+  InputFieldDeprecationReasonChanged: 'INPUT_FIELD_DEPRECATION_REASON_CHANGED',
+  InputFieldDeprecationReasonAdded: 'INPUT_FIELD_DEPRECATION_REASON_ADDED',
+  InputFieldDeprecationReasonRemoved: 'INPUT_FIELD_DEPRECATION_REASON_REMOVED',
   // Type
   ObjectTypeInterfaceAdded: 'OBJECT_TYPE_INTERFACE_ADDED',
   ObjectTypeInterfaceRemoved: 'OBJECT_TYPE_INTERFACE_REMOVED',
@@ -149,6 +159,55 @@ export type FieldArgumentTypeChangedChange = {
     oldArgumentType: string;
     newArgumentType: string;
     isSafeArgumentTypeChange: boolean;
+  };
+};
+
+export type FieldArgumentDeprecationAddedChange = {
+  type: typeof ChangeType.FieldArgumentDeprecationAdded;
+  meta: {
+    typeName: string;
+    fieldName: string;
+    argumentName: string;
+    deprecationReason: string;
+  };
+};
+
+export type FieldArgumentDeprecationRemovedChange = {
+  type: typeof ChangeType.FieldArgumentDeprecationRemoved;
+  meta: {
+    typeName: string;
+    fieldName: string;
+    argumentName: string;
+  };
+};
+
+export type FieldArgumentDeprecationReasonChangedChange = {
+  type: typeof ChangeType.FieldArgumentDeprecationReasonChanged;
+  meta: {
+    typeName: string;
+    fieldName: string;
+    argumentName: string;
+    oldDeprecationReason: string;
+    newDeprecationReason: string;
+  };
+};
+
+export type FieldArgumentDeprecationReasonAddedChange = {
+  type: typeof ChangeType.FieldArgumentDeprecationReasonAdded;
+  meta: {
+    typeName: string;
+    fieldName: string;
+    argumentName: string;
+    addedDeprecationReason: string;
+  };
+};
+
+export type FieldArgumentDeprecationReasonRemovedChange = {
+  type: typeof ChangeType.FieldArgumentDeprecationReasonRemoved;
+  meta: {
+    typeName: string;
+    fieldName: string;
+    argumentName: string;
   };
 };
 
@@ -537,6 +596,50 @@ export type InputFieldTypeChangedChange = {
     oldInputFieldType: string;
     newInputFieldType: string;
     isInputFieldTypeChangeSafe: boolean;
+  };
+};
+
+export type InputFieldDeprecationAddedChange = {
+  type: typeof ChangeType.InputFieldDeprecationAdded;
+  meta: {
+    inputName: string;
+    inputFieldName: string;
+    deprecationReason: string;
+  };
+};
+
+export type InputFieldDeprecationRemovedChange = {
+  type: typeof ChangeType.InputFieldDeprecationRemoved;
+  meta: {
+    inputName: string;
+    inputFieldName: string;
+  };
+};
+
+export type InputFieldDeprecationReasonChangedChange = {
+  type: typeof ChangeType.InputFieldDeprecationReasonChanged;
+  meta: {
+    inputName: string;
+    inputFieldName: string;
+    oldDeprecationReason: string;
+    newDeprecationReason: string;
+  };
+};
+
+export type InputFieldDeprecationReasonAddedChange = {
+  type: typeof ChangeType.InputFieldDeprecationReasonAdded;
+  meta: {
+    inputName: string;
+    inputFieldName: string;
+    addedDeprecationReason: string;
+  };
+};
+
+export type InputFieldDeprecationReasonRemovedChange = {
+  type: typeof ChangeType.InputFieldDeprecationReasonRemoved;
+  meta: {
+    inputName: string;
+    inputFieldName: string;
   };
 };
 
@@ -956,6 +1059,11 @@ type Changes = {
   [ChangeType.InputFieldDescriptionChanged]: InputFieldDescriptionChangedChange;
   [ChangeType.InputFieldDefaultValueChanged]: InputFieldDefaultValueChangedChange;
   [ChangeType.InputFieldTypeChanged]: InputFieldTypeChangedChange;
+  [ChangeType.InputFieldDeprecationAdded]: InputFieldDeprecationAddedChange;
+  [ChangeType.InputFieldDeprecationRemoved]: InputFieldDeprecationRemovedChange;
+  [ChangeType.InputFieldDeprecationReasonChanged]: InputFieldDeprecationReasonChangedChange;
+  [ChangeType.InputFieldDeprecationReasonAdded]: InputFieldDeprecationReasonAddedChange;
+  [ChangeType.InputFieldDeprecationReasonRemoved]: InputFieldDeprecationReasonRemovedChange;
   [ChangeType.FieldRemoved]: FieldRemovedChange;
   [ChangeType.FieldAdded]: FieldAddedChange;
   [ChangeType.FieldDescriptionAdded]: FieldDescriptionAddedChange;
@@ -976,6 +1084,11 @@ type Changes = {
   [ChangeType.FieldArgumentDescriptionChanged]: FieldArgumentDescriptionChangedChange;
   [ChangeType.FieldArgumentDefaultChanged]: FieldArgumentDefaultChangedChange;
   [ChangeType.FieldArgumentTypeChanged]: FieldArgumentTypeChangedChange;
+  [ChangeType.FieldArgumentDeprecationAdded]: FieldArgumentDeprecationAddedChange;
+  [ChangeType.FieldArgumentDeprecationRemoved]: FieldArgumentDeprecationRemovedChange;
+  [ChangeType.FieldArgumentDeprecationReasonChanged]: FieldArgumentDeprecationReasonChangedChange;
+  [ChangeType.FieldArgumentDeprecationReasonAdded]: FieldArgumentDeprecationReasonAddedChange;
+  [ChangeType.FieldArgumentDeprecationReasonRemoved]: FieldArgumentDeprecationReasonRemovedChange;
   [ChangeType.DirectiveLocationAdded]: DirectiveLocationAddedChange;
   [ChangeType.DirectiveLocationRemoved]: DirectiveLocationRemovedChange;
   [ChangeType.EnumValueRemoved]: EnumValueRemovedChange;
