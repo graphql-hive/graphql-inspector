@@ -52,7 +52,12 @@ inputs:
 
       Should be a path to a JS file as described in https://the-guild.dev/graphql/inspector/docs/essentials/diff#considerusage
     required: false
-
+  success-title:
+    description: |
+      Title to display when the action is successful. If not provided, the default 'Everything looks good' will be used.
+  failure-title:
+    description: |
+      Title to display when the action failes. If not provided, the default 'Something is wrong with your schema' will be used.
 outputs:
   changes:
     description: Total number of changes
