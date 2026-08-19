@@ -62,9 +62,11 @@ export function validateTokenCount(args: {
   if (tokenCount > args.maxTokenCount) {
     return new GraphQLError(
       `Query exceeds maximum token count of ${args.maxTokenCount} (actual: ${tokenCount})`,
-      args.document,
-      args.source,
-      args.document.loc?.start ? [args.document.loc.start] : undefined,
+      {
+        nodes: args.document,
+        source: args.source,
+        positions: args.document.loc?.start ? [args.document.loc.start] : undefined,
+      },
     );
   }
 }

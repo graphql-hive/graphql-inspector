@@ -61,17 +61,17 @@
     "prepack": "bob prepack"
   },
   "peerDependencies": {
-    "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0"
+    "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0"
   },
   "dependencies": {
-    "@graphql-inspector/commands": "workspace:*",
-    "@graphql-inspector/core": "workspace:*",
-    "@graphql-inspector/logger": "workspace:*",
-    "@graphql-tools/utils": "10.8.6",
-    "tslib": "2.6.2"
+    "@graphql-inspector/commands": "workspace:^",
+    "@graphql-inspector/core": "workspace:^",
+    "@graphql-inspector/logger": "workspace:^",
+    "@graphql-tools/utils": "^12.0.0",
+    "tslib": "~2.6.2"
   },
   "devDependencies": {
-    "graphql": "16.9.0"
+    "graphql": "17.0.2"
   },
   "publishConfig": {
     "directory": "dist",

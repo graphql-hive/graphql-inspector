@@ -1,4 +1,4 @@
-import { GraphQLInputField, GraphQLInputObjectType, Kind } from 'graphql';
+import { GraphQLInputField, GraphQLInputObjectType, Kind, print } from 'graphql';
 import {
   compareDirectiveLists,
   compareLists,
@@ -81,12 +81,20 @@ function changesInInputField(
   }
 
   if (!isVoid(oldField)) {
-    if (isNotEqual(oldField?.defaultValue, newField.defaultValue)) {
-      if (Array.isArray(oldField?.defaultValue) && Array.isArray(newField.defaultValue)) {
-        if (diffArrays(oldField.defaultValue, newField.defaultValue).length > 0) {
+    // GraphQL <17 compat
+    const oldDefaultValue = oldField?.default?.literal
+      ? print(oldField.default.literal)
+      : oldField?.defaultValue;
+    const newDefaultValue = newField?.default?.literal
+      ? print(newField.default.literal)
+      : newField.defaultValue;
+
+    if (isNotEqual(oldDefaultValue, newDefaultValue)) {
+      if (Array.isArray(oldDefaultValue) && Array.isArray(newDefaultValue)) {
+        if (diffArrays(oldDefaultValue, newDefaultValue).length > 0) {
           addChange(inputFieldDefaultValueChanged(input, oldField, newField));
         }
-      } else if (JSON.stringify(oldField?.defaultValue) !== JSON.stringify(newField.defaultValue)) {
+      } else if (JSON.stringify(oldDefaultValue) !== JSON.stringify(newDefaultValue)) {
         addChange(inputFieldDefaultValueChanged(input, oldField, newField));
       }
     }
@@ -96,8 +104,9 @@ function changesInInputField(
     }
   }
 
-  if (newField.astNode?.directives) {
-    compareDirectiveLists(oldField?.astNode?.directives || [], newField.astNode.directives || [], {
+  if (oldField?.astNode?.directives || newField.astNode?.directives) {
+    
+    compareDirectiveLists(oldField?.astNode?.directives || [], newField.astNode?.directives || [], {
       onAdded(directive) {
         addChange(
           directiveUsageAdded(

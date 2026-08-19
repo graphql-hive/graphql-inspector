@@ -1,4 +1,11 @@
-import { DirectiveLocationEnum, GraphQLArgument, GraphQLDirective, isNonNullType } from 'graphql';
+import {
+  DirectiveLocation,
+  GraphQLArgument,
+  GraphQLDirective,
+  isNonNullType,
+  print,
+  versionInfo,
+} from 'graphql';
 import { safeChangeForInputValue } from '../../utils/graphql.js';
 import { fmt, safeString } from '../../utils/string.js';
 import {
@@ -189,7 +196,7 @@ export function directiveLocationAddedFromMeta(args: DirectiveLocationAddedChang
 
 export function directiveLocationAdded(
   directive: GraphQLDirective,
-  location: DirectiveLocationEnum,
+  location: DirectiveLocation,
 ): Change<typeof ChangeType.DirectiveLocationAdded> {
   return directiveLocationAddedFromMeta({
     type: ChangeType.DirectiveLocationAdded,
@@ -223,7 +230,7 @@ export function directiveLocationRemovedFromMeta(args: DirectiveLocationRemovedC
 
 export function directiveLocationRemoved(
   directive: GraphQLDirective,
-  location: DirectiveLocationEnum,
+  location: DirectiveLocation,
 ): Change<typeof ChangeType.DirectiveLocationRemoved> {
   return directiveLocationRemovedFromMeta({
     type: ChangeType.DirectiveLocationRemoved,
@@ -273,7 +280,11 @@ export function directiveArgumentAdded(
       addedDirectiveArgumentName: arg.name,
       addedDirectiveArgumentType: arg.type.toString(),
       addedDirectiveDefaultValue:
-        arg.defaultValue === undefined ? undefined : safeString(arg.defaultValue),
+        (arg.default || arg.defaultValue) === undefined
+          ? undefined
+          : arg.default?.literal
+            ? print(arg.default.literal)
+            : safeString(arg.defaultValue),
       addedDirectiveArgumentTypeIsNonNull: isNonNullType(arg.type),
       addedDirectiveArgumentDescription: arg.description ?? undefined,
       addedToNewDirective,
@@ -398,11 +409,23 @@ export function directiveArgumentDefaultValueChanged(
     directiveName: directive.name,
     directiveArgumentName: newArg.name,
   };
-  if (oldArg?.defaultValue !== undefined) {
-    meta.oldDirectiveArgumentDefaultValue = safeString(oldArg.defaultValue);
-  }
-  if (newArg.defaultValue !== undefined) {
-    meta.newDirectiveArgumentDefaultValue = safeString(newArg.defaultValue);
+  if (versionInfo.major < 17) {
+    if (oldArg?.defaultValue !== undefined) {
+      meta.oldDirectiveArgumentDefaultValue = safeString(oldArg.defaultValue);
+    }
+    if (newArg.defaultValue !== undefined) {
+      meta.newDirectiveArgumentDefaultValue = safeString(newArg.defaultValue);
+    }
+  } else {
+    const oldDefaultValue = oldArg?.default?.literal ? print(oldArg.default.literal) : undefined;
+    const newDefaultValue = newArg?.default?.literal ? print(newArg.default.literal) : undefined;
+
+    if (oldDefaultValue !== undefined) {
+      meta.oldDirectiveArgumentDefaultValue = oldDefaultValue;
+    }
+    if (newDefaultValue !== undefined) {
+      meta.newDirectiveArgumentDefaultValue = newDefaultValue;
+    }
   }
 
   return directiveArgumentDefaultValueChangedFromMeta({

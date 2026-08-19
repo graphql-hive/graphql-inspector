@@ -297,7 +297,7 @@ test('huge test', async () => {
         "[NON_BREAKING] AInput.a: Input field 'AInput.a' description changed from 'a' to 'changed'",
         "[DANGEROUS] AInput.a: Input field 'AInput.a' default value changed from '"1"' to '1'",
         "[BREAKING] AInput.a: Input field 'AInput.a' changed type from 'String' to 'Int'",
-        "[DANGEROUS] ListInput.a: Input field 'ListInput.a' default value changed from '[ 'foo' ]' to '[ 'bar' ]'",
+        "[DANGEROUS] ListInput.a: Input field 'ListInput.a' default value changed from '["foo"]' to '["bar"]'",
         "[NON_BREAKING] Query.a: Field 'Query.a' description changed from 'Just a simple string' to 'This description has been changed'",
         "[BREAKING] Query.a.anArg: Argument 'anArg: String' was removed from field 'Query.a'",
         "[BREAKING] Query.b: Field 'Query.b' changed type from 'BType' to 'Int!'",
@@ -368,7 +368,7 @@ test('array as default value in argument (different)', async () => {
   expect(changes[0]).toBeDefined();
   expect(changes[0].criticality.level).toEqual(CriticalityLevel.Dangerous);
   expect(changes[0].message).toEqual(
-    `Default value for argument 'b' on field 'MyInterface.a' changed from '[ 'Hello' ]' to '[ 'Goodbye' ]'`,
+    `Default value for argument 'b' on field 'MyInterface.a' changed from '["Hello"]' to '["Goodbye"]'`,
   );
   expect(changes[0].path).toEqual(`MyInterface.a.b`);
 });
@@ -468,7 +468,7 @@ test('array as default value in input (different)', async () => {
   expect(changes[0]).toBeDefined();
   expect(changes[0].criticality.level).toEqual(CriticalityLevel.Dangerous);
   expect(changes[0].message).toEqual(
-    `Input field 'CommentQuery.sortOrder' default value changed from '[ 'ASC' ]' to '[ 'DEC' ]'`,
+    `Input field 'CommentQuery.sortOrder' default value changed from '[ASC]' to '[DEC]'`,
   );
   expect(changes[0].path).toEqual(`CommentQuery.sortOrder`);
 });

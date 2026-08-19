@@ -413,7 +413,8 @@ export function fieldArgumentAdded(
   arg: GraphQLArgument,
   addedToNewField: boolean,
 ): Change<typeof ChangeType.FieldArgumentAdded> {
-  const isBreaking = isNonNullType(arg.type) && typeof arg.defaultValue === 'undefined';
+  const hasDefaultValue = (arg.default ?? arg.defaultValue) != null;
+  const isBreaking = isNonNullType(arg.type) && !hasDefaultValue;
 
   return fieldArgumentAddedFromMeta({
     type: ChangeType.FieldArgumentAdded,
@@ -422,7 +423,7 @@ export function fieldArgumentAdded(
       fieldName: field.name,
       addedArgumentName: arg.name,
       addedArgumentType: arg.type.toString(),
-      hasDefaultValue: arg.defaultValue != null,
+      hasDefaultValue,
       addedToNewField,
       isAddedFieldArgumentBreaking: isBreaking,
     },

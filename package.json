@@ -83,7 +83,7 @@
     "@vercel/ncc": "0.38.3",
     "bob-the-bundler": "7.0.1",
     "eslint": "8.57.1",
-    "graphql": "16.10.0",
+    "graphql": "17.0.2",
     "graphql-config": "5.1.0",
     "jsesc": "3.0.2",
     "lint-staged": "15.2.8",
@@ -107,7 +107,7 @@
   "pnpm": {
     "overrides": {
       "@octokit/types": "13.10.0",
-      "graphql": "16.10.0",
+      "graphql": "17.0.2",
       "eslint-plugin-unicorn": "56.0.1",
       "cookie": "1.0.2",
       "dompurify": "3.3.2",

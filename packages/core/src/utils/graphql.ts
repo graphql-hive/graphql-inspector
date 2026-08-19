@@ -22,7 +22,6 @@ import {
   isUnionType,
   isWrappingType,
   Kind,
-  KindEnum,
   TypeInfo,
   visit,
   visitWithTypeInfo,
@@ -74,7 +73,7 @@ export function safeChangeForInputValue(
   return false;
 }
 
-export function getKind(type: GraphQLNamedType): KindEnum {
+export function getKind(type: GraphQLNamedType): Kind {
   const node = type.astNode as any;
   return node?.kind || '';
 }
@@ -133,7 +132,7 @@ export function findDeprecatedUsages(
               errors.push(
                 new GraphQLError(
                   `The argument '${argument?.name}' of '${fieldDef.name}' is deprecated. ${reason}`,
-                  [node],
+                  { nodes: [node] },
                 ),
               );
             }
@@ -151,7 +150,7 @@ export function findDeprecatedUsages(
                 `The field '${parentType.name}.${fieldDef.name}' is deprecated.${
                   reason ? ' ' + reason : ''
                 }`,
-                [node],
+                { nodes: [node] },
               ),
             );
           }
@@ -168,7 +167,7 @@ export function findDeprecatedUsages(
                 `The enum value '${type.name}.${enumVal.name}' is deprecated.${
                   reason ? ' ' + reason : ''
                 }`,
-                [node],
+                { nodes: [node] },
               ),
             );
           }

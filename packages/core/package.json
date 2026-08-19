@@ -60,12 +60,12 @@
     "prepack": "bob prepack"
   },
   "peerDependencies": {
-    "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0"
+    "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0"
   },
   "dependencies": {
-    "dependency-graph": "1.0.0",
-    "object-inspect": "1.13.2",
-    "tslib": "2.6.2"
+    "dependency-graph": "^1.0.0",
+    "object-inspect": "^1.13.2",
+    "tslib": "~2.6.2"
   },
   "devDependencies": {
     "@types/object-inspect": "1.13.0"
