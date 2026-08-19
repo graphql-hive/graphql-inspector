@@ -81,3 +81,30 @@ jobs:
 
           echo 2088
           node ./packages/cli/dist/cjs/index.js diff ./integration_tests/2088/old.graphql ./integration_tests/2088/new.graphql --rule suppressRemovalOfDeprecatedField
+
+  graphql-compatibility:
+    name: Test GraphQL ${{ matrix.graphql_version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        graphql_version: [14, 15, 16]
+    env:
+      CI: true
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@master
+        with:
+          node-version: 24
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
+
+      - name: Install
+        run: pnpm i --no-frozen-lockfile
+
+      - name: Test GraphQL ${{ matrix.graphql_version }}
+        run: pnpm exec vitest run --mode graphql-${{ matrix.graphql_version }}
