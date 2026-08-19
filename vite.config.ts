@@ -3,6 +3,14 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  resolve: {
+    alias: [
+      {
+        find: /^graphql$/,
+        replacement: join(__dirname, 'node_modules/graphql/index.mjs'),
+      },
+    ],
+  },
   test: {
     globals: true,
     alias: {
@@ -13,12 +21,6 @@ export default defineConfig({
       '@graphql-inspector/testing': 'packages/testing/src/index.ts',
       '@graphql-inspector/core': 'packages/core/src/index.ts',
       '@graphql-inspector/patch': 'packages/patch/src/index.ts',
-      'graphql/language/parser.js': 'graphql/language/parser.js',
-      graphql: 'graphql/index.js',
-    },
-    deps: {
-      // fixes `graphql` Duplicate "graphql" modules cannot be used at the same time since different
-      fallbackCJS: true,
     },
     setupFiles: ['./packages/testing/src/setup-file.ts'],
   },
