@@ -1,12 +1,5 @@
-import {
-  DirectiveLocation,
-  GraphQLArgument,
-  GraphQLDirective,
-  isNonNullType,
-  print,
-  versionInfo,
-} from 'graphql';
-import { safeChangeForInputValue } from '../../utils/graphql.js';
+import { DirectiveLocation, GraphQLArgument, GraphQLDirective, isNonNullType } from 'graphql';
+import { getDefaultValue, hasDefaultValue, safeChangeForInputValue } from '../../utils/graphql.js';
 import { fmt, safeString } from '../../utils/string.js';
 import {
   Change,
@@ -279,12 +272,9 @@ export function directiveArgumentAdded(
       directiveName: directive.name,
       addedDirectiveArgumentName: arg.name,
       addedDirectiveArgumentType: arg.type.toString(),
-      addedDirectiveDefaultValue:
-        (arg.default || arg.defaultValue) === undefined
-          ? undefined
-          : arg.default?.literal
-            ? print(arg.default.literal)
-            : safeString(arg.defaultValue),
+      addedDirectiveDefaultValue: hasDefaultValue(arg)
+        ? safeString(getDefaultValue(arg))
+        : undefined,
       addedDirectiveArgumentTypeIsNonNull: isNonNullType(arg.type),
       addedDirectiveArgumentDescription: arg.description ?? undefined,
       addedToNewDirective,
@@ -409,23 +399,14 @@ export function directiveArgumentDefaultValueChanged(
     directiveName: directive.name,
     directiveArgumentName: newArg.name,
   };
-  if (versionInfo.major < 17) {
-    if (oldArg?.defaultValue !== undefined) {
-      meta.oldDirectiveArgumentDefaultValue = safeString(oldArg.defaultValue);
-    }
-    if (newArg.defaultValue !== undefined) {
-      meta.newDirectiveArgumentDefaultValue = safeString(newArg.defaultValue);
-    }
-  } else {
-    const oldDefaultValue = oldArg?.default?.literal ? print(oldArg.default.literal) : undefined;
-    const newDefaultValue = newArg?.default?.literal ? print(newArg.default.literal) : undefined;
+  const oldDefaultValue = oldArg === null ? undefined : getDefaultValue(oldArg);
+  const newDefaultValue = getDefaultValue(newArg);
 
-    if (oldDefaultValue !== undefined) {
-      meta.oldDirectiveArgumentDefaultValue = oldDefaultValue;
-    }
-    if (newDefaultValue !== undefined) {
-      meta.newDirectiveArgumentDefaultValue = newDefaultValue;
-    }
+  if (oldDefaultValue !== undefined) {
+    meta.oldDirectiveArgumentDefaultValue = safeString(oldDefaultValue);
+  }
+  if (newDefaultValue !== undefined) {
+    meta.newDirectiveArgumentDefaultValue = safeString(newDefaultValue);
   }
 
   return directiveArgumentDefaultValueChangedFromMeta({

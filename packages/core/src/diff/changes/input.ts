@@ -1,11 +1,5 @@
-import {
-  GraphQLInputField,
-  GraphQLInputObjectType,
-  isNonNullType,
-  print,
-  versionInfo,
-} from 'graphql';
-import { safeChangeForInputValue } from '../../utils/graphql.js';
+import { GraphQLInputField, GraphQLInputObjectType, isNonNullType } from 'graphql';
+import { getDefaultValue, hasDefaultValue, safeChangeForInputValue } from '../../utils/graphql.js';
 import { isDeprecated } from '../../utils/is-deprecated.js';
 import { fmt, safeString } from '../../utils/string.js';
 import {
@@ -105,7 +99,8 @@ export function inputFieldAdded(
   field: GraphQLInputField,
   addedToNewType: boolean,
 ): Change<typeof ChangeType.InputFieldAdded> {
-  console.log(field.default);
+  const defaultValue = getDefaultValue(field);
+
   return inputFieldAddedFromMeta({
     type: ChangeType.InputFieldAdded,
     meta: {
@@ -113,13 +108,7 @@ export function inputFieldAdded(
       addedInputFieldName: field.name,
       isAddedInputFieldTypeNullable: !isNonNullType(field.type),
       addedInputFieldType: field.type.toString(),
-      ...((field.default || field.defaultValue) === undefined
-        ? {}
-        : {
-            addedFieldDefault: field.default?.literal
-              ? print(field.default.literal)
-              : safeString(field.defaultValue),
-          }),
+      ...(hasDefaultValue(field) ? { addedFieldDefault: safeString(defaultValue) } : {}),
       addedToNewType,
     },
   });
@@ -256,28 +245,14 @@ export function inputFieldDefaultValueChanged(
     inputFieldName: newField.name,
   };
 
-  if (versionInfo.major < 17) {
-    // GraphQL <17 compat
-    if (oldField?.defaultValue !== undefined) {
-      meta.oldDefaultValue = safeString(oldField.defaultValue);
-    }
-    if (newField.defaultValue !== undefined) {
-      meta.newDefaultValue = safeString(newField.defaultValue);
-    }
-  } else {
-    const oldDefaultValue = oldField?.default?.literal
-      ? print(oldField.default.literal)
-      : undefined;
-    const newDefaultValue = newField?.default?.literal
-      ? print(newField.default.literal)
-      : undefined;
+  const oldDefaultValue = getDefaultValue(oldField);
+  const newDefaultValue = getDefaultValue(newField);
 
-    if (oldDefaultValue !== undefined) {
-      meta.oldDefaultValue = oldDefaultValue;
-    }
-    if (newDefaultValue !== undefined) {
-      meta.newDefaultValue = newDefaultValue;
-    }
+  if (oldDefaultValue !== undefined) {
+    meta.oldDefaultValue = safeString(oldDefaultValue);
+  }
+  if (newDefaultValue !== undefined) {
+    meta.newDefaultValue = safeString(newDefaultValue);
   }
 
   return inputFieldDefaultValueChangedFromMeta({

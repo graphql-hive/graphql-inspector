@@ -7,7 +7,7 @@ import {
   isInterfaceType,
   isNonNullType,
 } from 'graphql';
-import { safeChangeForField } from '../../utils/graphql.js';
+import { hasDefaultValue, safeChangeForField } from '../../utils/graphql.js';
 import { fmt } from '../../utils/string.js';
 import {
   Change,
@@ -413,8 +413,8 @@ export function fieldArgumentAdded(
   arg: GraphQLArgument,
   addedToNewField: boolean,
 ): Change<typeof ChangeType.FieldArgumentAdded> {
-  const hasDefaultValue = (arg.default ?? arg.defaultValue) != null;
-  const isBreaking = isNonNullType(arg.type) && !hasDefaultValue;
+  const hasDefault = hasDefaultValue(arg);
+  const isBreaking = isNonNullType(arg.type) && !hasDefault;
 
   return fieldArgumentAddedFromMeta({
     type: ChangeType.FieldArgumentAdded,
@@ -423,7 +423,7 @@ export function fieldArgumentAdded(
       fieldName: field.name,
       addedArgumentName: arg.name,
       addedArgumentType: arg.type.toString(),
-      hasDefaultValue,
+      hasDefaultValue: hasDefault,
       addedToNewField,
       isAddedFieldArgumentBreaking: isBreaking,
     },

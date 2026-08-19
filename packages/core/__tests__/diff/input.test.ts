@@ -1,6 +1,6 @@
-import { buildSchema } from 'graphql';
+import { buildSchema, GraphQLInputObjectType } from 'graphql';
 import { CriticalityLevel, diff, DiffRule } from '../../src/index.js';
-import { findChangesByPath, findFirstChangeByPath } from '../../utils/testing.js';
+import { findFirstChangeByPath } from '../../utils/testing.js';
 
 describe('input', () => {
   describe('fields', () => {
@@ -66,6 +66,19 @@ describe('input', () => {
       expect(change.message).toEqual(
         `Input field 'b' of type 'String!' with default value '"B"' was added to input object type 'Foo'`,
       );
+    });
+
+    test('detects a changed programmatic default value', async () => {
+      const a = buildSchema('input Foo { value: Int } type Query { field(input: Foo): String }');
+      const b = buildSchema('input Foo { value: Int } type Query { field(input: Foo): String }');
+      (a.getType('Foo') as GraphQLInputObjectType).getFields().value.default = { value: 1 };
+      (b.getType('Foo') as GraphQLInputObjectType).getFields().value.default = { value: 2 };
+
+      const change = findFirstChangeByPath(await diff(a, b), 'Foo.value');
+
+      expect(change.type).toEqual('INPUT_FIELD_DEFAULT_VALUE_CHANGED');
+      expect(change.meta.oldDefaultValue).toBe('1');
+      expect(change.meta.newDefaultValue).toBe('2');
     });
 
     test('added to an added input', async () => {

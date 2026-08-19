@@ -4,9 +4,9 @@ import {
   GraphQLInterfaceType,
   GraphQLObjectType,
   Kind,
-  print,
 } from 'graphql';
-import { compareDirectiveLists, diffArrays, isNotEqual } from '../utils/compare.js';
+import { compareDirectiveLists, isNotEqual } from '../utils/compare.js';
+import { defaultValuesAreEqual } from '../utils/graphql.js';
 import {
   fieldArgumentDefaultChanged,
   fieldArgumentDescriptionChanged,
@@ -30,23 +30,8 @@ export function changesInArgument(
     addChange(fieldArgumentDescriptionChanged(type, field, oldArg, newArg));
   }
 
-  // GraphQL <17 compat
-  const oldArgDefaultValue = oldArg?.default?.literal
-    ? print(oldArg.default.literal)
-    : oldArg?.defaultValue;
-  const newArgDefaultValue = newArg?.default?.literal
-    ? print(newArg.default.literal)
-    : newArg.defaultValue;
-
-  if (isNotEqual(oldArgDefaultValue, newArgDefaultValue)) {
-    if (Array.isArray(oldArgDefaultValue) && Array.isArray(newArgDefaultValue)) {
-      const diff = diffArrays(oldArgDefaultValue, newArgDefaultValue);
-      if (diff.length > 0) {
-        addChange(fieldArgumentDefaultChanged(type, field, oldArg, newArg));
-      }
-    } else if (JSON.stringify(oldArgDefaultValue) !== JSON.stringify(newArgDefaultValue)) {
-      addChange(fieldArgumentDefaultChanged(type, field, oldArg, newArg));
-    }
+  if (!defaultValuesAreEqual(oldArg, newArg)) {
+    addChange(fieldArgumentDefaultChanged(type, field, oldArg, newArg));
   }
 
   if (isNotEqual(oldArg?.type.toString(), newArg.type.toString())) {

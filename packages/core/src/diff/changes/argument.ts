@@ -1,12 +1,5 @@
-import {
-  GraphQLArgument,
-  GraphQLField,
-  GraphQLInterfaceType,
-  GraphQLObjectType,
-  print,
-  versionInfo,
-} from 'graphql';
-import { safeChangeForInputValue } from '../../utils/graphql.js';
+import { GraphQLArgument, GraphQLField, GraphQLInterfaceType, GraphQLObjectType } from 'graphql';
+import { getDefaultValue, safeChangeForInputValue } from '../../utils/graphql.js';
 import { fmt, safeString } from '../../utils/string.js';
 import {
   Change,
@@ -97,23 +90,14 @@ export function fieldArgumentDefaultChanged(
     argumentName: newArg.name,
   };
 
-  if (versionInfo.major < 17) {
-    if (oldArg?.defaultValue !== undefined) {
-      meta.oldDefaultValue = safeString(oldArg.defaultValue);
-    }
-    if (newArg.defaultValue !== undefined) {
-      meta.newDefaultValue = safeString(newArg.defaultValue);
-    }
-  } else {
-    const oldDefaultValue = oldArg?.default?.literal ? print(oldArg.default.literal) : undefined;
-    const newDefaultValue = newArg?.default?.literal ? print(newArg.default.literal) : undefined;
+  const oldDefaultValue = oldArg === null ? undefined : getDefaultValue(oldArg);
+  const newDefaultValue = getDefaultValue(newArg);
 
-    if (oldDefaultValue !== undefined) {
-      meta.oldDefaultValue = oldDefaultValue;
-    }
-    if (newDefaultValue !== undefined) {
-      meta.newDefaultValue = newDefaultValue;
-    }
+  if (oldDefaultValue !== undefined) {
+    meta.oldDefaultValue = safeString(oldDefaultValue);
+  }
+  if (newDefaultValue !== undefined) {
+    meta.newDefaultValue = safeString(newDefaultValue);
   }
 
   return fieldArgumentDefaultChangedFromMeta({
