@@ -5,7 +5,7 @@
   "description": "Schema Coverage in GraphQL Inspector",
   "repository": {
     "type": "git",
-    "url": "kamilkisgraphql-hiveiela/graphql-inspector",
+    "url": "https://github.com/graphql-hive/graphql-inspector",
     "directory": "packages/commands/coverage"
   },
   "author": {
