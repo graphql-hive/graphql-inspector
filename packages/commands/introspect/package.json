@@ -1,6 +1,6 @@
 {
   "name": "@graphql-inspector/introspect-command",
-  "version": "5.0.20",
+  "version": "6.0.0",
   "type": "module",
   "description": "Introspects GraphQL Schema",
   "repository": {

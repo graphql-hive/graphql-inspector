@@ -1,5 +1,23 @@
 # @graphql-inspector/loaders
 
+## 5.0.0
+
+### Major Changes
+
+- [#2965](https://github.com/graphql-hive/graphql-inspector/pull/2965)
+  [`f640d71`](https://github.com/graphql-hive/graphql-inspector/commit/f640d7126c7862b7ceeb88de6c17d8dd9df19397)
+  Thanks [@n1ru4l](https://github.com/n1ru4l)! - Add support for `graphql-js@17`.
+
+  **BREAKING** Drop support for Node.js 20
+
+  **BREAKING** Drop support for GraphQL 14 and 15
+
+### Patch Changes
+
+- Updated dependencies
+  [[`f640d71`](https://github.com/graphql-hive/graphql-inspector/commit/f640d7126c7862b7ceeb88de6c17d8dd9df19397)]:
+  - @graphql-inspector/config@5.0.0
+
 ## 4.1.0
 
 ### Minor Changes
