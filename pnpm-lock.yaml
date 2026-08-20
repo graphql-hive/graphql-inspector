@@ -334,11 +334,11 @@ importers:
   packages/commands/commands:
     dependencies:
       '@graphql-inspector/config':
-        specifier: ^4.0.0
-        version: 4.0.2(graphql@17.0.2)
+        specifier: workspace:^
+        version: link:../../config/dist
       '@graphql-inspector/loaders':
-        specifier: ^4.1.0
-        version: 4.1.0(@graphql-inspector/config@4.0.2(graphql@17.0.2))(graphql@17.0.2)
+        specifier: workspace:^
+        version: link:../../loaders/loaders/dist
       graphql:
         specifier: 17.0.2
         version: 17.0.2
@@ -625,8 +625,8 @@ importers:
   packages/loaders/loaders:
     dependencies:
       '@graphql-inspector/config':
-        specifier: ^4.0.0
-        version: 4.0.2(graphql@17.0.2)
+        specifier: workspace:^
+        version: link:../../config/dist
       '@graphql-tools/code-file-loader':
         specifier: ^8.1.37
         version: 8.1.37(graphql@17.0.2)
@@ -1239,19 +1239,6 @@ packages:
     resolution: {integrity: sha512-Pz8wB3K0iU6ae9S1fWfsmJX24CcGeTo6hE7T44ucmV/ALKRj+bxClmqrYcDT7v3f0d12Rh4FAXBb6gon+WkDpQ==}
     engines: {node: '>=20.0.0'}
 
-  '@graphql-inspector/config@4.0.2':
-    resolution: {integrity: sha512-fnIwVpGM5AtTr4XyV8NJkDnwpXxZSBzi3BopjuXwBPXXD1F3tcVkCKNT6/5WgUQGfNPskBVbitcOPtM4hIYAOQ==}
-    engines: {node: '>=16.0.0'}
-    peerDependencies:
-      graphql: 17.0.2
-
-  '@graphql-inspector/loaders@4.1.0':
-    resolution: {integrity: sha512-Ue1xSc11b+ouAeiHLAv9s7CK6FTO4FIVqjwzojDic+3PlMa9hEVgYDYnlvdebOZfwTW9g54As4KfxVXQd6YiBw==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      '@graphql-inspector/config': ^4.0.0
-      graphql: 17.0.2
-
   '@graphql-tools/batch-execute@10.0.9':
     resolution: {integrity: sha512-khIgAPlyaWJ3dVX6SsqOkABZCH1Gii32WHn3xMzavupsxPCfb/9G3zjdswptzTFrOcZ92dWo7MXvwNFkRfNN4w==}
     engines: {node: '>=20.0.0'}
@@ -1261,12 +1248,6 @@ packages:
   '@graphql-tools/batch-execute@9.0.13':
     resolution: {integrity: sha512-CgxmfhMv/QYsZMKhmMOMLM5pt/8VaH/fbgebn/9eHQ5nik3qC5U3GD/mHh6Udxz29Rt0UdmHPH2Wo29+pIgsLg==}
     engines: {node: '>=18.0.0'}
-    peerDependencies:
-      graphql: 17.0.2
-
-  '@graphql-tools/code-file-loader@8.1.20':
-    resolution: {integrity: sha512-GzIbjjWJIc04KWnEr8VKuPe0FA2vDTlkaeub5p4lLimljnJ6C0QSkOyCUnFmsB9jetQcHm0Wfmn/akMnFUG+wA==}
-    engines: {node: '>=16.0.0'}
     peerDependencies:
       graphql: 17.0.2
 
@@ -1366,12 +1347,6 @@ packages:
     peerDependencies:
       graphql: 17.0.2
 
-  '@graphql-tools/graphql-tag-pluck@8.3.19':
-    resolution: {integrity: sha512-LEw/6IYOUz48HjbWntZXDCzSXsOIM1AyWZrlLoJOrA8QAlhFd8h5Tny7opCypj8FO9VvpPFugWoNDh5InPOEQA==}
-    engines: {node: '>=16.0.0'}
-    peerDependencies:
-      graphql: 17.0.2
-
   '@graphql-tools/graphql-tag-pluck@8.3.36':
     resolution: {integrity: sha512-o+J7i2i1MhswlCcfuWg2JmHZMcKTtFtSzTdDmDOC0/jroHL0pQTtnGPg4yM3UqKAaqntSYPTUW0QSphq8+xCEQ==}
     engines: {node: '>=16.0.0'}
@@ -1390,12 +1365,6 @@ packages:
     peerDependencies:
       graphql: 17.0.2
 
-  '@graphql-tools/load@8.0.19':
-    resolution: {integrity: sha512-YA3T9xTy2B6dNTnqsCzqSclA23j4v3p3A2Vdn0jEbZPGLMRPzWW8MJu2nlgQ8uua1IpYD/J8xgyrFxxAo3qPmQ==}
-    engines: {node: '>=16.0.0'}
-    peerDependencies:
-      graphql: 17.0.2
-
   '@graphql-tools/load@8.1.16':
     resolution: {integrity: sha512-b3VK4+lX9w3c0TPp0UBzqpPziZKRLmcmF4dDVWlCylhQAlB0SlHJK+oIovMX2qCfmB/Q5Y/7ayFsVy2la+pW6g==}
     engines: {node: '>=16.0.0'}
@@ -1410,12 +1379,6 @@ packages:
 
   '@graphql-tools/merge@9.2.3':
     resolution: {integrity: sha512-cKRoXqJGy2zSRBLvotQpkACbXlHAb0yuHLN0l0ypKGCuL3NnF0zofYalkBJqiBxxxpK0lr3s9uowKFHCKi1/ZQ==}
-    engines: {node: '>=16.0.0'}
-    peerDependencies:
-      graphql: 17.0.2
-
-  '@graphql-tools/schema@10.0.23':
-    resolution: {integrity: sha512-aEGVpd1PCuGEwqTXCStpEkmheTHNdMayiIKH1xDWqYp9i8yKv9FRDgkGrY4RD8TNxnf7iII+6KOBGaJ3ygH95A==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       graphql: 17.0.2
@@ -8392,11 +8355,6 @@ snapshots:
     dependencies:
       '@babel/types': 7.29.8
 
-  '@babel/plugin-syntax-import-assertions@7.26.0(@babel/core@7.26.10)':
-    dependencies:
-      '@babel/core': 7.26.10
-      '@babel/helper-plugin-utils': 7.26.5
-
   '@babel/plugin-syntax-import-assertions@7.26.0(@babel/core@7.29.7)':
     dependencies:
       '@babel/core': 7.29.7
@@ -8809,22 +8767,6 @@ snapshots:
 
   '@graphql-hive/signal@2.0.0': {}
 
-  '@graphql-inspector/config@4.0.2(graphql@17.0.2)':
-    dependencies:
-      graphql: 17.0.2
-      tslib: 2.6.2
-
-  '@graphql-inspector/loaders@4.1.0(@graphql-inspector/config@4.0.2(graphql@17.0.2))(graphql@17.0.2)':
-    dependencies:
-      '@graphql-inspector/config': 4.0.2(graphql@17.0.2)
-      '@graphql-tools/code-file-loader': 8.1.20(graphql@17.0.2)
-      '@graphql-tools/load': 8.0.19(graphql@17.0.2)
-      '@graphql-tools/utils': 10.8.6(graphql@17.0.2)
-      graphql: 17.0.2
-      tslib: 2.6.2
-    transitivePeerDependencies:
-      - supports-color
-
   '@graphql-tools/batch-execute@10.0.9(graphql@17.0.2)':
     dependencies:
       '@graphql-tools/utils': 11.2.2(graphql@17.0.2)
@@ -8840,17 +8782,6 @@ snapshots:
       dataloader: 2.2.3
       graphql: 17.0.2
       tslib: 2.8.1
-
-  '@graphql-tools/code-file-loader@8.1.20(graphql@17.0.2)':
-    dependencies:
-      '@graphql-tools/graphql-tag-pluck': 8.3.19(graphql@17.0.2)
-      '@graphql-tools/utils': 10.8.6(graphql@17.0.2)
-      globby: 11.1.0
-      graphql: 17.0.2
-      tslib: 2.6.2
-      unixify: 1.0.0
-    transitivePeerDependencies:
-      - supports-color
 
   '@graphql-tools/code-file-loader@8.1.37(graphql@17.0.2)':
     dependencies:
@@ -9040,19 +8971,6 @@ snapshots:
       tslib: 2.6.2
       unixify: 1.0.0
 
-  '@graphql-tools/graphql-tag-pluck@8.3.19(graphql@17.0.2)':
-    dependencies:
-      '@babel/core': 7.26.10
-      '@babel/parser': 7.26.10
-      '@babel/plugin-syntax-import-assertions': 7.26.0(@babel/core@7.26.10)
-      '@babel/traverse': 7.26.10
-      '@babel/types': 7.26.10
-      '@graphql-tools/utils': 10.8.6(graphql@17.0.2)
-      graphql: 17.0.2
-      tslib: 2.6.2
-    transitivePeerDependencies:
-      - supports-color
-
   '@graphql-tools/graphql-tag-pluck@8.3.36(graphql@17.0.2)':
     dependencies:
       '@babel/core': 7.29.7
@@ -9081,14 +8999,6 @@ snapshots:
       tslib: 2.6.2
       unixify: 1.0.0
 
-  '@graphql-tools/load@8.0.19(graphql@17.0.2)':
-    dependencies:
-      '@graphql-tools/schema': 10.0.23(graphql@17.0.2)
-      '@graphql-tools/utils': 10.8.6(graphql@17.0.2)
-      graphql: 17.0.2
-      p-limit: 3.1.0
-      tslib: 2.6.2
-
   '@graphql-tools/load@8.1.16(graphql@17.0.2)':
     dependencies:
       '@graphql-tools/schema': 10.1.0(graphql@17.0.2)
@@ -9106,13 +9016,6 @@ snapshots:
   '@graphql-tools/merge@9.2.3(graphql@17.0.2)':
     dependencies:
       '@graphql-tools/utils': 12.0.0(graphql@17.0.2)
-      graphql: 17.0.2
-      tslib: 2.6.2
-
-  '@graphql-tools/schema@10.0.23(graphql@17.0.2)':
-    dependencies:
-      '@graphql-tools/merge': 9.0.24(graphql@17.0.2)
-      '@graphql-tools/utils': 10.8.6(graphql@17.0.2)
       graphql: 17.0.2
       tslib: 2.6.2
 
