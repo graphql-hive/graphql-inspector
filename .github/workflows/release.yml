@@ -39,6 +39,6 @@ jobs:
       buildScript: build
       packageManager: pnpm
       packageManagerVersion: 10.34.5
-      nodeVersion: 23
+      nodeVersion: 24
     secrets:
       githubToken: ${{ secrets.GITHUB_TOKEN }}
