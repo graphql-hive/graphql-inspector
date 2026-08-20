@@ -6,7 +6,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN npm install -g pnpm@9.12.3
+RUN npm install -g "$(node -p "require('./package.json').packageManager")"
 RUN pnpm install
 RUN pnpm build
 
@@ -21,9 +21,10 @@ COPY --from=build /app/packages "${DISTDIR}/packages"
 COPY --from=build /app/package.json ${DISTDIR}
 COPY --from=build /app/pnpm-workspace.yaml ${DISTDIR}
 
-RUN npm install -g pnpm@9.12.3
-
 WORKDIR ${DISTDIR}
+
+RUN npm install -g "$(node -p "require('./package.json').packageManager")"
+
 RUN pnpm install --prod
 RUN pnpm store prune
 

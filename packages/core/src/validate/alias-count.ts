@@ -32,9 +32,11 @@ export function validateAliasCount({
     if (aliasCount > maxAliasCount) {
       return new GraphQLError(
         `Too many aliases (${aliasCount}). Maximum allowed is ${maxAliasCount}`,
-        [definition],
-        source,
-        definition.loc?.start ? [definition.loc.start] : undefined,
+        {
+          source,
+          nodes: [definition],
+          positions: definition.loc?.start ? [definition.loc.start] : undefined,
+        },
       );
     }
   }

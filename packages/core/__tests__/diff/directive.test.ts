@@ -148,6 +148,19 @@ describe('directive', () => {
   });
 
   describe('arguments', () => {
+    test('detects changed programmatic defaults', async () => {
+      const a = buildSchema('directive @a(value: Int) on FIELD type Query { field: String }');
+      const b = buildSchema('directive @a(value: Int) on FIELD type Query { field: String }');
+      a.getDirective('a')!.args[0].default = { value: 1 };
+      b.getDirective('a')!.args[0].default = { value: 2 };
+
+      const change = findFirstChangeByPath(await diff(a, b), '@a.value');
+
+      expect(change.type).toEqual('DIRECTIVE_ARGUMENT_DEFAULT_VALUE_CHANGED');
+      expect(change.meta.oldDirectiveArgumentDefaultValue).toBe('1');
+      expect(change.meta.newDirectiveArgumentDefaultValue).toBe('2');
+    });
+
     test('added', async () => {
       const a = buildSchema(/* GraphQL */ `
         directive @a on FIELD

@@ -5,7 +5,8 @@ import {
   GraphQLObjectType,
   Kind,
 } from 'graphql';
-import { compareDirectiveLists, diffArrays, isNotEqual } from '../utils/compare.js';
+import { compareDirectiveLists, isNotEqual } from '../utils/compare.js';
+import { defaultValuesAreEqual } from '../utils/graphql.js';
 import {
   fieldArgumentDefaultChanged,
   fieldArgumentDescriptionChanged,
@@ -29,23 +30,16 @@ export function changesInArgument(
     addChange(fieldArgumentDescriptionChanged(type, field, oldArg, newArg));
   }
 
-  if (isNotEqual(oldArg?.defaultValue, newArg.defaultValue)) {
-    if (Array.isArray(oldArg?.defaultValue) && Array.isArray(newArg.defaultValue)) {
-      const diff = diffArrays(oldArg.defaultValue, newArg.defaultValue);
-      if (diff.length > 0) {
-        addChange(fieldArgumentDefaultChanged(type, field, oldArg, newArg));
-      }
-    } else if (JSON.stringify(oldArg?.defaultValue) !== JSON.stringify(newArg.defaultValue)) {
-      addChange(fieldArgumentDefaultChanged(type, field, oldArg, newArg));
-    }
+  if (!defaultValuesAreEqual(oldArg, newArg)) {
+    addChange(fieldArgumentDefaultChanged(type, field, oldArg, newArg));
   }
 
   if (isNotEqual(oldArg?.type.toString(), newArg.type.toString())) {
     addChange(fieldArgumentTypeChanged(type, field, oldArg, newArg));
   }
 
-  if (newArg.astNode?.directives) {
-    compareDirectiveLists(oldArg?.astNode?.directives || [], newArg.astNode.directives || [], {
+  if (oldArg?.astNode?.directives || newArg.astNode?.directives) {
+    compareDirectiveLists(oldArg?.astNode?.directives || [], newArg.astNode?.directives || [], {
       onAdded(directive) {
         addChange(
           directiveUsageAdded(

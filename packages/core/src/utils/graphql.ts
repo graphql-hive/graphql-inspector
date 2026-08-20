@@ -1,9 +1,13 @@
 import {
+  coerceInputValue,
+  ConstValueNode,
   DocumentNode,
   FieldNode,
   getNamedType,
+  GraphQLArgument,
   GraphQLEnumType,
   GraphQLError,
+  GraphQLInputField,
   GraphQLInputObjectType,
   GraphQLInputType,
   GraphQLInterfaceType,
@@ -22,12 +26,78 @@ import {
   isUnionType,
   isWrappingType,
   Kind,
-  KindEnum,
   TypeInfo,
+  valueFromAST,
   visit,
   visitWithTypeInfo,
 } from 'graphql';
 import { isDeprecated } from './is-deprecated.js';
+
+type GraphQLInputValue = (GraphQLArgument | GraphQLInputField) & {
+  default?: { literal: ConstValueNode; value?: never } | { value: unknown; literal?: never };
+};
+
+export function getDefaultValue(inputValue: GraphQLInputValue): unknown {
+  if (inputValue.default !== undefined) {
+    if (inputValue.default.literal !== undefined) {
+      return valueFromAST(inputValue.default.literal, inputValue.type);
+    }
+
+    return coerceInputValue(inputValue.default.value, inputValue.type);
+  }
+
+  return inputValue.defaultValue;
+}
+
+export function hasDefaultValue(inputValue: GraphQLInputValue): boolean {
+  return inputValue.default !== undefined || inputValue.defaultValue !== undefined;
+}
+
+export function defaultValuesAreEqual(
+  oldInputValue: GraphQLInputValue | null | undefined,
+  newInputValue: GraphQLInputValue,
+): boolean {
+  return defaultValueEquals(
+    oldInputValue == null ? undefined : getDefaultValue(oldInputValue),
+    getDefaultValue(newInputValue),
+  );
+}
+
+function defaultValueEquals(oldValue: unknown, newValue: unknown): boolean {
+  if (Object.is(oldValue, newValue)) {
+    return true;
+  }
+
+  if (Array.isArray(oldValue) && Array.isArray(newValue)) {
+    return (
+      oldValue.length === newValue.length &&
+      oldValue.every((value, index) => defaultValueEquals(value, newValue[index]))
+    );
+  }
+
+  if (
+    oldValue !== null &&
+    newValue !== null &&
+    typeof oldValue === 'object' &&
+    typeof newValue === 'object'
+  ) {
+    const oldRecord = oldValue as Record<string, unknown>;
+    const newRecord = newValue as Record<string, unknown>;
+    const oldKeys = Object.keys(oldRecord);
+    const newKeys = Object.keys(newRecord);
+
+    return (
+      oldKeys.length === newKeys.length &&
+      oldKeys.every(
+        key =>
+          Object.prototype.hasOwnProperty.call(newRecord, key) &&
+          defaultValueEquals(oldRecord[key], newRecord[key]),
+      )
+    );
+  }
+
+  return false;
+}
 
 export function safeChangeForField(
   oldType: GraphQLOutputType,
@@ -74,7 +144,7 @@ export function safeChangeForInputValue(
   return false;
 }
 
-export function getKind(type: GraphQLNamedType): KindEnum {
+export function getKind(type: GraphQLNamedType): Kind {
   const node = type.astNode as any;
   return node?.kind || '';
 }
@@ -133,7 +203,7 @@ export function findDeprecatedUsages(
               errors.push(
                 new GraphQLError(
                   `The argument '${argument?.name}' of '${fieldDef.name}' is deprecated. ${reason}`,
-                  [node],
+                  { nodes: [node] },
                 ),
               );
             }
@@ -151,7 +221,7 @@ export function findDeprecatedUsages(
                 `The field '${parentType.name}.${fieldDef.name}' is deprecated.${
                   reason ? ' ' + reason : ''
                 }`,
-                [node],
+                { nodes: [node] },
               ),
             );
           }
@@ -168,7 +238,7 @@ export function findDeprecatedUsages(
                 `The enum value '${type.name}.${enumVal.name}' is deprecated.${
                   reason ? ' ' + reason : ''
                 }`,
-                [node],
+                { nodes: [node] },
               ),
             );
           }

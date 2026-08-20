@@ -1,5 +1,5 @@
-import { DirectiveLocationEnum, GraphQLArgument, GraphQLDirective, isNonNullType } from 'graphql';
-import { safeChangeForInputValue } from '../../utils/graphql.js';
+import { DirectiveLocation, GraphQLArgument, GraphQLDirective, isNonNullType } from 'graphql';
+import { getDefaultValue, hasDefaultValue, safeChangeForInputValue } from '../../utils/graphql.js';
 import { fmt, safeString } from '../../utils/string.js';
 import {
   Change,
@@ -189,7 +189,7 @@ export function directiveLocationAddedFromMeta(args: DirectiveLocationAddedChang
 
 export function directiveLocationAdded(
   directive: GraphQLDirective,
-  location: DirectiveLocationEnum,
+  location: DirectiveLocation,
 ): Change<typeof ChangeType.DirectiveLocationAdded> {
   return directiveLocationAddedFromMeta({
     type: ChangeType.DirectiveLocationAdded,
@@ -223,7 +223,7 @@ export function directiveLocationRemovedFromMeta(args: DirectiveLocationRemovedC
 
 export function directiveLocationRemoved(
   directive: GraphQLDirective,
-  location: DirectiveLocationEnum,
+  location: DirectiveLocation,
 ): Change<typeof ChangeType.DirectiveLocationRemoved> {
   return directiveLocationRemovedFromMeta({
     type: ChangeType.DirectiveLocationRemoved,
@@ -272,8 +272,9 @@ export function directiveArgumentAdded(
       directiveName: directive.name,
       addedDirectiveArgumentName: arg.name,
       addedDirectiveArgumentType: arg.type.toString(),
-      addedDirectiveDefaultValue:
-        arg.defaultValue === undefined ? undefined : safeString(arg.defaultValue),
+      addedDirectiveDefaultValue: hasDefaultValue(arg)
+        ? safeString(getDefaultValue(arg))
+        : undefined,
       addedDirectiveArgumentTypeIsNonNull: isNonNullType(arg.type),
       addedDirectiveArgumentDescription: arg.description ?? undefined,
       addedToNewDirective,
@@ -398,11 +399,14 @@ export function directiveArgumentDefaultValueChanged(
     directiveName: directive.name,
     directiveArgumentName: newArg.name,
   };
-  if (oldArg?.defaultValue !== undefined) {
-    meta.oldDirectiveArgumentDefaultValue = safeString(oldArg.defaultValue);
+  const oldDefaultValue = oldArg === null ? undefined : getDefaultValue(oldArg);
+  const newDefaultValue = getDefaultValue(newArg);
+
+  if (oldDefaultValue !== undefined) {
+    meta.oldDirectiveArgumentDefaultValue = safeString(oldDefaultValue);
   }
-  if (newArg.defaultValue !== undefined) {
-    meta.newDirectiveArgumentDefaultValue = safeString(newArg.defaultValue);
+  if (newDefaultValue !== undefined) {
+    meta.newDirectiveArgumentDefaultValue = safeString(newDefaultValue);
   }
 
   return directiveArgumentDefaultValueChangedFromMeta({

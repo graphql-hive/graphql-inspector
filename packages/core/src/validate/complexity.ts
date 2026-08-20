@@ -51,9 +51,11 @@ export function validateComplexity({
     if (complexityScore > maxComplexityScore) {
       return new GraphQLError(
         `Too high complexity score (${complexityScore}). Maximum allowed is ${maxComplexityScore}`,
-        [definition],
-        source,
-        definition.loc?.start ? [definition.loc.start] : undefined,
+        {
+          nodes: [definition],
+          positions: definition.loc?.start ? [definition.loc.start] : undefined,
+          source,
+        },
       );
     }
   }

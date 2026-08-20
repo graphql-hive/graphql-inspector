@@ -61,12 +61,12 @@
     "prepack": "bob prepack"
   },
   "peerDependencies": {
-    "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0"
+    "graphql": "^16.0.0 || ^17.0.0"
   },
   "dependencies": {
-    "@graphql-inspector/commands": "workspace:*",
-    "open": "8.4.2",
-    "tslib": "2.6.2"
+    "@graphql-inspector/commands": "workspace:^",
+    "open": "^8.4.2",
+    "tslib": "~2.6.2"
   },
   "publishConfig": {
     "directory": "dist",

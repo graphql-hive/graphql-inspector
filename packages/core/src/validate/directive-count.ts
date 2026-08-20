@@ -32,9 +32,11 @@ export function validateDirectiveCount({
     if (directiveCount > maxDirectiveCount) {
       return new GraphQLError(
         `Too many directives (${directiveCount}). Maximum allowed is ${maxDirectiveCount}`,
-        [definition],
-        source,
-        definition.loc?.start ? [definition.loc.start] : undefined,
+        {
+          nodes: [definition],
+          source,
+          positions: definition.loc?.start ? [definition.loc.start] : undefined,
+        },
       );
     }
   }

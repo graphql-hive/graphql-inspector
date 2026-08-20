@@ -39,12 +39,11 @@ export function validateQueryDepth({
 
     const node: ASTNode = errorOrNode;
 
-    return new GraphQLError(
-      `Query exceeds maximum depth of ${maxDepth}`,
-      node,
+    return new GraphQLError(`Query exceeds maximum depth of ${maxDepth}`, {
+      nodes: node,
       source,
-      node.loc?.start ? [node.loc.start] : undefined,
-    );
+      positions: node.loc?.start ? [node.loc.start] : undefined,
+    });
   }
 }
 

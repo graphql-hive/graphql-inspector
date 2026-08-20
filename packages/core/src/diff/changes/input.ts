@@ -1,5 +1,5 @@
 import { GraphQLInputField, GraphQLInputObjectType, isNonNullType } from 'graphql';
-import { safeChangeForInputValue } from '../../utils/graphql.js';
+import { getDefaultValue, hasDefaultValue, safeChangeForInputValue } from '../../utils/graphql.js';
 import { isDeprecated } from '../../utils/is-deprecated.js';
 import { fmt, safeString } from '../../utils/string.js';
 import {
@@ -99,6 +99,8 @@ export function inputFieldAdded(
   field: GraphQLInputField,
   addedToNewType: boolean,
 ): Change<typeof ChangeType.InputFieldAdded> {
+  const defaultValue = getDefaultValue(field);
+
   return inputFieldAddedFromMeta({
     type: ChangeType.InputFieldAdded,
     meta: {
@@ -106,9 +108,7 @@ export function inputFieldAdded(
       addedInputFieldName: field.name,
       isAddedInputFieldTypeNullable: !isNonNullType(field.type),
       addedInputFieldType: field.type.toString(),
-      ...(field.defaultValue === undefined
-        ? {}
-        : { addedFieldDefault: safeString(field.defaultValue) }),
+      ...(hasDefaultValue(field) ? { addedFieldDefault: safeString(defaultValue) } : {}),
       addedToNewType,
     },
   });
@@ -245,12 +245,16 @@ export function inputFieldDefaultValueChanged(
     inputFieldName: newField.name,
   };
 
-  if (oldField.defaultValue !== undefined) {
-    meta.oldDefaultValue = safeString(oldField.defaultValue);
+  const oldDefaultValue = getDefaultValue(oldField);
+  const newDefaultValue = getDefaultValue(newField);
+
+  if (oldDefaultValue !== undefined) {
+    meta.oldDefaultValue = safeString(oldDefaultValue);
   }
-  if (newField.defaultValue !== undefined) {
-    meta.newDefaultValue = safeString(newField.defaultValue);
+  if (newDefaultValue !== undefined) {
+    meta.newDefaultValue = safeString(newDefaultValue);
   }
+
   return inputFieldDefaultValueChangedFromMeta({
     type: ChangeType.InputFieldDefaultValueChanged,
     meta,

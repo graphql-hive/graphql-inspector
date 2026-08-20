@@ -1,11 +1,6 @@
 import { GraphQLInputField, GraphQLInputObjectType, Kind } from 'graphql';
-import {
-  compareDirectiveLists,
-  compareLists,
-  diffArrays,
-  isNotEqual,
-  isVoid,
-} from '../utils/compare.js';
+import { compareDirectiveLists, compareLists, isNotEqual, isVoid } from '../utils/compare.js';
+import { defaultValuesAreEqual } from '../utils/graphql.js';
 import {
   directiveUsageAdded,
   directiveUsageChanged,
@@ -81,14 +76,8 @@ function changesInInputField(
   }
 
   if (!isVoid(oldField)) {
-    if (isNotEqual(oldField?.defaultValue, newField.defaultValue)) {
-      if (Array.isArray(oldField?.defaultValue) && Array.isArray(newField.defaultValue)) {
-        if (diffArrays(oldField.defaultValue, newField.defaultValue).length > 0) {
-          addChange(inputFieldDefaultValueChanged(input, oldField, newField));
-        }
-      } else if (JSON.stringify(oldField?.defaultValue) !== JSON.stringify(newField.defaultValue)) {
-        addChange(inputFieldDefaultValueChanged(input, oldField, newField));
-      }
+    if (!defaultValuesAreEqual(oldField, newField)) {
+      addChange(inputFieldDefaultValueChanged(input, oldField, newField));
     }
 
     if (!isVoid(oldField) && isNotEqual(oldField.type.toString(), newField.type.toString())) {
@@ -96,8 +85,8 @@ function changesInInputField(
     }
   }
 
-  if (newField.astNode?.directives) {
-    compareDirectiveLists(oldField?.astNode?.directives || [], newField.astNode.directives || [], {
+  if (oldField?.astNode?.directives || newField.astNode?.directives) {
+    compareDirectiveLists(oldField?.astNode?.directives || [], newField.astNode?.directives || [], {
       onAdded(directive) {
         addChange(
           directiveUsageAdded(

@@ -61,15 +61,15 @@
     "prepack": "bob prepack"
   },
   "peerDependencies": {
-    "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0"
+    "graphql": "^16.0.0 || ^17.0.0"
   },
   "dependencies": {
-    "@graphql-tools/url-loader": "8.0.31",
-    "tslib": "2.6.2"
+    "@graphql-tools/url-loader": "^9.1.7",
+    "tslib": "~2.6.2"
   },
   "devDependencies": {
     "@types/node": "20.14.15",
-    "graphql": "16.9.0"
+    "graphql": "17.0.2"
   },
   "publishConfig": {
     "directory": "dist",

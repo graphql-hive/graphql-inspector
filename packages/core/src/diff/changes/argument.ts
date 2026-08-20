@@ -1,5 +1,5 @@
 import { GraphQLArgument, GraphQLField, GraphQLInterfaceType, GraphQLObjectType } from 'graphql';
-import { safeChangeForInputValue } from '../../utils/graphql.js';
+import { getDefaultValue, safeChangeForInputValue } from '../../utils/graphql.js';
 import { fmt, safeString } from '../../utils/string.js';
 import {
   Change,
@@ -90,11 +90,14 @@ export function fieldArgumentDefaultChanged(
     argumentName: newArg.name,
   };
 
-  if (oldArg?.defaultValue !== undefined) {
-    meta.oldDefaultValue = safeString(oldArg.defaultValue);
+  const oldDefaultValue = oldArg === null ? undefined : getDefaultValue(oldArg);
+  const newDefaultValue = getDefaultValue(newArg);
+
+  if (oldDefaultValue !== undefined) {
+    meta.oldDefaultValue = safeString(oldDefaultValue);
   }
-  if (newArg.defaultValue !== undefined) {
-    meta.newDefaultValue = safeString(newArg.defaultValue);
+  if (newDefaultValue !== undefined) {
+    meta.newDefaultValue = safeString(newDefaultValue);
   }
 
   return fieldArgumentDefaultChangedFromMeta({

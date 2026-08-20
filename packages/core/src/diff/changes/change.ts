@@ -608,11 +608,11 @@ export type TypeAddedChange = {
   meta:
     | InputAddedMeta
     | TypeAddedMeta<
-        | Kind.ENUM_TYPE_DEFINITION
-        | Kind.OBJECT_TYPE_DEFINITION
-        | Kind.INTERFACE_TYPE_DEFINITION
-        | Kind.UNION_TYPE_DEFINITION
-        | Kind.SCALAR_TYPE_DEFINITION
+        | typeof Kind.ENUM_TYPE_DEFINITION
+        | typeof Kind.OBJECT_TYPE_DEFINITION
+        | typeof Kind.INTERFACE_TYPE_DEFINITION
+        | typeof Kind.UNION_TYPE_DEFINITION
+        | typeof Kind.SCALAR_TYPE_DEFINITION
       >;
 };
 
