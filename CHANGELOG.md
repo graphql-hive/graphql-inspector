@@ -2,6 +2,10 @@
 
 ### vNEXT
 
+### v4.0.1
+
+- **action**: fix regression of not using `require` for resolving rules from v4.0.0
+
 ### v4.0.0
 
 - **action**: BREAKING CHANGE - Node engine in the action runner is now v24
