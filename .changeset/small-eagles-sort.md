@@ -1,28 +1,32 @@
 ---
-'@graphql-inspector/introspect-command': minor
-'@graphql-inspector/commands': minor
-'@graphql-inspector/coverage-command': minor
-'@graphql-inspector/validate-command': minor
-'@graphql-inspector/similar-command': minor
-'@graphql-inspector/compare-changes': minor
-'@graphql-inspector/graphql-loader': minor
-'@graphql-inspector/loaders': minor
-'@graphql-inspector/audit-command': minor
-'@graphql-inspector/serve-command': minor
-'@graphql-inspector/github-loader': minor
-'@graphql-inspector/diff-command': minor
-'@graphql-inspector/docs-command': minor
-'@graphql-inspector/code-loader': minor
-'@graphql-inspector/json-loader': minor
-'@graphql-inspector/git-loader': minor
-'@graphql-inspector/url-loader': minor
-'@graphql-inspector/action': minor
-'@graphql-inspector/config': minor
-'@graphql-inspector/logger': minor
-'@graphql-inspector/patch': minor
-'@graphql-inspector/core': minor
-'@graphql-inspector/cli': minor
-'@graphql-inspector/ci': minor
+'@graphql-inspector/introspect-command': major
+'@graphql-inspector/commands': major
+'@graphql-inspector/coverage-command': major
+'@graphql-inspector/validate-command': major
+'@graphql-inspector/similar-command': major
+'@graphql-inspector/compare-changes': major
+'@graphql-inspector/graphql-loader': major
+'@graphql-inspector/loaders': major
+'@graphql-inspector/audit-command': major
+'@graphql-inspector/serve-command': major
+'@graphql-inspector/github-loader': major
+'@graphql-inspector/diff-command': major
+'@graphql-inspector/docs-command': major
+'@graphql-inspector/code-loader': major
+'@graphql-inspector/json-loader': major
+'@graphql-inspector/git-loader': major
+'@graphql-inspector/url-loader': major
+'@graphql-inspector/action': major
+'@graphql-inspector/config': major
+'@graphql-inspector/logger': major
+'@graphql-inspector/patch': major
+'@graphql-inspector/core': major
+'@graphql-inspector/cli': major
+'@graphql-inspector/ci': major
 ---
 
 Add support for `graphql-js@17`.
+
+**BREAKING** Drop support for Node.js 20
+
+**BREAKING** Drop support for GraphQL 14 and 15

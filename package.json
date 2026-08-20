@@ -84,8 +84,6 @@
     "bob-the-bundler": "7.0.1",
     "eslint": "8.57.1",
     "graphql": "17.0.2",
-    "graphql-14": "npm:graphql@14.7.0",
-    "graphql-15": "npm:graphql@15.10.1",
     "graphql-16": "npm:graphql@16.14.2",
     "graphql-config": "5.1.0",
     "jsesc": "3.0.2",
