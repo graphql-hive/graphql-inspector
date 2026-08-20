@@ -1,6 +1,6 @@
 {
   "name": "@graphql-inspector/graphql-loader",
-  "version": "5.0.1",
+  "version": "6.0.0",
   "type": "module",
   "description": "Load GraphQL Schema and Documents from GraphQL files (.graphql, .gql etc)",
   "repository": {

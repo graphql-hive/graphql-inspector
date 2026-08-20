@@ -1,6 +1,6 @@
 {
   "name": "@graphql-inspector/config",
-  "version": "4.0.2",
+  "version": "5.0.0",
   "type": "module",
   "repository": {
     "type": "git",
