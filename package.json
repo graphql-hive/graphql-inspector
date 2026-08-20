@@ -74,7 +74,7 @@
     "@graphql-inspector/url-loader": "workspace:*",
     "@graphql-inspector/validate-command": "workspace:*",
     "@theguild/eslint-config": "0.13.4",
-    "@theguild/prettier-config": "2.0.7",
+    "@theguild/prettier-config": "3.0.1",
     "@types/body-parser": "1.19.5",
     "@types/cors": "2.8.17",
     "@types/express": "5.0.1",
