@@ -5,7 +5,7 @@
   "description": "Load GraphQL Schema and Documents from Git repository",
   "repository": {
     "type": "git",
-    "url": "graphql-hive/graphql-inspector",
+    "url": "https://github.com/graphql-hive/graphql-inspector",
     "directory": "packages/plugins/loaders/git"
   },
   "author": {

@@ -5,7 +5,7 @@
   "description": "Logger for GraphQL Inspector",
   "repository": {
     "type": "git",
-    "url": "graphql-hive/graphql-inspector",
+    "url": "https://github.com/graphql-hive/graphql-inspector",
     "directory": "packages/logger"
   },
   "author": {

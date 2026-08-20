@@ -5,8 +5,8 @@
   "description": "Loaders in GraphQL Inspector",
   "repository": {
     "type": "git",
-    "url": "graphql-hive/graphql-inspector",
-    "directory": "packages/plugins/plugin"
+    "url": "https://github.com/graphql-hive/graphql-inspector",
+    "directory": "packages/plugins/loaders/loaders"
   },
   "author": {
     "name": "Kamil Kisiela",
