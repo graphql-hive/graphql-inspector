@@ -12,10 +12,10 @@
   },
   "license": "MIT",
   "private": true,
-  "packageManager": "pnpm@9.12.3",
+  "packageManager": "pnpm@10.34.5",
   "engines": {
     "node": ">=18.0.0",
-    "pnpm": ">=9.12.3"
+    "pnpm": ">=10.34.5"
   },
   "keywords": [
     "graphql",

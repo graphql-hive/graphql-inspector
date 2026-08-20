@@ -1,15 +1,44 @@
 name: release
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches:
-      - 'master'
+      - master
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  id-token: write
+  pull-requests: write
+  actions: write
+  contents: write
 
 jobs:
   stable:
-    uses: the-guild-org/shared-config/.github/workflows/release-stable.yml@main
+    uses: the-guild-org/shared-config/.github/workflows/release-stable.yml@1c4632ccc198d4c9b34d9e6b3d556c6f245b4e69
+    if: github.event_name == 'push'
     with:
       releaseScript: release
       packageManager: pnpm
+      packageManagerVersion: 10.34.5
+      nodeVersion: 24
     secrets:
       githubToken: ${{ secrets.GITHUB_TOKEN }}
-      npmToken: ${{ secrets.NPM_TOKEN }}
+
+  alpha:
+    if:
+      github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name ==
+      github.repository
+    uses: the-guild-org/shared-config/.github/workflows/release-snapshot.yml@1c4632ccc198d4c9b34d9e6b3d556c6f245b4e69
+    with:
+      npmTag: alpha
+      buildScript: build
+      packageManager: pnpm
+      packageManagerVersion: 10.34.5
+      nodeVersion: 24
+    secrets:
+      githubToken: ${{ secrets.GITHUB_TOKEN }}
