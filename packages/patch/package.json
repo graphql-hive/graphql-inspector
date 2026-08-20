@@ -5,7 +5,7 @@
   "description": "Applies changes output from @graphql-inspect/diff",
   "repository": {
     "type": "git",
-    "url": "graphql-hive/graphql-inspector",
+    "url": "https://github.com/graphql-hive/graphql-inspector",
     "directory": "packages/patch"
   },
   "author": {

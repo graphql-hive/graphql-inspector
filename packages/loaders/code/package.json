@@ -5,7 +5,7 @@
   "description": "Load GraphQL Schema and Documents from TypeScript and JavaScript code",
   "repository": {
     "type": "git",
-    "url": "graphql-hive/graphql-inspector",
+    "url": "https://github.com/graphql-hive/graphql-inspector",
     "directory": "packages/plugins/loaders/code"
   },
   "author": {
