@@ -61,7 +61,7 @@
     "prepack": "bob prepack"
   },
   "peerDependencies": {
-    "@graphql-inspector/config": "^4.0.0",
+    "@graphql-inspector/config": "workspace:^",
     "graphql": "^16.0.0 || ^17.0.0"
   },
   "dependencies": {
