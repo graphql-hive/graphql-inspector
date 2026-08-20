@@ -6,6 +6,7 @@ import {
   isNotEqual,
   isVoid,
 } from '../utils/compare.js';
+import { isDeprecated } from '../utils/is-deprecated.js';
 import {
   directiveUsageAdded,
   directiveUsageChanged,
@@ -14,6 +15,11 @@ import {
 import {
   inputFieldAdded,
   inputFieldDefaultValueChanged,
+  inputFieldDeprecationAdded,
+  inputFieldDeprecationReasonAdded,
+  inputFieldDeprecationReasonChanged,
+  inputFieldDeprecationReasonRemoved,
+  inputFieldDeprecationRemoved,
   inputFieldDescriptionAdded,
   inputFieldDescriptionChanged,
   inputFieldDescriptionRemoved,
@@ -21,6 +27,8 @@ import {
   inputFieldTypeChanged,
 } from './changes/input.js';
 import { AddChange } from './schema.js';
+
+const DEPRECATION_REASON_DEFAULT = 'No longer supported';
 
 export function changesInInputObject(
   oldInput: GraphQLInputObjectType | null,
@@ -80,6 +88,30 @@ function changesInInputField(
     }
   }
 
+  if (isVoid(oldField) || !isDeprecated(oldField)) {
+    if (isDeprecated(newField)) {
+      addChange(inputFieldDeprecationAdded(input, newField));
+    }
+  } else if (!isDeprecated(newField)) {
+    if (isDeprecated(oldField)) {
+      addChange(inputFieldDeprecationRemoved(input, oldField));
+    }
+  } else if (isNotEqual(oldField.deprecationReason, newField.deprecationReason)) {
+    if (
+      isVoid(oldField.deprecationReason) ||
+      oldField.deprecationReason === DEPRECATION_REASON_DEFAULT
+    ) {
+      addChange(inputFieldDeprecationReasonAdded(input, newField));
+    } else if (
+      isVoid(newField.deprecationReason) ||
+      newField.deprecationReason === DEPRECATION_REASON_DEFAULT
+    ) {
+      addChange(inputFieldDeprecationReasonRemoved(input, oldField));
+    } else {
+      addChange(inputFieldDeprecationReasonChanged(input, oldField, newField));
+    }
+  }
+
   if (!isVoid(oldField)) {
     if (isNotEqual(oldField?.defaultValue, newField.defaultValue)) {
       if (Array.isArray(oldField?.defaultValue) && Array.isArray(newField.defaultValue)) {
@@ -96,39 +128,37 @@ function changesInInputField(
     }
   }
 
-  if (newField.astNode?.directives) {
-    compareDirectiveLists(oldField?.astNode?.directives || [], newField.astNode.directives || [], {
-      onAdded(directive) {
-        addChange(
-          directiveUsageAdded(
-            Kind.INPUT_VALUE_DEFINITION,
-            directive,
-            {
-              type: input,
-              field: newField,
-            },
-            oldField === null,
-          ),
-        );
-        directiveUsageChanged(null, directive, addChange, input, newField);
-      },
-      onMutual(directive) {
-        directiveUsageChanged(
-          directive.oldVersion,
-          directive.newVersion,
-          addChange,
-          input,
-          newField,
-        );
-      },
-      onRemoved(directive) {
-        addChange(
-          directiveUsageRemoved(Kind.INPUT_VALUE_DEFINITION, directive, {
+  compareDirectiveLists(oldField?.astNode?.directives || [], newField.astNode?.directives || [], {
+    onAdded(directive) {
+      addChange(
+        directiveUsageAdded(
+          Kind.INPUT_VALUE_DEFINITION,
+          directive,
+          {
             type: input,
             field: newField,
-          }),
-        );
-      },
-    });
-  }
+          },
+          oldField === null,
+        ),
+      );
+      directiveUsageChanged(null, directive, addChange, input, newField);
+    },
+    onMutual(directive) {
+      directiveUsageChanged(
+        directive.oldVersion,
+        directive.newVersion,
+        addChange,
+        input,
+        newField,
+      );
+    },
+    onRemoved(directive) {
+      addChange(
+        directiveUsageRemoved(Kind.INPUT_VALUE_DEFINITION, directive, {
+          type: input,
+          field: newField,
+        }),
+      );
+    },
+  });
 }

@@ -44,7 +44,11 @@ const isAdditionChange = (change: Change<any>): change is Change<AdditionChangeT
     case ChangeType.FieldDeprecationAdded:
     case ChangeType.FieldDeprecationReasonAdded:
     case ChangeType.FieldDescriptionAdded:
+    case ChangeType.FieldArgumentDeprecationAdded:
+    case ChangeType.FieldArgumentDeprecationReasonAdded:
     case ChangeType.InputFieldAdded:
+    case ChangeType.InputFieldDeprecationAdded:
+    case ChangeType.InputFieldDeprecationReasonAdded:
     case ChangeType.InputFieldDescriptionAdded:
     case ChangeType.ObjectTypeInterfaceAdded:
     case ChangeType.TypeDescriptionAdded:

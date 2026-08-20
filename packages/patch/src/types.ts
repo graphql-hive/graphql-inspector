@@ -12,7 +12,11 @@ export type AdditionChangeType =
   | typeof ChangeType.FieldDeprecationAdded
   | typeof ChangeType.FieldDeprecationReasonAdded
   | typeof ChangeType.FieldDescriptionAdded
+  | typeof ChangeType.FieldArgumentDeprecationAdded
+  | typeof ChangeType.FieldArgumentDeprecationReasonAdded
   | typeof ChangeType.InputFieldAdded
+  | typeof ChangeType.InputFieldDeprecationAdded
+  | typeof ChangeType.InputFieldDeprecationReasonAdded
   | typeof ChangeType.InputFieldDescriptionAdded
   | typeof ChangeType.ObjectTypeInterfaceAdded
   | typeof ChangeType.TypeDescriptionAdded

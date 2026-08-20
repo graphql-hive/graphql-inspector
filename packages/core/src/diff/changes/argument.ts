@@ -1,4 +1,10 @@
-import { GraphQLArgument, GraphQLField, GraphQLInterfaceType, GraphQLObjectType } from 'graphql';
+import {
+  GraphQLArgument,
+  GraphQLDeprecatedDirective,
+  GraphQLField,
+  GraphQLInterfaceType,
+  GraphQLObjectType,
+} from 'graphql';
 import { safeChangeForInputValue } from '../../utils/graphql.js';
 import { fmt, safeString } from '../../utils/string.js';
 import {
@@ -6,6 +12,11 @@ import {
   ChangeType,
   CriticalityLevel,
   FieldArgumentDefaultChangedChange,
+  FieldArgumentDeprecationAddedChange,
+  FieldArgumentDeprecationReasonAddedChange,
+  FieldArgumentDeprecationReasonChangedChange,
+  FieldArgumentDeprecationReasonRemovedChange,
+  FieldArgumentDeprecationRemovedChange,
   FieldArgumentDescriptionChangedChange,
   FieldArgumentTypeChangedChange,
 } from './change.js';
@@ -145,6 +156,181 @@ export function fieldArgumentTypeChanged(
       oldArgumentType: oldArg?.type.toString() ?? '',
       newArgumentType: newArg.type.toString(),
       isSafeArgumentTypeChange: !oldArg || safeChangeForInputValue(oldArg.type, newArg.type),
+    },
+  });
+}
+
+function fieldArgumentDeprecationPath(meta: {
+  typeName: string;
+  fieldName: string;
+  argumentName: string;
+}) {
+  return [meta.typeName, meta.fieldName, meta.argumentName, `@${GraphQLDeprecatedDirective.name}`].join(
+    '.',
+  );
+}
+
+function buildFieldArgumentDeprecatedAddedMessage(args: FieldArgumentDeprecationAddedChange['meta']) {
+  return `Argument '${args.argumentName}' on field '${args.typeName}.${args.fieldName}' is deprecated`;
+}
+
+export function fieldArgumentDeprecationAddedFromMeta(args: FieldArgumentDeprecationAddedChange) {
+  return {
+    type: ChangeType.FieldArgumentDeprecationAdded,
+    criticality: {
+      level: CriticalityLevel.NonBreaking,
+    },
+    message: buildFieldArgumentDeprecatedAddedMessage(args.meta),
+    meta: args.meta,
+    path: fieldArgumentDeprecationPath(args.meta),
+  } as const;
+}
+
+export function fieldArgumentDeprecationAdded(
+  type: GraphQLObjectType | GraphQLInterfaceType,
+  field: GraphQLField<any, any, any>,
+  arg: GraphQLArgument,
+): Change<typeof ChangeType.FieldArgumentDeprecationAdded> {
+  return fieldArgumentDeprecationAddedFromMeta({
+    type: ChangeType.FieldArgumentDeprecationAdded,
+    meta: {
+      typeName: type.name,
+      fieldName: field.name,
+      argumentName: arg.name,
+      deprecationReason: arg.deprecationReason ?? '',
+    },
+  });
+}
+
+export function fieldArgumentDeprecationRemovedFromMeta(args: FieldArgumentDeprecationRemovedChange) {
+  return {
+    type: ChangeType.FieldArgumentDeprecationRemoved,
+    criticality: {
+      level: CriticalityLevel.NonBreaking,
+    },
+    message: `Argument '${args.meta.argumentName}' on field '${args.meta.typeName}.${args.meta.fieldName}' is no longer deprecated`,
+    meta: args.meta,
+    path: fieldArgumentDeprecationPath(args.meta),
+  } as const;
+}
+
+export function fieldArgumentDeprecationRemoved(
+  type: GraphQLObjectType | GraphQLInterfaceType,
+  field: GraphQLField<any, any, any>,
+  arg: GraphQLArgument,
+): Change<typeof ChangeType.FieldArgumentDeprecationRemoved> {
+  return fieldArgumentDeprecationRemovedFromMeta({
+    type: ChangeType.FieldArgumentDeprecationRemoved,
+    meta: {
+      typeName: type.name,
+      fieldName: field.name,
+      argumentName: arg.name,
+    },
+  });
+}
+
+function buildFieldArgumentDeprecationReasonChangedMessage(
+  args: FieldArgumentDeprecationReasonChangedChange['meta'],
+) {
+  const oldReason = fmt(args.oldDeprecationReason);
+  const newReason = fmt(args.newDeprecationReason);
+  return `Deprecation reason on argument '${args.argumentName}' on field '${args.typeName}.${args.fieldName}' has changed from '${oldReason}' to '${newReason}'`;
+}
+
+export function fieldArgumentDeprecationReasonChangedFromMeta(
+  args: FieldArgumentDeprecationReasonChangedChange,
+) {
+  return {
+    type: ChangeType.FieldArgumentDeprecationReasonChanged,
+    criticality: {
+      level: CriticalityLevel.NonBreaking,
+    },
+    message: buildFieldArgumentDeprecationReasonChangedMessage(args.meta),
+    meta: args.meta,
+    path: fieldArgumentDeprecationPath(args.meta),
+  } as const;
+}
+
+export function fieldArgumentDeprecationReasonChanged(
+  type: GraphQLObjectType | GraphQLInterfaceType,
+  field: GraphQLField<any, any, any>,
+  oldArg: GraphQLArgument,
+  newArg: GraphQLArgument,
+): Change<typeof ChangeType.FieldArgumentDeprecationReasonChanged> {
+  return fieldArgumentDeprecationReasonChangedFromMeta({
+    type: ChangeType.FieldArgumentDeprecationReasonChanged,
+    meta: {
+      argumentName: newArg.name,
+      fieldName: field.name,
+      typeName: type.name,
+      newDeprecationReason: newArg.deprecationReason ?? '',
+      oldDeprecationReason: oldArg.deprecationReason ?? '',
+    },
+  });
+}
+
+function buildFieldArgumentDeprecationReasonAddedMessage(
+  args: FieldArgumentDeprecationReasonAddedChange['meta'],
+) {
+  const reason = fmt(args.addedDeprecationReason);
+  return `Argument '${args.argumentName}' on field '${args.typeName}.${args.fieldName}' has deprecation reason '${reason}'`;
+}
+
+export function fieldArgumentDeprecationReasonAddedFromMeta(
+  args: FieldArgumentDeprecationReasonAddedChange,
+) {
+  return {
+    type: ChangeType.FieldArgumentDeprecationReasonAdded,
+    criticality: {
+      level: CriticalityLevel.NonBreaking,
+    },
+    message: buildFieldArgumentDeprecationReasonAddedMessage(args.meta),
+    meta: args.meta,
+    path: fieldArgumentDeprecationPath(args.meta),
+  } as const;
+}
+
+export function fieldArgumentDeprecationReasonAdded(
+  type: GraphQLObjectType | GraphQLInterfaceType,
+  field: GraphQLField<any, any, any>,
+  arg: GraphQLArgument,
+): Change<typeof ChangeType.FieldArgumentDeprecationReasonAdded> {
+  return fieldArgumentDeprecationReasonAddedFromMeta({
+    type: ChangeType.FieldArgumentDeprecationReasonAdded,
+    meta: {
+      typeName: type.name,
+      fieldName: field.name,
+      argumentName: arg.name,
+      addedDeprecationReason: arg.deprecationReason ?? '',
+    },
+  });
+}
+
+export function fieldArgumentDeprecationReasonRemovedFromMeta(
+  args: FieldArgumentDeprecationReasonRemovedChange,
+) {
+  return {
+    type: ChangeType.FieldArgumentDeprecationReasonRemoved,
+    criticality: {
+      level: CriticalityLevel.NonBreaking,
+    },
+    message: `Deprecation reason was removed from argument '${args.meta.argumentName}' on field '${args.meta.typeName}.${args.meta.fieldName}'`,
+    meta: args.meta,
+    path: [args.meta.typeName, args.meta.fieldName, args.meta.argumentName].join('.'),
+  } as const;
+}
+
+export function fieldArgumentDeprecationReasonRemoved(
+  type: GraphQLObjectType | GraphQLInterfaceType,
+  field: GraphQLField<any, any, any>,
+  arg: GraphQLArgument,
+): Change<typeof ChangeType.FieldArgumentDeprecationReasonRemoved> {
+  return fieldArgumentDeprecationReasonRemovedFromMeta({
+    type: ChangeType.FieldArgumentDeprecationReasonRemoved,
+    meta: {
+      typeName: type.name,
+      fieldName: field.name,
+      argumentName: arg.name,
     },
   });
 }

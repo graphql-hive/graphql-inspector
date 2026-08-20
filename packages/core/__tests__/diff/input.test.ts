@@ -4,6 +4,97 @@ import { findChangesByPath, findFirstChangeByPath } from '../../utils/testing.js
 
 describe('input', () => {
   describe('fields', () => {
+    test('deprecation reason changed / added / removed', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        input Foo {
+          a: String! @deprecated(reason: "OLD")
+          b: String! @deprecated(reason: "BBB")
+          c: String!
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        input Foo {
+          a: String! @deprecated(reason: "NEW")
+          b: String!
+          c: String! @deprecated(reason: "CCC")
+        }
+      `);
+
+      const changes = await diff(a, b);
+      const change = {
+        a: findFirstChangeByPath(changes, 'Foo.a.@deprecated'),
+        b: findFirstChangeByPath(changes, 'Foo.b.@deprecated'),
+        c: findFirstChangeByPath(changes, 'Foo.c.@deprecated'),
+      };
+
+      expect(change.a.type).toEqual('INPUT_FIELD_DEPRECATION_REASON_CHANGED');
+      expect(change.a.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      expect(change.a.message).toEqual(
+        "Deprecation reason on input field 'Foo.a' has changed from 'OLD' to 'NEW'",
+      );
+      expect(change.b.type).toEqual('INPUT_FIELD_DEPRECATION_REMOVED');
+      expect(change.b.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      expect(change.b.message).toEqual("Input field 'Foo.b' is no longer deprecated");
+      expect(change.c.type).toEqual('INPUT_FIELD_DEPRECATION_ADDED');
+      expect(change.c.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      expect(change.c.message).toEqual("Input field 'Foo.c' is deprecated");
+    });
+
+    test('deprecation added / removed', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        input Foo {
+          a: String! @deprecated
+          b: String!
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        input Foo {
+          a: String!
+          b: String! @deprecated
+        }
+      `);
+
+      const changes = await diff(a, b);
+      const change = {
+        a: findFirstChangeByPath(changes, 'Foo.a.@deprecated'),
+        b: findFirstChangeByPath(changes, 'Foo.b.@deprecated'),
+      };
+
+      expect(change.a.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      expect(change.a.type).toEqual('INPUT_FIELD_DEPRECATION_REMOVED');
+      expect(change.a.message).toEqual("Input field 'Foo.a' is no longer deprecated");
+      expect(change.b.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      expect(change.b.type).toEqual('INPUT_FIELD_DEPRECATION_ADDED');
+      expect(change.b.message).toEqual("Input field 'Foo.b' is deprecated");
+    });
+
+    test('deprecation added w/reason', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        input Foo {
+          a: String!
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        input Foo {
+          a: String! @deprecated(reason: "Use b instead.")
+        }
+      `);
+
+      const changes = await diff(a, b);
+
+      expect(findChangesByPath(changes, 'Foo.a.@deprecated')).toHaveLength(2);
+      const change = findFirstChangeByPath(changes, 'Foo.a.@deprecated');
+
+      expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+      expect(change.type).toEqual('INPUT_FIELD_DEPRECATION_ADDED');
+      expect(change.message).toEqual("Input field 'Foo.a' is deprecated");
+      expect(change.meta).toMatchObject({
+        deprecationReason: 'Use b instead.',
+        inputFieldName: 'a',
+        inputName: 'Foo',
+      });
+    });
+
     test('added', async () => {
       const a = buildSchema(/* GraphQL */ `
         input Foo {
