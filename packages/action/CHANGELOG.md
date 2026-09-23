@@ -1,5 +1,16 @@
 # @graphql-inspector/action
 
+## 6.1.0
+
+### Minor Changes
+
+- [#2973](https://github.com/graphql-hive/graphql-inspector/pull/2973)
+  [`d8b6c89`](https://github.com/graphql-hive/graphql-inspector/commit/d8b6c89496431cda13073381e48b76bd4ee0fb32)
+  Thanks [@maxmelamed](https://github.com/maxmelamed)! - Adds an optional `annotation-level` input
+  to filter inline GitHub Action annotations by minimum severity. Choose `dangerous` for breaking
+  and dangerous changes or `breaking` for breaking changes only. The default `all` preserves all
+  annotations. Filtering does not affect the check summary, change count, or conclusion.
+
 ## 6.0.0
 
 ### Major Changes
