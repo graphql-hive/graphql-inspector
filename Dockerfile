@@ -1,4 +1,4 @@
-FROM node:20-alpine AS build
+FROM node:24-alpine AS build
 ENV NODE_ENV=development
 ENV DISTDIR=/usr/local/share/graphql-inspector
 
@@ -10,7 +10,7 @@ RUN npm install -g "$(node -p "require('./package.json').packageManager")"
 RUN pnpm install
 RUN pnpm build
 
-FROM node:20-alpine AS dist
+FROM node:24-alpine AS dist
 ENV NODE_ENV=production
 ENV DISTDIR=/usr/local/share/graphql-inspector
 

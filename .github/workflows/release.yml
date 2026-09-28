@@ -24,7 +24,7 @@ jobs:
     with:
       releaseScript: release
       packageManager: pnpm
-      packageManagerVersion: 10.34.5
+      packageManagerVersion: 11.27.1
       nodeVersion: 24
     secrets:
       githubToken: ${{ secrets.GITHUB_TOKEN }}
@@ -38,7 +38,7 @@ jobs:
       npmTag: alpha
       buildScript: build
       packageManager: pnpm
-      packageManagerVersion: 10.34.5
+      packageManagerVersion: 11.27.1
       nodeVersion: 24
     secrets:
       githubToken: ${{ secrets.GITHUB_TOKEN }}

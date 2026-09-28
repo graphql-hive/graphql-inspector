@@ -2,3 +2,24 @@ packages:
   - packages/*
   - packages/commands/*
   - packages/loaders/*
+
+saveExact: true
+enablePrePostScripts: false
+
+# Build scripts were already skipped under pnpm 10; pnpm 11 requires an explicit decision.
+allowBuilds:
+  esbuild: false
+  sharp: false
+  workerd: false
+
+overrides:
+  '@octokit/types': 13.10.0
+  graphql: 17.0.2
+  eslint-plugin-unicorn: 56.0.1
+  cookie: 1.0.2
+  dompurify: 3.3.2
+  esbuild: 0.25.1
+  cross-spawn: 6.0.6
+  micromatch: 4.0.8
+  braces: 3.0.3
+  '@babel/runtime': 7.26.10
