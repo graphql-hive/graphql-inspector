@@ -45,13 +45,13 @@ describe('Inspector Action', () => {
       `)
       .mockResolvedValueOnce(/* GraphQL */ `
         type Query {
-          value: Int
+          value: Int # Breaking: field type changed from String to Int
           choice: Choice
-          added: String
+          added: String # Safe: field added
         }
         enum Choice {
           A
-          B
+          B # Dangerous: enum value added
         }
       `);
   }
