@@ -2,7 +2,7 @@
   "name": "@graphql-inspector/cli",
   "version": "7.0.0",
   "type": "module",
-  "description": "Tooling for GraphQL. Compare GraphQL Schemas, check documents, find breaking changes, find similar types. Test",
+  "description": "Tooling for GraphQL. Compare GraphQL Schemas, check documents, find breaking changes, find similar types.",
   "repository": {
     "type": "git",
     "url": "https://github.com/graphql-hive/graphql-inspector",
