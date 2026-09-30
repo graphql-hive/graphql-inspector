@@ -375,4 +375,37 @@ describe('simplifyChanges rule', () => {
       ]
     `);
   });
+
+  test('keeps a breaking field type change when the same field also gains a description', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      type Payload {
+        id: String!
+      }
+      type Query {
+        _: Boolean
+      }
+      type Mutation {
+        doSomething(id: String!): Payload!
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      type Payload {
+        id: String!
+      }
+      type Query {
+        _: Boolean
+      }
+      type Mutation {
+        "Does something."
+        doSomething(id: String!): Boolean!
+      }
+    `);
+
+    const changes = await diff(a, b, [simplifyChanges]);
+
+    // The breaking type change must survive even though the same field also gained a description.
+    const typeChange = changes.find(c => c.type === ChangeType.FieldTypeChanged);
+    expect(typeChange).toBeDefined();
+    expect(typeChange?.criticality.level).toBe(CriticalityLevel.Breaking);
+  });
 });
