@@ -1,5 +1,16 @@
 # @graphql-inspector/action
 
+## 6.2.0
+
+### Minor Changes
+
+- [#2977](https://github.com/graphql-hive/graphql-inspector/pull/2977)
+  [`85eaca3`](https://github.com/graphql-hive/graphql-inspector/commit/85eaca3ab06b693b0850030ab77076d1bcc41d2f)
+  Thanks [@eddeee888](https://github.com/eddeee888)! - Add `breaking-changes`, `dangerous-changes`
+  and `safe-changes` outputs, each a list of change messages. Add `create-action-check` input
+  (enabled by default) to skip creating the GitHub check and its annotations, e.g. when a later step
+  only consumes the outputs.
+
 ## 6.1.0
 
 ### Minor Changes
