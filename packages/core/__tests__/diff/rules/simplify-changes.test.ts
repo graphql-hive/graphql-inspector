@@ -375,4 +375,116 @@ describe('simplifyChanges rule', () => {
       ]
     `);
   });
+
+  test('keeps a breaking field type change when the same field also gains a description', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      type Payload {
+        id: String!
+      }
+      type Query {
+        _: Boolean
+      }
+      type Mutation {
+        doSomething(id: String!): Payload!
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      type Payload {
+        id: String!
+      }
+      type Query {
+        _: Boolean
+      }
+      type Mutation {
+        "Does something."
+        doSomething(id: String!): Boolean!
+      }
+    `);
+
+    const changes = await diff(a, b, [simplifyChanges]);
+
+    // The breaking type change must survive even though the same field also gained a description.
+    const typeChange = changes.find(c => c.type === ChangeType.FieldTypeChanged);
+    expect(typeChange).toBeDefined();
+    expect(typeChange?.criticality.level).toBe(CriticalityLevel.Breaking);
+  });
+
+  test('keeps a breaking field argument type change when the same field also gains a description', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      type Query {
+        foo(id: String): String
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      type Query {
+        "Foo."
+        foo(id: Int): String
+      }
+    `);
+
+    const changes = await diff(a, b, [simplifyChanges]);
+
+    const argChange = changes.find(c => c.type === ChangeType.FieldArgumentTypeChanged);
+    expect(argChange).toBeDefined();
+    expect(argChange?.criticality.level).toBe(CriticalityLevel.Breaking);
+    expect(changes.find(c => c.type === ChangeType.FieldDescriptionAdded)).toBeDefined();
+  });
+
+  test('keeps a breaking field type change when the same field also gains a deprecation', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      type Query {
+        foo: String
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      type Query {
+        foo: Int @deprecated(reason: "Use bar")
+      }
+    `);
+
+    const changes = await diff(a, b, [simplifyChanges]);
+
+    const typeChange = changes.find(c => c.type === ChangeType.FieldTypeChanged);
+    expect(typeChange).toBeDefined();
+    expect(typeChange?.criticality.level).toBe(CriticalityLevel.Breaking);
+    expect(changes.find(c => c.type === ChangeType.FieldDeprecationAdded)).toBeDefined();
+  });
+
+  test('returns the same changes regardless of input order', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      type Query {
+        foo: Foo
+      }
+      type Foo {
+        a: String
+        b: String
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      type Query {
+        foo: Foo
+      }
+      "Foo type."
+      type Foo {
+        a: String
+      }
+    `);
+
+    const changes = await diff(a, b);
+    const descriptionAdded = changes.find(c => c.type === ChangeType.TypeDescriptionAdded);
+    const fieldRemoved = changes.find(c => c.type === ChangeType.FieldRemoved);
+    if (!descriptionAdded || !fieldRemoved) {
+      throw new Error('Expected a type description addition and a field removal');
+    }
+
+    const forward = [descriptionAdded, fieldRemoved];
+    const reversed = [fieldRemoved, descriptionAdded];
+
+    expect(
+      await simplifyChanges({ changes: forward, newSchema: b, oldSchema: a, config: {} }),
+    ).toEqual(forward);
+    expect(
+      await simplifyChanges({ changes: reversed, newSchema: b, oldSchema: a, config: {} }),
+    ).toEqual(reversed);
+  });
 });
