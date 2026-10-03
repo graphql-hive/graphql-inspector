@@ -48,6 +48,12 @@
     }
   },
   "include": ["packages"],
-  "exclude": ["**/dist", "**/node_modules/**", "**/__tests__", "**/tests"],
+  "exclude": [
+    "**/dist",
+    "**/node_modules/**",
+    "**/__tests__",
+    "**/tests",
+    "packages/testing/src/setup-file.ts"
+  ],
   "references": [{ "path": "./tsconfig.test.json" }]
 }

@@ -1,6 +1,6 @@
 import jsesc from 'jsesc';
 import stripAnsi from 'strip-ansi';
-import { expect, type MockInstance } from 'vitest';
+import type { MockInstance } from 'vitest';
 
 function nonTTY(msg: string) {
   return stripAnsi(jsesc(stripAnsi(msg)));
