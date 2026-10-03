@@ -21,7 +21,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "skipLibCheck": true,
-    "types": ["vitest/globals"],
     "paths": {
       "@graphql-inspector/core": ["packages/core/src/index.ts"],
       "@graphql-inspector/logger": ["packages/logger/src/index.ts"],
