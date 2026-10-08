@@ -47,7 +47,7 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       tsconfigPaths({
-        projects: [join(__dirname, 'tsconfig.test.json')],
+        projects: [join(__dirname, 'tsconfig.build.json'), join(__dirname, 'tsconfig.test.json')],
       }),
     ],
   };
