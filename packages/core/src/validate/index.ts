@@ -1,5 +1,6 @@
 import { DepGraph } from 'dependency-graph';
 import {
+  ASTNode,
   DocumentNode,
   FragmentDefinitionNode,
   GraphQLError,
@@ -8,6 +9,7 @@ import {
   print,
   Source,
   validate as validateDocument,
+  visit,
 } from 'graphql';
 import { readDocument } from '../ast/document.js';
 import { transformDocumentWithApollo, transformSchemaWithApollo } from '../utils/apollo.js';
@@ -101,12 +103,8 @@ export function validate(
   }
 
   for (const fragment of fragments) {
-    const depends = extractFragments(print(fragment.node));
-
-    if (depends) {
-      for (const name of depends) {
-        graph.addDependency(fragment.node.name.value, name);
-      }
+    for (const name of extractFragments(fragment.node)) {
+      graph.addDependency(fragment.node.name.value, name);
     }
   }
 
@@ -117,7 +115,7 @@ export function validate(
       kind: Kind.DOCUMENT,
       definitions: doc.operations.map(d => d.node),
     };
-    const extractedFragments = (extractFragments(print(docWithOperations)) || [])
+    const extractedFragments = extractFragments(docWithOperations)
       // resolve all nested fragments
       .map(fragmentName => resolveFragment(graph.getNodeData(fragmentName), graph))
       // flatten arrays
@@ -250,8 +248,16 @@ function resolveFragment(
     );
 }
 
-function extractFragments(document: string): string[] | undefined {
-  return (document.match(/[.]{3}[a-z0-9_]+\b/gi) || []).map(name => name.replace('...', ''));
+function extractFragments(document: ASTNode): string[] {
+  const fragmentNames: string[] = [];
+
+  visit(document, {
+    FragmentSpread(node) {
+      fragmentNames.push(node.name.value);
+    },
+  });
+
+  return fragmentNames;
 }
 
 function sumLengths(...arrays: any[][]): number {
