@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, unlinkSync } from 'fs';
 import { buildSchema } from 'graphql';
+import type { Mock, MockInstance } from 'vitest';
 import yargs from 'yargs';
 import { mockCommand } from '@graphql-inspector/commands';
 import { LoadersRegistry } from '@graphql-inspector/loaders';
@@ -39,8 +40,8 @@ const introspect = createCommand({
 });
 
 describe('introspect', () => {
-  let spyReporter: vi.SpyInstance;
-  let spyProcessCwd: vi.SpyInstance;
+  let spyReporter: Mock<(msg: string) => void>;
+  let spyProcessCwd: MockInstance;
 
   beforeEach(() => {
     yargs();
@@ -90,7 +91,7 @@ describe('introspect', () => {
 
     const builtSchema = buildSchema(printed);
 
-    expect(builtSchema.getQueryType().getFields()).toHaveProperty('post');
+    expect(builtSchema.getQueryType()!.getFields()).toHaveProperty('post');
   });
 
   test('saved to graphql files using url-loader by GET method', async () => {
@@ -113,6 +114,6 @@ describe('introspect', () => {
 
     const builtSchema = buildSchema(printed);
 
-    expect(builtSchema.getQueryType().getFields()).toHaveProperty('post');
+    expect(builtSchema.getQueryType()!.getFields()).toHaveProperty('post');
   });
 });

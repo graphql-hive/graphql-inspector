@@ -1,3 +1,4 @@
+import type { MockedFunction } from 'vitest';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { AnnotationFilterLevel, CheckConclusion } from '../helpers/types.js';
@@ -10,11 +11,13 @@ vi.mock('../src/checks');
 vi.mock('../src/git');
 vi.mock('../src/files');
 
-const mockUpdateCheckRun = updateCheckRun as vi.MockedFunction<typeof updateCheckRun>;
-const mockFileLoader = fileLoader as vi.MockedFunction<typeof fileLoader>;
-const mockGetAssociatedPullRequest = getAssociatedPullRequest as vi.MockedFunction<
+const mockUpdateCheckRun = updateCheckRun as MockedFunction<typeof updateCheckRun>;
+const mockFileLoader = fileLoader as MockedFunction<typeof fileLoader>;
+const mockGetAssociatedPullRequest = getAssociatedPullRequest as MockedFunction<
   typeof getAssociatedPullRequest
 >;
+
+type PullRequest = Awaited<ReturnType<typeof getAssociatedPullRequest>>;
 
 describe('Inspector Action', () => {
   const mockLoadFile = vi.fn();
@@ -91,7 +94,7 @@ describe('Inspector Action', () => {
           }),
         },
       },
-    });
+    } as unknown as ReturnType<typeof github.getOctokit>);
     vi.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
       return {
         owner: 'some-owner',
@@ -105,7 +108,7 @@ describe('Inspector Action', () => {
       base: {
         ref: 'master',
       },
-    });
+    } as PullRequest);
     mockFileLoader.mockReturnValue(mockLoadFile);
 
     process.env.GITHUB_WORKSPACE = '/workspace';
@@ -158,7 +161,7 @@ describe('Inspector Action', () => {
           number: 1,
           labels: [{ name: 'expected-breaking-change' }],
           base: { ref: 'master' },
-        });
+        } as PullRequest);
       }
 
       await run();
@@ -298,7 +301,7 @@ describe('Inspector Action', () => {
             number: 1,
             labels: [{ name: 'expected-breaking-change' }],
             base: { ref: 'master' },
-          });
+          } as PullRequest);
         }
 
         await run();

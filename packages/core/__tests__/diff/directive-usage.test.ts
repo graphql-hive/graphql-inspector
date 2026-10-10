@@ -2,7 +2,6 @@ import { buildSchema } from 'graphql';
 import {
   CriticalityLevel,
   diff,
-  DiffRule,
   directiveUsageFieldAddedFromMeta,
   directiveUsageFieldRemovedFromMeta,
 } from '../../src/index.js';
@@ -1184,6 +1183,7 @@ describe('directive-usage', () => {
           typeName: 'User',
           fieldName: 'email',
           addedDirectiveName: 'external',
+          directiveRepeatedTimes: 1,
         },
       });
 
@@ -1196,6 +1196,7 @@ describe('directive-usage', () => {
         typeName: 'User',
         fieldName: 'email',
         addedDirectiveName: 'external',
+        directiveRepeatedTimes: 1,
       });
     });
 
@@ -1206,6 +1207,7 @@ describe('directive-usage', () => {
           typeName: 'User',
           fieldName: 'name',
           addedDirectiveName: 'deprecated',
+          directiveRepeatedTimes: 1,
         },
       });
 
@@ -1219,6 +1221,7 @@ describe('directive-usage', () => {
           typeName: 'SearchResult',
           fieldName: 'result',
           addedDirectiveName: 'oneOf',
+          directiveRepeatedTimes: 1,
         },
       });
 
@@ -1232,6 +1235,7 @@ describe('directive-usage', () => {
           typeName: 'User',
           fieldName: 'email',
           removedDirectiveName: 'external',
+          directiveRepeatedTimes: 1,
         },
       });
 
@@ -1246,6 +1250,7 @@ describe('directive-usage', () => {
         typeName: 'User',
         fieldName: 'email',
         removedDirectiveName: 'external',
+        directiveRepeatedTimes: 1,
       });
     });
 
@@ -1256,6 +1261,7 @@ describe('directive-usage', () => {
           typeName: 'User',
           fieldName: 'name',
           removedDirectiveName: 'deprecated',
+          directiveRepeatedTimes: 1,
         },
       });
 
@@ -1269,6 +1275,7 @@ describe('directive-usage', () => {
           typeName: 'SearchResult',
           fieldName: 'result',
           removedDirectiveName: 'oneOf',
+          directiveRepeatedTimes: 1,
         },
       });
 

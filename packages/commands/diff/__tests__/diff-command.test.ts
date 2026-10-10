@@ -1,5 +1,6 @@
 import { resolve } from 'path';
 import { buildSchema } from 'graphql';
+import type { Mock, MockInstance } from 'vitest';
 import yargs from 'yargs';
 import { mockCommand } from '@graphql-inspector/commands';
 import { mockLogger, unmockLogger } from '@graphql-inspector/logger';
@@ -12,10 +13,12 @@ import createCommand from '../src/index.js';
  */
 vi.mock('yargs', async () => {
   const yargsPath = require.resolve('yargs').replace('index.cjs', '');
-  const { YargsFactory } = await vi.importActual(yargsPath + 'build/lib/yargs-factory.js');
-  const { default: esmPlatformShim } = await vi.importActual(
-    yargsPath + 'lib/platform-shims/esm.mjs',
+  const { YargsFactory } = await vi.importActual<{ YargsFactory: (shim: object) => unknown }>(
+    yargsPath + 'build/lib/yargs-factory.js',
   );
+  const { default: esmPlatformShim } = await vi.importActual<{
+    default: { process: object };
+  }>(yargsPath + 'lib/platform-shims/esm.mjs');
   return {
     default: YargsFactory({
       ...esmPlatformShim,
@@ -57,18 +60,19 @@ const diff = createCommand({
     loaders: [],
   },
   loaders: {
-    loadSchema: pointer => (pointer.includes('old') ? oldSchema : newSchema),
+    loadSchema: async pointer => (pointer.includes('old') ? oldSchema : newSchema),
+    loadDocuments: async () => [],
   },
 });
 
 describe('diff', () => {
-  let spyReporter: vi.SpyInstance;
-  let spyProcessExit: vi.SpyInstance;
-  let spyProcessCwd: vi.SpyInstance;
+  let spyReporter: Mock<(msg: string) => void>;
+  let spyProcessExit: MockInstance<typeof process.exit>;
+  let spyProcessCwd: MockInstance;
 
   beforeEach(() => {
     yargs();
-    spyProcessExit = vi.spyOn(process, 'exit').mockImplementation(() => null);
+    spyProcessExit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
     spyProcessCwd = vi.spyOn(process, 'cwd').mockImplementation(() => __dirname);
     spyReporter = vi.fn();
     mockLogger(spyReporter);
