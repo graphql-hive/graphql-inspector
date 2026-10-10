@@ -587,7 +587,6 @@ describe('isChangeEqual', () => {
           addedDirectiveName: 'd',
           addedToNewType: false,
           directiveRepeatedTimes: 1,
-          schemaTypeName: '',
         },
         message: 'Example',
         criticality: { level: CriticalityLevel.NonBreaking },
@@ -599,14 +598,14 @@ describe('isChangeEqual', () => {
       const a: Change<'DIRECTIVE_USAGE_SCHEMA_REMOVED'> = {
         type: 'DIRECTIVE_USAGE_SCHEMA_REMOVED',
         path: 'schema',
-        meta: { removedDirectiveName: 'd', directiveRepeatedTimes: 1, schemaTypeName: '' },
+        meta: { removedDirectiveName: 'd', directiveRepeatedTimes: 1 },
         message: 'Example',
         criticality: { level: CriticalityLevel.NonBreaking },
       };
       expect(
         isChangeEqual(a, {
           ...a,
-          meta: { removedDirectiveName: 'x', directiveRepeatedTimes: 2, schemaTypeName: '' },
+          meta: { removedDirectiveName: 'x', directiveRepeatedTimes: 2 },
         }),
       ).toBe(false);
     });
@@ -1017,7 +1016,12 @@ describe('isChangeEqual', () => {
       const a: Change<'INPUT_FIELD_DESCRIPTION_CHANGED'> = {
         type: 'INPUT_FIELD_DESCRIPTION_CHANGED',
         path: 'p',
-        meta: { inputFieldName: 'f', inputName: 'i', newInputFieldDescription: 'd' },
+        meta: {
+          inputFieldName: 'f',
+          inputName: 'i',
+          oldInputFieldDescription: 'o',
+          newInputFieldDescription: 'd',
+        },
         message: 'Example',
         criticality: { level: CriticalityLevel.NonBreaking },
       };

@@ -1,5 +1,6 @@
 import { relative } from 'path';
 import { buildSchema, parse } from 'graphql';
+import type { Mock, MockInstance } from 'vitest';
 import yargs from 'yargs';
 import { mockCommand } from '@graphql-inspector/commands';
 import { mockLogger, unmockLogger } from '@graphql-inspector/logger';
@@ -30,10 +31,8 @@ const operation = parse(/* GraphQL */ `
 
 const validate = createCommand({
   config: {
-    use: {
-      commands: [],
-      loaders: [],
-    },
+    commands: [],
+    loaders: [],
   },
   loaders: {
     async loadSchema() {
@@ -66,12 +65,12 @@ const validate = createCommand({
 });
 
 describe('validate', () => {
-  let spyReporter: vi.SpyInstance;
-  let spyProcessExit: vi.SpyInstance;
-  let spyProcessCwd: vi.SpyInstance;
+  let spyReporter: Mock<(msg: string) => void>;
+  let spyProcessExit: MockInstance<typeof process.exit>;
+  let spyProcessCwd: MockInstance;
 
   beforeEach(() => {
-    spyProcessExit = vi.spyOn(process, 'exit').mockImplementation(() => null);
+    spyProcessExit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
     spyProcessCwd = vi.spyOn(process, 'cwd').mockImplementation(() => __dirname);
     spyReporter = vi.fn();
     mockLogger(spyReporter);
