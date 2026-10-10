@@ -94,6 +94,69 @@ describe('validate', () => {
     expect(results.length).toEqual(0);
   });
 
+  test('pass when a string value contains "..."', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      type Mutation {
+        createItems(input: [ItemInput!]!): CreateItemsPayload
+      }
+
+      type CreateItemsPayload {
+        info(format: String): CreateItemsInfo
+      }
+
+      type CreateItemsInfo {
+        nodesCreated: Int
+      }
+
+      input ItemInput {
+        name: String
+        description: String
+      }
+
+      type Query {
+        _: Boolean
+      }
+
+      schema {
+        query: Query
+        mutation: Mutation
+      }
+    `);
+
+    const docs = [
+      parse(/* GraphQL */ `
+        mutation createItems {
+          createItems(input: [{ name: "Test", description: "Test...Test" }]) {
+            info {
+              nodesCreated
+            }
+            ...CreateItemsInfo
+          }
+        }
+
+        fragment CreateItemsInfo on CreateItemsPayload {
+          info {
+            nodesCreated
+          }
+        }
+      `),
+      parse(/* GraphQL */ `
+        fragment CreateItemsDescription on CreateItemsPayload {
+          info(format: "Test...Test") {
+            nodesCreated
+          }
+        }
+      `),
+    ];
+
+    const results = validate(
+      schema,
+      docs.map(doc => new Source(print(doc))),
+    );
+
+    expect(results.length).toEqual(0);
+  });
+
   test('fail on non unique fragment names', async () => {
     const schema = buildSchema(/* GraphQL */ `
       type Post {
