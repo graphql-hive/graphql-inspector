@@ -30,6 +30,30 @@ export const suppressRemovalOfDeprecatedField: Rule = ({ changes, oldSchema, new
     }
 
     if (
+      change.type === ChangeType.FieldArgumentRemoved &&
+      change.criticality.level === CriticalityLevel.Breaking &&
+      change.path
+    ) {
+      const [typeName, fieldName, argumentName] = parsePath(change.path);
+      const type = oldSchema.getType(typeName);
+
+      if (isObjectType(type) || isInterfaceType(type)) {
+        const field = type.getFields()[fieldName];
+        const argument = field.args.find(arg => arg.name === argumentName)!;
+
+        if (isDeprecated(argument)) {
+          return {
+            ...change,
+            criticality: {
+              ...change.criticality,
+              level: CriticalityLevel.Dangerous,
+            },
+          };
+        }
+      }
+    }
+
+    if (
       change.type === ChangeType.EnumValueRemoved &&
       change.criticality.level === CriticalityLevel.Breaking &&
       change.path
