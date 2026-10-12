@@ -36,20 +36,18 @@ export async function updateCheckRun(
   });
 
   try {
-    await Promise.all(
-      batches.map(async chunk => {
-        await octokit.rest.checks.update({
-          check_run_id: checkId,
-          ...github.context.repo,
-          output: {
-            title,
-            summary,
-            annotations: chunk,
-          },
-        } as any);
-        core.info(`annotations sent (${chunk.length})`);
-      }),
-    );
+    for (const chunk of batches) {
+      await octokit.rest.checks.update({
+        check_run_id: checkId,
+        ...github.context.repo,
+        output: {
+          title,
+          summary,
+          annotations: chunk,
+        },
+      } as any);
+      core.info(`annotations sent (${chunk.length})`);
+    }
   } catch (error) {
     core.error(`failed to send annotations: ${error}`);
     throw error;

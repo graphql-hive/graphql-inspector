@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { AnnotationFilterLevel, CheckConclusion } from '../helpers/types.js';
+import { AnnotationFilterLevel, AnnotationLevel, CheckConclusion } from '../helpers/types.js';
 import { updateCheckRun } from '../src/checks.js';
 import { fileLoader } from '../src/files.js';
 import { getAssociatedPullRequest } from '../src/git.js';
@@ -321,6 +321,45 @@ describe('Inspector Action', () => {
       expect(mockUpdateCheckRun).not.toHaveBeenCalled();
       expect(core.setFailed).not.toHaveBeenCalled();
       expect(core.setOutput).toHaveBeenCalledWith('changes', '3');
+    });
+  });
+
+  describe('updateCheckRun', () => {
+    it('sends annotation batches to the check run sequentially', async () => {
+      const { updateCheckRun: realUpdateCheckRun } =
+        await vi.importActual<typeof import('../src/checks.js')>('../src/checks.js');
+
+      const annotations = Array.from({ length: 120 }, (_, i) => ({
+        path: 'schema.graphql',
+        start_line: i + 1,
+        end_line: i + 1,
+        annotation_level: AnnotationLevel.Warning,
+        message: `Change ${i + 1}`,
+        title: `Change ${i + 1}`,
+      }));
+
+      const events: string[] = [];
+      const updateCheck = vi.fn().mockImplementation(async (params: any) => {
+        const sent = params.output?.annotations?.length;
+        if (sent === undefined) {
+          return;
+        }
+        events.push(`start:${sent}`);
+        await new Promise(resolve => setTimeout(resolve, 0));
+        events.push(`end:${sent}`);
+      });
+      const octokit = { rest: { checks: { update: updateCheck } } };
+
+      await realUpdateCheckRun(octokit as any, 2, {
+        conclusion: CheckConclusion.Success,
+        output: {
+          title: 'title',
+          summary: 'summary',
+          annotations,
+        },
+      });
+
+      expect(events).toEqual(['start:50', 'end:50', 'start:50', 'end:50', 'start:20', 'end:20']);
     });
   });
 
