@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.build.json",
   "compilerOptions": {
+    "noEmit": true,
     "types": ["vitest/globals"],
     "tsBuildInfoFile": "dist/tsconfig.test.tsbuildinfo"
   },
