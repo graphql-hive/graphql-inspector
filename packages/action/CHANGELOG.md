@@ -1,5 +1,18 @@
 # @graphql-inspector/action
 
+## 6.2.1
+
+### Patch Changes
+
+- [#2984](https://github.com/graphql-hive/graphql-inspector/pull/2984)
+  [`c9235fb`](https://github.com/graphql-hive/graphql-inspector/commit/c9235fb820ca407affe63793a1a69586eab5fce1)
+  Thanks [@cpruijsen](https://github.com/cpruijsen)! - Send check-run annotation batches to the
+  GitHub Checks API sequentially instead of concurrently, avoiding `write EPIPE` crashes when a
+  schema diff produces hundreds of annotations.
+- Updated dependencies
+  [[`1912c6b`](https://github.com/graphql-hive/graphql-inspector/commit/1912c6bac69f7e4df9b908b3abef23736f9f5038)]:
+  - @graphql-inspector/core@8.0.1
+
 ## 6.2.0
 
 ### Minor Changes

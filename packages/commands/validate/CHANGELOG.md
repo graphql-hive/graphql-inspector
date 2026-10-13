@@ -1,5 +1,13 @@
 # @graphql-inspector/validate-command
 
+## 6.0.1
+
+### Patch Changes
+
+- Updated dependencies
+  [[`1912c6b`](https://github.com/graphql-hive/graphql-inspector/commit/1912c6bac69f7e4df9b908b3abef23736f9f5038)]:
+  - @graphql-inspector/core@8.0.1
+
 ## 6.0.0
 
 ### Major Changes

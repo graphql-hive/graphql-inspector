@@ -1,5 +1,15 @@
 # @graphql-inspector/core
 
+## 8.0.1
+
+### Patch Changes
+
+- [#2982](https://github.com/graphql-hive/graphql-inspector/pull/2982)
+  [`1912c6b`](https://github.com/graphql-hive/graphql-inspector/commit/1912c6bac69f7e4df9b908b3abef23736f9f5038)
+  Thanks [@cpruijsen](https://github.com/cpruijsen)! - Fix `validate` failing when a `...` sequence
+  occurs inside a string literal in a query or fragment. Fragment references are now collected from
+  the parsed AST instead of a regular expression over the printed document.
+
 ## 8.0.0
 
 ### Major Changes
