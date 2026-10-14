@@ -25,15 +25,6 @@ export default defineConfig(({ mode }) => {
     },
     test: {
       globals: true,
-      alias: {
-        '@graphql-inspector/commands': 'packages/commands/commands/src/index.ts',
-        '@graphql-inspector/loaders': 'packages/loaders/loaders/src/index.ts',
-        '@graphql-inspector/logger': 'packages/logger/src/index.ts',
-        '@graphql-inspector/url-loader': 'packages/loaders/url/src/index.ts',
-        '@graphql-inspector/testing': 'packages/testing/src/index.ts',
-        '@graphql-inspector/core': 'packages/core/src/index.ts',
-        '@graphql-inspector/patch': 'packages/patch/src/index.ts',
-      },
       setupFiles: ['./packages/testing/src/setup-file.ts'],
       ...(usesLegacyGraphQL
         ? {
