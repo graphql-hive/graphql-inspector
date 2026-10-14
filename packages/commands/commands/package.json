@@ -1,6 +1,6 @@
 {
   "name": "@graphql-inspector/commands",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "type": "module",
   "description": "Plugin system for commands in GraphQL Inspector",
   "repository": {

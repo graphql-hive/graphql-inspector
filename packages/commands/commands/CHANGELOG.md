@@ -1,5 +1,14 @@
 # @graphql-inspector/commands
 
+## 7.0.1
+
+### Patch Changes
+
+- [#2980](https://github.com/graphql-hive/graphql-inspector/pull/2980)
+  [`bc73368`](https://github.com/graphql-hive/graphql-inspector/commit/bc733682dc1e56df7cc8585e72f87790a4e2c145)
+  Thanks [@eddeee888](https://github.com/eddeee888)! - `mockCommand` accepts commands with typed
+  arguments, such as those returned by `createCommand`, without a type error.
+
 ## 7.0.0
 
 ### Major Changes
