@@ -1,4 +1,4 @@
-import { buildSchema } from 'graphql';
+import { buildClientSchema, buildSchema, introspectionFromSchema } from 'graphql';
 import {
   CriticalityLevel,
   diff,
@@ -1280,6 +1280,22 @@ describe('directive-usage', () => {
       });
 
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+    });
+  });
+
+  describe('introspected schema vs SDL schema', () => {
+    test('built-in @deprecated on a field is not reported as added', async () => {
+      const sdl = /* GraphQL */ `
+        type Query {
+          a: String
+          b: String @deprecated(reason: "use a")
+        }
+      `;
+      const a = buildClientSchema(introspectionFromSchema(buildSchema(sdl)));
+      const b = buildSchema(sdl);
+
+      const changes = await diff(a, b);
+      expect(changes).toEqual([]);
     });
   });
 });
