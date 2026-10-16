@@ -1,5 +1,5 @@
 import { GraphQLInterfaceType, Kind } from 'graphql';
-import { compareDirectiveLists, compareLists } from '../utils/compare.js';
+import { compareDirectiveLists, compareLists, hasDirectiveUsageAst } from '../utils/compare.js';
 import {
   directiveUsageAdded,
   directiveUsageChanged,
@@ -8,13 +8,14 @@ import {
 import { fieldAdded, fieldRemoved } from './changes/field.js';
 import { objectTypeInterfaceAdded, objectTypeInterfaceRemoved } from './changes/object.js';
 import { changesInField } from './field.js';
-import { AddChange } from './schema.js';
+import type { AddChange, SkipDirectiveUsages } from './schema.js';
 
 export function changesInInterface(
   oldInterface: GraphQLInterfaceType | null,
   newInterface: GraphQLInterfaceType,
   addChange: AddChange,
-) {
+  skipDirectiveUsages: SkipDirectiveUsages,
+): void {
   const oldInterfaces = oldInterface?.getInterfaces() ?? [];
   const newInterfaces = newInterface.getInterfaces();
 
@@ -33,15 +34,27 @@ export function changesInInterface(
   compareLists(Object.values(oldFields), Object.values(newFields), {
     onAdded(field) {
       addChange(fieldAdded(newInterface, field));
-      changesInField(newInterface, null, field, addChange);
+      changesInField(newInterface, null, field, addChange, skipDirectiveUsages);
     },
     onRemoved(field) {
       addChange(fieldRemoved(oldInterface!, field));
     },
     onMutual(field) {
-      changesInField(newInterface, field.oldVersion, field.newVersion, addChange);
+      changesInField(
+        newInterface,
+        field.oldVersion,
+        field.newVersion,
+        addChange,
+        skipDirectiveUsages,
+      );
     },
   });
+
+  if (!hasDirectiveUsageAst({ oldNode: oldInterface, newNode: newInterface })) {
+    skipDirectiveUsages({ path: newInterface.name, oldNode: oldInterface, newNode: newInterface });
+    return;
+  }
+
   compareDirectiveLists(
     oldInterface?.astNode?.directives || [],
     newInterface.astNode?.directives || [],

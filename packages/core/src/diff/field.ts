@@ -1,5 +1,11 @@
 import { GraphQLField, GraphQLInterfaceType, GraphQLObjectType, Kind } from 'graphql';
-import { compareDirectiveLists, compareLists, isNotEqual, isVoid } from '../utils/compare.js';
+import {
+  compareDirectiveLists,
+  compareLists,
+  hasDirectiveUsageAst,
+  isNotEqual,
+  isVoid,
+} from '../utils/compare.js';
 import { isDeprecated } from '../utils/is-deprecated.js';
 import { changesInArgument } from './argument.js';
 import {
@@ -20,7 +26,7 @@ import {
   fieldDescriptionRemoved,
   fieldTypeChanged,
 } from './changes/field.js';
-import { AddChange } from './schema.js';
+import type { AddChange, SkipDirectiveUsages } from './schema.js';
 
 const DEPRECATION_REASON_DEFAULT = 'No longer supported';
 
@@ -29,7 +35,8 @@ export function changesInField(
   oldField: GraphQLField<any, any> | null,
   newField: GraphQLField<any, any>,
   addChange: AddChange,
-) {
+  skipDirectiveUsages: SkipDirectiveUsages,
+): void {
   if (isNotEqual(oldField?.description, newField.description)) {
     if (isVoid(oldField?.description)) {
       addChange(fieldDescriptionAdded(type, newField));
@@ -76,9 +83,25 @@ export function changesInField(
       addChange(fieldArgumentRemoved(type, newField, arg));
     },
     onMutual(arg) {
-      changesInArgument(type, newField, arg.oldVersion, arg.newVersion, addChange);
+      changesInArgument(
+        type,
+        newField,
+        arg.oldVersion,
+        arg.newVersion,
+        addChange,
+        skipDirectiveUsages,
+      );
     },
   });
+
+  if (!hasDirectiveUsageAst({ oldNode: oldField, newNode: newField })) {
+    skipDirectiveUsages({
+      path: `${type.name}.${newField.name}`,
+      oldNode: oldField,
+      newNode: newField,
+    });
+    return;
+  }
 
   compareDirectiveLists(oldField?.astNode?.directives || [], newField.astNode?.directives || [], {
     onAdded(directive) {

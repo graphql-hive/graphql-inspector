@@ -1297,5 +1297,137 @@ describe('directive-usage', () => {
       const changes = await diff(a, b);
       expect(changes).toEqual([]);
     });
+
+    test('onWarning is called once with the paths whose directive usages were not compared', async () => {
+      const sdl = /* GraphQL */ `
+        type Query {
+          a: String
+          b: String @deprecated(reason: "use a")
+        }
+      `;
+      const a = buildClientSchema(introspectionFromSchema(buildSchema(sdl)));
+      const b = buildSchema(sdl);
+      const onWarning = vi.fn();
+
+      await diff(a, b, [], undefined, { onWarning });
+
+      expect(onWarning).toHaveBeenCalledTimes(1);
+      expect(onWarning.mock.calls[0][0].paths).toEqual(['Query.a', 'Query.b', 'Query', 'schema']);
+    });
+
+    test('SDL old schema vs introspected new schema reports no removed directive usages', async () => {
+      const sdl = /* GraphQL */ `
+        directive @foo on FIELD_DEFINITION
+
+        type Query {
+          a: String @foo
+        }
+      `;
+      const a = buildSchema(sdl);
+      const b = buildClientSchema(introspectionFromSchema(buildSchema(sdl)));
+
+      const changes = await diff(a, b);
+      expect(changes).toEqual([]);
+    });
+
+    test('schema and extension directives are not compared against an introspected schema', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @foo on SCHEMA
+        directive @bar on SCHEMA
+
+        schema @foo {
+          query: Query
+        }
+
+        extend schema @bar
+
+        type Query {
+          a: String
+        }
+      `);
+      const b = buildClientSchema(introspectionFromSchema(a));
+      const onWarning = vi.fn();
+
+      const changes = await diff(a, b, [], undefined, { onWarning });
+
+      expect(changes).toEqual([]);
+      expect(onWarning).toHaveBeenCalledTimes(1);
+      expect(onWarning.mock.calls[0][0].paths).toContain('schema');
+    });
+
+    test('custom directives on enum values, input fields, arguments, unions and scalars are listed in paths', async () => {
+      const sdl = /* GraphQL */ `
+        directive @foo on ENUM_VALUE | INPUT_FIELD_DEFINITION | ARGUMENT_DEFINITION | UNION | SCALAR
+
+        scalar Date @foo
+
+        union U @foo = A
+
+        type A {
+          a(arg: String @foo): String
+        }
+
+        enum E {
+          ONE @foo
+        }
+
+        input I {
+          f: String @foo
+        }
+
+        type Query {
+          u: U
+          e: E
+          i(i: I): Date
+        }
+      `;
+      const a = buildClientSchema(introspectionFromSchema(buildSchema(sdl)));
+      const b = buildSchema(sdl);
+      const onWarning = vi.fn();
+
+      const changes = await diff(a, b, [], undefined, { onWarning });
+
+      expect(changes).toEqual([]);
+      expect(onWarning).toHaveBeenCalledTimes(1);
+      expect(onWarning.mock.calls[0][0].paths).toEqual(
+        expect.arrayContaining(['Date', 'U', 'A.a.arg', 'E.ONE', 'I.f']),
+      );
+    });
+
+    test('onWarning is not called when both schemas are built from SDL', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        type Query {
+          a: String
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        type Query {
+          a: String
+          b: String @deprecated(reason: "use a")
+        }
+      `);
+      const onWarning = vi.fn();
+
+      await diff(a, b, [], undefined, { onWarning });
+
+      expect(onWarning).not.toHaveBeenCalled();
+    });
+
+    test('onWarning is not called and nothing is reported when both schemas are introspection-built', async () => {
+      const sdl = /* GraphQL */ `
+        type Query {
+          a: String
+          b: String @deprecated(reason: "use a")
+        }
+      `;
+      const a = buildClientSchema(introspectionFromSchema(buildSchema(sdl)));
+      const b = buildClientSchema(introspectionFromSchema(buildSchema(sdl)));
+      const onWarning = vi.fn();
+
+      const changes = await diff(a, b, [], undefined, { onWarning });
+
+      expect(changes).toEqual([]);
+      expect(onWarning).not.toHaveBeenCalled();
+    });
   });
 });

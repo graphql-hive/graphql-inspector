@@ -3,7 +3,9 @@ export {
   CompletionArgs,
   CompletionHandler,
   diff,
+  DiffOptions,
   DiffRule,
+  DiffWarning,
   Rule,
   UsageHandler,
 } from './diff/index.js';

@@ -1,5 +1,11 @@
 import { GraphQLInputField, GraphQLInputObjectType, Kind } from 'graphql';
-import { compareDirectiveLists, compareLists, isNotEqual, isVoid } from '../utils/compare.js';
+import {
+  compareDirectiveLists,
+  compareLists,
+  hasDirectiveUsageAst,
+  isNotEqual,
+  isVoid,
+} from '../utils/compare.js';
 import { defaultValuesAreEqual } from '../utils/graphql.js';
 import {
   directiveUsageAdded,
@@ -15,28 +21,40 @@ import {
   inputFieldRemoved,
   inputFieldTypeChanged,
 } from './changes/input.js';
-import { AddChange } from './schema.js';
+import type { AddChange, SkipDirectiveUsages } from './schema.js';
 
 export function changesInInputObject(
   oldInput: GraphQLInputObjectType | null,
   newInput: GraphQLInputObjectType,
   addChange: AddChange,
-) {
+  skipDirectiveUsages: SkipDirectiveUsages,
+): void {
   const oldFields = oldInput?.getFields() ?? {};
   const newFields = newInput.getFields();
 
   compareLists(Object.values(oldFields), Object.values(newFields), {
     onAdded(field) {
       addChange(inputFieldAdded(newInput, field, oldInput == null));
-      changesInInputField(newInput, null, field, addChange);
+      changesInInputField(newInput, null, field, addChange, skipDirectiveUsages);
     },
     onRemoved(field) {
       addChange(inputFieldRemoved(oldInput!, field));
     },
     onMutual(field) {
-      changesInInputField(newInput, field.oldVersion, field.newVersion, addChange);
+      changesInInputField(
+        newInput,
+        field.oldVersion,
+        field.newVersion,
+        addChange,
+        skipDirectiveUsages,
+      );
     },
   });
+
+  if (!hasDirectiveUsageAst({ oldNode: oldInput, newNode: newInput })) {
+    skipDirectiveUsages({ path: newInput.name, oldNode: oldInput, newNode: newInput });
+    return;
+  }
 
   compareDirectiveLists(oldInput?.astNode?.directives || [], newInput.astNode?.directives || [], {
     onAdded(directive) {
@@ -64,7 +82,8 @@ function changesInInputField(
   oldField: GraphQLInputField | null,
   newField: GraphQLInputField,
   addChange: AddChange,
-) {
+  skipDirectiveUsages: SkipDirectiveUsages,
+): void {
   if (isNotEqual(oldField?.description, newField.description)) {
     if (isVoid(oldField?.description)) {
       addChange(inputFieldDescriptionAdded(input, newField));
@@ -83,6 +102,15 @@ function changesInInputField(
     if (!isVoid(oldField) && isNotEqual(oldField.type.toString(), newField.type.toString())) {
       addChange(inputFieldTypeChanged(input, oldField, newField));
     }
+  }
+
+  if (!hasDirectiveUsageAst({ oldNode: oldField, newNode: newField })) {
+    skipDirectiveUsages({
+      path: `${input.name}.${newField.name}`,
+      oldNode: oldField,
+      newNode: newField,
+    });
+    return;
   }
 
   if (oldField?.astNode?.directives || newField.astNode?.directives) {

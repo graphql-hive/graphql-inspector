@@ -55,9 +55,17 @@ export async function handler(input: {
     rules.push(DiffRule.simplifyChanges);
   }
 
-  const changes = await diffSchema(input.oldSchema, input.newSchema, rules, {
-    checkUsage: input.onUsage ? resolveUsageHandler(input.onUsage) : undefined,
-  });
+  const changes = await diffSchema(
+    input.oldSchema,
+    input.newSchema,
+    rules,
+    {
+      checkUsage: input.onUsage ? resolveUsageHandler(input.onUsage) : undefined,
+    },
+    {
+      onWarning: warning => Logger.warn(warning.message),
+    },
+  );
 
   if (changes.length === 0) {
     Logger.success('No changes detected');

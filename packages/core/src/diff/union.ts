@@ -1,18 +1,19 @@
 import { GraphQLUnionType, Kind } from 'graphql';
-import { compareDirectiveLists, compareLists } from '../utils/compare.js';
+import { compareDirectiveLists, compareLists, hasDirectiveUsageAst } from '../utils/compare.js';
 import {
   directiveUsageAdded,
   directiveUsageChanged,
   directiveUsageRemoved,
 } from './changes/directive-usage.js';
 import { unionMemberAdded, unionMemberRemoved } from './changes/union.js';
-import { AddChange } from './schema.js';
+import type { AddChange, SkipDirectiveUsages } from './schema.js';
 
 export function changesInUnion(
   oldUnion: GraphQLUnionType | null,
   newUnion: GraphQLUnionType,
   addChange: AddChange,
-) {
+  skipDirectiveUsages: SkipDirectiveUsages,
+): void {
   const oldTypes = oldUnion?.getTypes() ?? [];
   const newTypes = newUnion.getTypes();
 
@@ -24,6 +25,11 @@ export function changesInUnion(
       addChange(unionMemberRemoved(oldUnion!, t));
     },
   });
+
+  if (!hasDirectiveUsageAst({ oldNode: oldUnion, newNode: newUnion })) {
+    skipDirectiveUsages({ path: newUnion.name, oldNode: oldUnion, newNode: newUnion });
+    return;
+  }
 
   compareDirectiveLists(oldUnion?.astNode?.directives || [], newUnion.astNode?.directives || [], {
     onAdded(directive) {

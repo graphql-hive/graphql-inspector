@@ -215,3 +215,19 @@ export function keyMapList<T>(
     return map;
   }, Object.create(null));
 }
+
+export interface DirectiveUsageNodes {
+  oldNode: { astNode?: unknown } | null | undefined;
+  newNode: { astNode?: unknown };
+}
+
+/**
+ * Directive usages are read from AST nodes, so they can be compared only when every side
+ * where the node exists has an AST node. A node without an old side was added and is compared.
+ */
+export function hasDirectiveUsageAst({ oldNode, newNode }: DirectiveUsageNodes): boolean {
+  if (!oldNode) {
+    return true;
+  }
+  return !!oldNode.astNode && !!newNode.astNode;
+}
