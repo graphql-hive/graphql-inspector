@@ -73,6 +73,12 @@ GraphQL Inspector can also introspect your GraphQL server:
 graphql-inspector diff http://api.com/graphql ./new-schema.json
 ```
 
+<Callout>
+  Schemas loaded from a GraphQL endpoint or an introspection JSON file don't include applied
+  directives, so [`diff`](../commands/diff#schemas-built-from-introspection) can't compare directive
+  usages against them.
+</Callout>
+
 ## Git Repository
 
 Get GraphQL Schema file from any branch or commit of your git repository:
