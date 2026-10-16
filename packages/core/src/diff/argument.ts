@@ -5,7 +5,7 @@ import {
   GraphQLObjectType,
   Kind,
 } from 'graphql';
-import { compareDirectiveLists, isNotEqual } from '../utils/compare.js';
+import { compareDirectiveLists, hasDirectiveUsageAst, isNotEqual } from '../utils/compare.js';
 import { defaultValuesAreEqual } from '../utils/graphql.js';
 import {
   fieldArgumentDefaultChanged,
@@ -17,7 +17,7 @@ import {
   directiveUsageChanged,
   directiveUsageRemoved,
 } from './changes/directive-usage.js';
-import { AddChange } from './schema.js';
+import type { AddChange, SkipDirectiveUsages } from './schema.js';
 
 export function changesInArgument(
   type: GraphQLObjectType | GraphQLInterfaceType,
@@ -25,7 +25,8 @@ export function changesInArgument(
   oldArg: GraphQLArgument | null,
   newArg: GraphQLArgument,
   addChange: AddChange,
-) {
+  skipDirectiveUsages: SkipDirectiveUsages,
+): void {
   if (isNotEqual(oldArg?.description, newArg.description)) {
     addChange(fieldArgumentDescriptionChanged(type, field, oldArg, newArg));
   }
@@ -36,6 +37,15 @@ export function changesInArgument(
 
   if (isNotEqual(oldArg?.type.toString(), newArg.type.toString())) {
     addChange(fieldArgumentTypeChanged(type, field, oldArg, newArg));
+  }
+
+  if (!hasDirectiveUsageAst({ oldNode: oldArg, newNode: newArg })) {
+    skipDirectiveUsages({
+      path: `${type.name}.${field.name}.${newArg.name}`,
+      oldNode: oldArg,
+      newNode: newArg,
+    });
+    return;
   }
 
   if (oldArg?.astNode?.directives || newArg.astNode?.directives) {

@@ -1,5 +1,11 @@
 import { GraphQLEnumType, GraphQLEnumValue, Kind } from 'graphql';
-import { compareDirectiveLists, compareLists, isNotEqual, isVoid } from '../utils/compare.js';
+import {
+  compareDirectiveLists,
+  compareLists,
+  hasDirectiveUsageAst,
+  isNotEqual,
+  isVoid,
+} from '../utils/compare.js';
 import {
   directiveUsageAdded,
   directiveUsageChanged,
@@ -13,7 +19,7 @@ import {
   enumValueDescriptionChanged,
   enumValueRemoved,
 } from './changes/enum.js';
-import { AddChange } from './schema.js';
+import type { AddChange, SkipDirectiveUsages } from './schema.js';
 
 const DEPRECATION_REASON_DEFAULT = 'No longer supported';
 
@@ -21,19 +27,30 @@ export function changesInEnum(
   oldEnum: GraphQLEnumType | null,
   newEnum: GraphQLEnumType,
   addChange: AddChange,
-) {
+  skipDirectiveUsages: SkipDirectiveUsages,
+): void {
   compareLists(oldEnum?.getValues() ?? [], newEnum.getValues(), {
     onAdded(value) {
       addChange(enumValueAdded(newEnum, value, oldEnum === null));
-      changesInEnumValue({ newVersion: value, oldVersion: null }, newEnum, addChange);
+      changesInEnumValue(
+        { newVersion: value, oldVersion: null },
+        newEnum,
+        addChange,
+        skipDirectiveUsages,
+      );
     },
     onRemoved(value) {
       addChange(enumValueRemoved(oldEnum!, value));
     },
     onMutual(value) {
-      changesInEnumValue(value, newEnum, addChange);
+      changesInEnumValue(value, newEnum, addChange, skipDirectiveUsages);
     },
   });
+
+  if (!hasDirectiveUsageAst({ oldNode: oldEnum, newNode: newEnum })) {
+    skipDirectiveUsages({ path: newEnum.name, oldNode: oldEnum, newNode: newEnum });
+    return;
+  }
 
   compareDirectiveLists(oldEnum?.astNode?.directives || [], newEnum.astNode?.directives || [], {
     onAdded(directive) {
@@ -58,7 +75,8 @@ function changesInEnumValue(
   },
   newEnum: GraphQLEnumType,
   addChange: AddChange,
-) {
+  skipDirectiveUsages: SkipDirectiveUsages,
+): void {
   const oldValue = value.oldVersion;
   const newValue = value.newVersion;
 
@@ -80,6 +98,15 @@ function changesInEnumValue(
     } else {
       addChange(enumValueDeprecationReasonChanged(newEnum, oldValue, newValue));
     }
+  }
+
+  if (!hasDirectiveUsageAst({ oldNode: oldValue, newNode: newValue })) {
+    skipDirectiveUsages({
+      path: `${newEnum.name}.${newValue.name}`,
+      oldNode: oldValue,
+      newNode: newValue,
+    });
+    return;
   }
 
   compareDirectiveLists(oldValue?.astNode?.directives || [], newValue.astNode?.directives || [], {

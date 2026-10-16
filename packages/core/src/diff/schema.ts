@@ -12,6 +12,7 @@ import {
   Kind,
 } from 'graphql';
 import { compareDirectiveLists, compareLists, isNotEqual, isVoid } from '../utils/compare.js';
+import type { DirectiveUsageNodes } from '../utils/compare.js';
 import { isForIntrospection, isPrimitive } from '../utils/graphql.js';
 import { Change } from './changes/change.js';
 import {
@@ -43,14 +44,51 @@ import { changesInUnion } from './union.js';
 
 export type AddChange = (change: Change) => void;
 
+export type SkipDirectiveUsages = (params: DirectiveUsageNodes & { path: string }) => void;
+
+export interface DiffWarning {
+  message: string;
+  paths: string[];
+}
+
+export interface DiffOptions {
+  onWarning?: (warning: DiffWarning) => void;
+}
+
 export function diffSchema(
   oldSchema: GraphQLSchema | null,
   newSchema: GraphQLSchema | null,
+  options: DiffOptions = {},
 ): Change[] {
   const changes: Change[] = [];
+  const skippedDirectiveUsagePaths: string[] = [];
 
   function addChange(change: Change) {
     changes.push(change);
+  }
+
+  // Only mixed comparisons are recorded: both sides exist and exactly one has an AST node.
+  // - old has AST, new has none -> recorded
+  // - old has none, new has AST -> recorded
+  // - neither has AST (e.g. two introspection-built schemas) -> silent
+  // - old is null (node added) -> silent
+  function skipDirectiveUsages({
+    path,
+    oldNode,
+    newNode,
+  }: DirectiveUsageNodes & { path: string }): void {
+    if (oldNode && !!oldNode.astNode !== !!newNode.astNode) {
+      skippedDirectiveUsagePaths.push(path);
+    }
+  }
+
+  // A schema built from SDL has AST nodes on its types even without a schema definition.
+  function hasAst(schema: GraphQLSchema): boolean {
+    return (
+      !!schema.astNode ||
+      schema.extensionASTNodes.length > 0 ||
+      Object.values(schema.getTypeMap()).some(type => !!type.astNode)
+    );
   }
 
   // important for directives to come first so that any directive usages that come
@@ -84,47 +122,25 @@ export function diffSchema(
     {
       onAdded(type) {
         addChange(typeAdded(type));
-        changesInType(null, type, addChange);
+        changesInType(null, type, addChange, skipDirectiveUsages);
       },
       onRemoved(type) {
         addChange(typeRemoved(type));
       },
       onMutual(type) {
-        changesInType(type.oldVersion, type.newVersion, addChange);
+        changesInType(type.oldVersion, type.newVersion, addChange, skipDirectiveUsages);
       },
     },
   );
 
-  compareDirectiveLists(
-    oldSchema?.astNode?.directives || [],
-    newSchema?.astNode?.directives || [],
-    {
-      onAdded(directive) {
-        addChange(directiveUsageAdded(Kind.SCHEMA_DEFINITION, directive, newSchema, false));
-        directiveUsageChanged(null, directive, addChange);
-      },
-      onMutual(directive) {
-        directiveUsageChanged(directive.oldVersion, directive.newVersion, addChange);
-      },
-      onRemoved(directive) {
-        addChange(directiveUsageRemoved(Kind.SCHEMA_DEFINITION, directive, oldSchema));
-      },
-    },
-  );
-
-  /**
-   * Extracting directives from the schema definition requires using the AST. But the AST does not combine the
-   * definition and extensions like the GraphQL Type System. Therefore, the extensions must be looped over as well.
-   **/
-  for (
-    let e = 0;
-    e <
-    Math.max(oldSchema?.extensionASTNodes.length ?? 0, newSchema?.extensionASTNodes.length ?? 0);
-    e++
-  ) {
+  if (oldSchema && newSchema && (!hasAst(oldSchema) || !hasAst(newSchema))) {
+    if (hasAst(oldSchema) !== hasAst(newSchema)) {
+      skippedDirectiveUsagePaths.push('schema');
+    }
+  } else {
     compareDirectiveLists(
-      oldSchema?.extensionASTNodes[e]?.directives || [],
-      newSchema?.extensionASTNodes[e]?.directives || [],
+      oldSchema?.astNode?.directives || [],
+      newSchema?.astNode?.directives || [],
       {
         onAdded(directive) {
           addChange(directiveUsageAdded(Kind.SCHEMA_DEFINITION, directive, newSchema, false));
@@ -138,6 +154,41 @@ export function diffSchema(
         },
       },
     );
+
+    /**
+     * Extracting directives from the schema definition requires using the AST. But the AST does not combine the
+     * definition and extensions like the GraphQL Type System. Therefore, the extensions must be looped over as well.
+     **/
+    for (
+      let e = 0;
+      e <
+      Math.max(oldSchema?.extensionASTNodes.length ?? 0, newSchema?.extensionASTNodes.length ?? 0);
+      e++
+    ) {
+      compareDirectiveLists(
+        oldSchema?.extensionASTNodes[e]?.directives || [],
+        newSchema?.extensionASTNodes[e]?.directives || [],
+        {
+          onAdded(directive) {
+            addChange(directiveUsageAdded(Kind.SCHEMA_DEFINITION, directive, newSchema, false));
+            directiveUsageChanged(null, directive, addChange);
+          },
+          onMutual(directive) {
+            directiveUsageChanged(directive.oldVersion, directive.newVersion, addChange);
+          },
+          onRemoved(directive) {
+            addChange(directiveUsageRemoved(Kind.SCHEMA_DEFINITION, directive, oldSchema));
+          },
+        },
+      );
+    }
+  }
+
+  if (options.onWarning && skippedDirectiveUsagePaths.length > 0) {
+    options.onWarning({
+      message: `Directive usages were not compared for ${skippedDirectiveUsagePaths.length} paths because a schema has no AST (e.g. it was built from introspection)`,
+      paths: skippedDirectiveUsagePaths,
+    });
   }
 
   return changes;
@@ -176,19 +227,20 @@ function changesInType(
   oldType: GraphQLNamedType | null,
   newType: GraphQLNamedType,
   addChange: AddChange,
-) {
+  skipDirectiveUsages: SkipDirectiveUsages,
+): void {
   if ((isVoid(oldType) || isEnumType(oldType)) && isEnumType(newType)) {
-    changesInEnum(oldType, newType, addChange);
+    changesInEnum(oldType, newType, addChange, skipDirectiveUsages);
   } else if ((isVoid(oldType) || isUnionType(oldType)) && isUnionType(newType)) {
-    changesInUnion(oldType, newType, addChange);
+    changesInUnion(oldType, newType, addChange, skipDirectiveUsages);
   } else if ((isVoid(oldType) || isInputObjectType(oldType)) && isInputObjectType(newType)) {
-    changesInInputObject(oldType, newType, addChange);
+    changesInInputObject(oldType, newType, addChange, skipDirectiveUsages);
   } else if ((isVoid(oldType) || isObjectType(oldType)) && isObjectType(newType)) {
-    changesInObject(oldType, newType, addChange);
+    changesInObject(oldType, newType, addChange, skipDirectiveUsages);
   } else if ((isVoid(oldType) || isInterfaceType(oldType)) && isInterfaceType(newType)) {
-    changesInInterface(oldType, newType, addChange);
+    changesInInterface(oldType, newType, addChange, skipDirectiveUsages);
   } else if ((isVoid(oldType) || isScalarType(oldType)) && isScalarType(newType)) {
-    changesInScalar(oldType, newType, addChange);
+    changesInScalar(oldType, newType, addChange, skipDirectiveUsages);
   } else if (!isVoid(oldType)) {
     // no need to call if oldType is void since the type will be captured by the TypeAdded change.
     addChange(typeKindChanged(oldType, newType));
