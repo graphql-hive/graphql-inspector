@@ -29,7 +29,7 @@ export function changesInField(
   oldField: GraphQLField<any, any> | null,
   newField: GraphQLField<any, any>,
   addChange: AddChange,
-): void {
+) {
   if (isNotEqual(oldField?.description, newField.description)) {
     if (isVoid(oldField?.description)) {
       addChange(fieldDescriptionAdded(type, newField));

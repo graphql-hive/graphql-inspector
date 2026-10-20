@@ -216,7 +216,7 @@ function changesInType(
   oldType: GraphQLNamedType | null,
   newType: GraphQLNamedType,
   addChange: AddChange,
-): void {
+) {
   if ((isVoid(oldType) || isEnumType(oldType)) && isEnumType(newType)) {
     changesInEnum(oldType, newType, addChange);
   } else if ((isVoid(oldType) || isUnionType(oldType)) && isUnionType(newType)) {

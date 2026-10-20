@@ -12,7 +12,7 @@ export function changesInUnion(
   oldUnion: GraphQLUnionType | null,
   newUnion: GraphQLUnionType,
   addChange: AddChange,
-): void {
+) {
   const oldTypes = oldUnion?.getTypes() ?? [];
   const newTypes = newUnion.getTypes();
 
