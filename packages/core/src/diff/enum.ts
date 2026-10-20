@@ -21,7 +21,7 @@ export function changesInEnum(
   oldEnum: GraphQLEnumType | null,
   newEnum: GraphQLEnumType,
   addChange: AddChange,
-) {
+): void {
   compareLists(oldEnum?.getValues() ?? [], newEnum.getValues(), {
     onAdded(value) {
       addChange(enumValueAdded(newEnum, value, oldEnum === null));
@@ -58,7 +58,7 @@ function changesInEnumValue(
   },
   newEnum: GraphQLEnumType,
   addChange: AddChange,
-) {
+): void {
   const oldValue = value.oldVersion;
   const newValue = value.newVersion;
 

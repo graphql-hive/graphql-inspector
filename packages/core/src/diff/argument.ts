@@ -25,7 +25,7 @@ export function changesInArgument(
   oldArg: GraphQLArgument | null,
   newArg: GraphQLArgument,
   addChange: AddChange,
-) {
+): void {
   if (isNotEqual(oldArg?.description, newArg.description)) {
     addChange(fieldArgumentDescriptionChanged(type, field, oldArg, newArg));
   }

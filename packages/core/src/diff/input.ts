@@ -21,7 +21,7 @@ export function changesInInputObject(
   oldInput: GraphQLInputObjectType | null,
   newInput: GraphQLInputObjectType,
   addChange: AddChange,
-) {
+): void {
   const oldFields = oldInput?.getFields() ?? {};
   const newFields = newInput.getFields();
 
@@ -64,7 +64,7 @@ function changesInInputField(
   oldField: GraphQLInputField | null,
   newField: GraphQLInputField,
   addChange: AddChange,
-) {
+): void {
   if (isNotEqual(oldField?.description, newField.description)) {
     if (isVoid(oldField?.description)) {
       addChange(inputFieldDescriptionAdded(input, newField));

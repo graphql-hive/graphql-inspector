@@ -14,7 +14,7 @@ export function changesInInterface(
   oldInterface: GraphQLInterfaceType | null,
   newInterface: GraphQLInterfaceType,
   addChange: AddChange,
-) {
+): void {
   const oldInterfaces = oldInterface?.getInterfaces() ?? [];
   const newInterfaces = newInterface.getInterfaces();
 
