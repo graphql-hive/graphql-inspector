@@ -11,7 +11,7 @@ export function changesInScalar(
   oldScalar: GraphQLScalarType | null,
   newScalar: GraphQLScalarType,
   addChange: AddChange,
-) {
+): void {
   compareDirectiveLists(oldScalar?.astNode?.directives || [], newScalar.astNode?.directives || [], {
     onAdded(directive) {
       addChange(

@@ -14,7 +14,7 @@ export function changesInObject(
   oldType: GraphQLObjectType | null,
   newType: GraphQLObjectType,
   addChange: AddChange,
-) {
+): void {
   const oldInterfaces = oldType?.getInterfaces() ?? [];
   const newInterfaces = newType.getInterfaces();
 

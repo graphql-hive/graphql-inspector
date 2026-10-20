@@ -43,13 +43,44 @@ import { changesInUnion } from './union.js';
 
 export type AddChange = (change: Change) => void;
 
+export interface DiffWarning {
+  message: string;
+}
+
+export interface DiffOptions {
+  onWarning?: (warning: DiffWarning) => void;
+}
+
 export function diffSchema(
   oldSchema: GraphQLSchema | null,
   newSchema: GraphQLSchema | null,
+  options: DiffOptions = {},
 ): Change[] {
   const changes: Change[] = [];
 
-  function addChange(change: Change) {
+  // A schema built from SDL has AST nodes on its types even without a schema definition.
+  function hasAst(schema: GraphQLSchema): boolean {
+    return (
+      !!schema.astNode ||
+      schema.extensionASTNodes.length > 0 ||
+      Object.values(schema.getTypeMap()).some(type => !!type.astNode)
+    );
+  }
+
+  const oldHasAst = !!oldSchema && hasAst(oldSchema);
+  const newHasAst = !!newSchema && hasAst(newSchema);
+  // Directive usages are read from AST nodes, so they are compared only when both schemas have one.
+  // - old has AST, new has AST -> compared
+  // - old has AST, new has none -> skipped, warns
+  // - old has none, new has AST -> skipped, warns
+  // - neither has AST (e.g. two introspection-built schemas) -> skipped, silent
+  // - either schema is null -> compared
+  const skipDirectiveUsages = !!oldSchema && !!newSchema && (!oldHasAst || !newHasAst);
+
+  function addChange(change: Change): void {
+    if (skipDirectiveUsages && change.type.startsWith('DIRECTIVE_USAGE_')) {
+      return;
+    }
     changes.push(change);
   }
 
@@ -95,36 +126,10 @@ export function diffSchema(
     },
   );
 
-  compareDirectiveLists(
-    oldSchema?.astNode?.directives || [],
-    newSchema?.astNode?.directives || [],
-    {
-      onAdded(directive) {
-        addChange(directiveUsageAdded(Kind.SCHEMA_DEFINITION, directive, newSchema, false));
-        directiveUsageChanged(null, directive, addChange);
-      },
-      onMutual(directive) {
-        directiveUsageChanged(directive.oldVersion, directive.newVersion, addChange);
-      },
-      onRemoved(directive) {
-        addChange(directiveUsageRemoved(Kind.SCHEMA_DEFINITION, directive, oldSchema));
-      },
-    },
-  );
-
-  /**
-   * Extracting directives from the schema definition requires using the AST. But the AST does not combine the
-   * definition and extensions like the GraphQL Type System. Therefore, the extensions must be looped over as well.
-   **/
-  for (
-    let e = 0;
-    e <
-    Math.max(oldSchema?.extensionASTNodes.length ?? 0, newSchema?.extensionASTNodes.length ?? 0);
-    e++
-  ) {
+  if (!skipDirectiveUsages) {
     compareDirectiveLists(
-      oldSchema?.extensionASTNodes[e]?.directives || [],
-      newSchema?.extensionASTNodes[e]?.directives || [],
+      oldSchema?.astNode?.directives || [],
+      newSchema?.astNode?.directives || [],
       {
         onAdded(directive) {
           addChange(directiveUsageAdded(Kind.SCHEMA_DEFINITION, directive, newSchema, false));
@@ -138,6 +143,41 @@ export function diffSchema(
         },
       },
     );
+
+    /**
+     * Extracting directives from the schema definition requires using the AST. But the AST does not combine the
+     * definition and extensions like the GraphQL Type System. Therefore, the extensions must be looped over as well.
+     **/
+    for (
+      let e = 0;
+      e <
+      Math.max(oldSchema?.extensionASTNodes.length ?? 0, newSchema?.extensionASTNodes.length ?? 0);
+      e++
+    ) {
+      compareDirectiveLists(
+        oldSchema?.extensionASTNodes[e]?.directives || [],
+        newSchema?.extensionASTNodes[e]?.directives || [],
+        {
+          onAdded(directive) {
+            addChange(directiveUsageAdded(Kind.SCHEMA_DEFINITION, directive, newSchema, false));
+            directiveUsageChanged(null, directive, addChange);
+          },
+          onMutual(directive) {
+            directiveUsageChanged(directive.oldVersion, directive.newVersion, addChange);
+          },
+          onRemoved(directive) {
+            addChange(directiveUsageRemoved(Kind.SCHEMA_DEFINITION, directive, oldSchema));
+          },
+        },
+      );
+    }
+  }
+
+  if (skipDirectiveUsages && oldHasAst !== newHasAst) {
+    options.onWarning?.({
+      message:
+        'Directive usages were not compared because one schema has no AST (e.g. it was built from introspection)',
+    });
   }
 
   return changes;
@@ -176,7 +216,7 @@ function changesInType(
   oldType: GraphQLNamedType | null,
   newType: GraphQLNamedType,
   addChange: AddChange,
-) {
+): void {
   if ((isVoid(oldType) || isEnumType(oldType)) && isEnumType(newType)) {
     changesInEnum(oldType, newType, addChange);
   } else if ((isVoid(oldType) || isUnionType(oldType)) && isUnionType(newType)) {

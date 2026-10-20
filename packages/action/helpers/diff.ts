@@ -1,4 +1,5 @@
 import { GraphQLSchema, Source } from 'graphql';
+import * as core from '@actions/core';
 import { Change, CriticalityLevel, diff as diffSchemas, Rule } from '@graphql-inspector/core';
 import { fetch } from '@whatwg-node/fetch';
 import { getLocationByPath } from './location.js';
@@ -56,7 +57,9 @@ export async function diff({
   rules?: Rule[];
   config?: Parameters<typeof diffSchemas>[3];
 }): Promise<ActionResult> {
-  let changes = await diffSchemas(schemas.old, schemas.new, rules, config);
+  let changes = await diffSchemas(schemas.old, schemas.new, rules, config, {
+    onWarning: warning => core.warning(warning.message),
+  });
   let forcedConclusion: CheckConclusion | null = null;
 
   if (!changes?.length) {
