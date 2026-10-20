@@ -77,6 +77,13 @@ export function diffSchema(
   // - either schema is null -> compared
   const skipDirectiveUsages = !!oldSchema && !!newSchema && (!oldHasAst || !newHasAst);
 
+  if (skipDirectiveUsages && oldHasAst !== newHasAst) {
+    options.onWarning?.({
+      message:
+        'Directive usages were not compared because one schema has no AST (e.g. it was built from introspection)',
+    });
+  }
+
   function addChange(change: Change): void {
     if (skipDirectiveUsages && change.type.startsWith('DIRECTIVE_USAGE_')) {
       return;
@@ -171,13 +178,6 @@ export function diffSchema(
         },
       );
     }
-  }
-
-  if (skipDirectiveUsages && oldHasAst !== newHasAst) {
-    options.onWarning?.({
-      message:
-        'Directive usages were not compared because one schema has no AST (e.g. it was built from introspection)',
-    });
   }
 
   return changes;
