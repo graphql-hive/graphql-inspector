@@ -44,6 +44,44 @@ describe('suppressRemovalOfDeprecatedFields rule', () => {
     expect(removed.criticality.level).toBe(CriticalityLevel.Dangerous);
   });
 
+  test('removed argument of field on object', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      type Foo {
+        a(b: String! @deprecated(reason: "use c"), c: String!): String!
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      type Foo {
+        a(c: String!): String!
+      }
+    `);
+
+    const changes = await diff(a, b, [suppressRemovalOfDeprecatedField]);
+
+    const removed = findFirstChangeByPath(changes, 'Foo.a.b');
+
+    expect(removed.criticality.level).toBe(CriticalityLevel.Dangerous);
+  });
+
+  test('removed argument of field on interface', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      interface Foo {
+        a(b: String! @deprecated(reason: "use c"), c: String!): String!
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      interface Foo {
+        a(c: String!): String!
+      }
+    `);
+
+    const changes = await diff(a, b, [suppressRemovalOfDeprecatedField]);
+
+    const removed = findFirstChangeByPath(changes, 'Foo.a.b');
+
+    expect(removed.criticality.level).toBe(CriticalityLevel.Dangerous);
+  });
+
   test('removed enum', async () => {
     const a = buildSchema(/* GraphQL */ `
       enum Foo {
