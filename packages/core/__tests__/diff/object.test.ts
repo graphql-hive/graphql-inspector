@@ -477,7 +477,7 @@ describe('object', () => {
       expect(change.b.type).toEqual('FIELD_ARGUMENT_ADDED');
       expect(change.b.message).toEqual("Argument 'b: String!' added to field 'Foo.foo'");
       // Added nullable
-      expect(change.c.criticality.level).toEqual(CriticalityLevel.Dangerous);
+      expect(change.c.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.c.type).toEqual('FIELD_ARGUMENT_ADDED');
       expect(change.c.message).toEqual("Argument 'c: String' added to field 'Foo.foo'");
     });

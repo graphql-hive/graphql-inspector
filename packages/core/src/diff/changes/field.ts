@@ -391,16 +391,32 @@ function buildFieldArgumentAddedMessage(args: FieldArgumentAddedChange['meta']) 
   }added to field '${args.typeName}.${args.fieldName}'`;
 }
 
+const fieldArgumentAddedNewFieldReason = 'The field is new, so no existing query uses it.';
+const fieldArgumentAddedCriticalityBreakingReason =
+  'Adding a non-null argument without a default value to an existing field will cause existing queries that do not provide it to error.';
+const fieldArgumentAddedCriticalityDangerousReason =
+  'Adding an argument with a default value to an existing field may change the runtime behaviour of the field for existing queries that do not provide it, as they now receive the default value.';
+const fieldArgumentAddedCriticalityNonBreakingReason =
+  'Adding a nullable argument without a default value to an existing field does not affect existing queries: they remain valid and the field receives no value for it.';
+
 export function fieldArgumentAddedFromMeta(args: FieldArgumentAddedChange) {
+  const criticality = args.meta.addedToNewField
+    ? { level: CriticalityLevel.NonBreaking, reason: fieldArgumentAddedNewFieldReason }
+    : args.meta.isAddedFieldArgumentBreaking
+      ? { level: CriticalityLevel.Breaking, reason: fieldArgumentAddedCriticalityBreakingReason }
+      : args.meta.hasDefaultValue
+        ? {
+            level: CriticalityLevel.Dangerous,
+            reason: fieldArgumentAddedCriticalityDangerousReason,
+          }
+        : {
+            level: CriticalityLevel.NonBreaking,
+            reason: fieldArgumentAddedCriticalityNonBreakingReason,
+          };
+
   return {
     type: ChangeType.FieldArgumentAdded,
-    criticality: {
-      level: args.meta.addedToNewField
-        ? CriticalityLevel.NonBreaking
-        : args.meta.isAddedFieldArgumentBreaking
-          ? CriticalityLevel.Breaking
-          : CriticalityLevel.Dangerous,
-    },
+    criticality,
     message: buildFieldArgumentAddedMessage(args.meta),
     meta: args.meta,
     path: [args.meta.typeName, args.meta.fieldName, args.meta.addedArgumentName].join('.'),

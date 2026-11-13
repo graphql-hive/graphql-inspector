@@ -18,10 +18,102 @@ describe('argument', () => {
     const change = findFirstChangeByPath(await diff(a, b), 'Query.a.b');
 
     expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
+    expect(change.criticality.reason).toEqual(
+      'Adding an argument with a default value to an existing field may change the runtime behaviour of the field for existing queries that do not provide it, as they now receive the default value.',
+    );
     expect(change.type).toEqual('FIELD_ARGUMENT_ADDED');
     expect(change.message).toEqual(
       "Argument 'b: Boolean!' (with default value) added to field 'Query.a'",
     );
+  });
+
+  test('added non-nullable without default value', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      type Query {
+        a: String
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      type Query {
+        a(b: Boolean!): String
+      }
+    `);
+
+    const change = findFirstChangeByPath(await diff(a, b), 'Query.a.b');
+
+    expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
+    expect(change.criticality.reason).toEqual(
+      'Adding a non-null argument without a default value to an existing field will cause existing queries that do not provide it to error.',
+    );
+    expect(change.type).toEqual('FIELD_ARGUMENT_ADDED');
+    expect(change.message).toEqual("Argument 'b: Boolean!' added to field 'Query.a'");
+  });
+
+  test('added nullable with default value', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      type Query {
+        a: String
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      type Query {
+        a(b: Boolean = true): String
+      }
+    `);
+
+    const change = findFirstChangeByPath(await diff(a, b), 'Query.a.b');
+
+    expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
+    expect(change.criticality.reason).toEqual(
+      'Adding an argument with a default value to an existing field may change the runtime behaviour of the field for existing queries that do not provide it, as they now receive the default value.',
+    );
+    expect(change.type).toEqual('FIELD_ARGUMENT_ADDED');
+    expect(change.message).toEqual(
+      "Argument 'b: Boolean' (with default value) added to field 'Query.a'",
+    );
+  });
+
+  test('added nullable without default value', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      type Query {
+        a: String
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      type Query {
+        a(b: Boolean): String
+      }
+    `);
+
+    const change = findFirstChangeByPath(await diff(a, b), 'Query.a.b');
+
+    expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+    expect(change.criticality.reason).toEqual(
+      'Adding a nullable argument without a default value to an existing field does not affect existing queries: they remain valid and the field receives no value for it.',
+    );
+    expect(change.type).toEqual('FIELD_ARGUMENT_ADDED');
+    expect(change.message).toEqual("Argument 'b: Boolean' added to field 'Query.a'");
+  });
+
+  test('added to a new field', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      type Query {
+        a: String
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      type Query {
+        a: String
+        c(b: Boolean!): String
+      }
+    `);
+
+    const change = findFirstChangeByPath(await diff(a, b), 'Query.c.b');
+
+    expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
+    expect(change.criticality.reason).toEqual('The field is new, so no existing query uses it.');
+    expect(change.type).toEqual('FIELD_ARGUMENT_ADDED');
+    expect(change.message).toEqual("Argument 'b: Boolean!' added to field 'Query.c'");
   });
 
   describe('default value', () => {
