@@ -8,7 +8,6 @@ import { Rule } from './types.js';
 // to that node and to its children.
 const simpleChangeTypes = new Set([
   ChangeType.DirectiveAdded,
-  ChangeType.DirectiveArgumentAdded,
   ChangeType.DirectiveUsageArgumentAdded,
   ChangeType.DirectiveUsageArgumentDefinitionAdded,
   ChangeType.DirectiveUsageEnumAdded,

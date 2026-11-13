@@ -489,4 +489,24 @@ describe('simplifyChanges rule', () => {
       ChangeType.DirectiveLocationRemoved,
     ]);
   });
+  test('type changed on an existing directive argument when another argument was added', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      directive @special(a: Int) on FIELD_DEFINITION
+      type Query {
+        foo: String
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      directive @special(a: String, b: Int) on FIELD_DEFINITION
+      type Query {
+        foo: String
+      }
+    `);
+
+    const changes = await diff(a, b, [simplifyChanges]);
+    expect(changes.map(change => change.type)).toEqual([
+      ChangeType.DirectiveArgumentAdded,
+      ChangeType.DirectiveArgumentTypeChanged,
+    ]);
+  });
 });
