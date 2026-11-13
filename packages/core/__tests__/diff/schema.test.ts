@@ -307,7 +307,7 @@ test('huge test', async () => {
         "[BREAKING] CType.c: Field 'c' was removed from object type 'CType'",
         "[NON_BREAKING] CType.b: Field 'b' was added to object type 'CType'",
         "[NON_BREAKING] CType.a.@deprecated: Deprecation reason on field 'CType.a' has changed from 'whynot' to 'cuz'",
-        "[DANGEROUS] CType.a.arg: Argument 'arg: Int' added to field 'CType.a'",
+        "[NON_BREAKING] CType.a.arg: Argument 'arg: Int' added to field 'CType.a'",
         "[DANGEROUS] CType.a.@deprecated.reason: Argument 'reason' was removed from '@deprecated'",
         "[NON_BREAKING] CType.a.@deprecated.reason: Argument 'reason' was added to '@deprecated'",
         "[DANGEROUS] CType.d.arg: Default value '10' was added to argument 'arg' on field 'CType.d'",
