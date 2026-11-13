@@ -1,5 +1,19 @@
 # @graphql-inspector/core
 
+## 8.0.3
+
+### Patch Changes
+
+- [#2991](https://github.com/graphql-hive/graphql-inspector/pull/2991)
+  [`70745e6`](https://github.com/graphql-hive/graphql-inspector/commit/70745e66e20a3b741cb75e1143d3a9afb1dfd7a5)
+  Thanks [@jdolle](https://github.com/jdolle)! - `FIELD_ARGUMENT_ADDED` now reports a nullable
+  argument without a default value, added to an existing field, as `NON_BREAKING` instead of
+  `DANGEROUS`: existing operations stay valid and the field receives no value for the argument,
+  exactly as before. The other cases are unchanged: a non-null argument without a default value is
+  `BREAKING`, and any argument with a default value is `DANGEROUS`, because operations that do not
+  provide it now receive the default. The change also carries a `criticality.reason` that explains
+  the assigned level.
+
 ## 8.0.2
 
 ### Patch Changes
