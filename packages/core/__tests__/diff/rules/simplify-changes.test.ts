@@ -375,4 +375,138 @@ describe('simplifyChanges rule', () => {
       ]
     `);
   });
+  test('argument added to an existing field whose description was added', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      type Query {
+        foo: String
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      type Query {
+        "Describes foo"
+        foo(a: String!): String
+      }
+    `);
+
+    const changes = await diff(a, b, [simplifyChanges]);
+    expect(changes.map(change => change.type)).toEqual([
+      ChangeType.FieldDescriptionAdded,
+      ChangeType.FieldArgumentAdded,
+    ]);
+  });
+
+  test('type changed on an existing field whose description was added', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      type Query {
+        foo: String
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      type Query {
+        "Describes foo"
+        foo: Int
+      }
+    `);
+
+    const changes = await diff(a, b, [simplifyChanges]);
+    expect(changes.map(change => change.type)).toEqual([
+      ChangeType.FieldDescriptionAdded,
+      ChangeType.FieldTypeChanged,
+    ]);
+  });
+
+  test('type changed on an existing input field whose description was added', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      input Filter {
+        name: String
+      }
+      type Query {
+        search(filter: Filter): String
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      input Filter {
+        "Describes name"
+        name: Int
+      }
+      type Query {
+        search(filter: Filter): String
+      }
+    `);
+
+    const changes = await diff(a, b, [simplifyChanges]);
+    expect(changes.map(change => change.type)).toEqual([
+      ChangeType.InputFieldDescriptionAdded,
+      ChangeType.InputFieldTypeChanged,
+    ]);
+  });
+
+  test('fields changed on an existing type that gained an interface', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      interface Node {
+        id: ID
+      }
+      type Query {
+        foo: String
+        bar: String
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      interface Node {
+        id: ID
+      }
+      type Query implements Node {
+        id: ID
+        foo: String
+      }
+    `);
+
+    const changes = await diff(a, b, [simplifyChanges]);
+    expect(changes.map(change => change.type)).toEqual([
+      ChangeType.ObjectTypeInterfaceAdded,
+      ChangeType.FieldRemoved,
+      ChangeType.FieldAdded,
+    ]);
+  });
+
+  test('location removed from an existing directive that gained a location', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      directive @special on FIELD_DEFINITION
+      type Query {
+        foo: String
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      directive @special on OBJECT
+      type Query {
+        foo: String
+      }
+    `);
+
+    const changes = await diff(a, b, [simplifyChanges]);
+    expect(changes.map(change => change.type)).toEqual([
+      ChangeType.DirectiveLocationAdded,
+      ChangeType.DirectiveLocationRemoved,
+    ]);
+  });
+  test('type changed on an existing directive argument when another argument was added', async () => {
+    const a = buildSchema(/* GraphQL */ `
+      directive @special(a: Int) on FIELD_DEFINITION
+      type Query {
+        foo: String
+      }
+    `);
+    const b = buildSchema(/* GraphQL */ `
+      directive @special(a: String, b: Int) on FIELD_DEFINITION
+      type Query {
+        foo: String
+      }
+    `);
+
+    const changes = await diff(a, b, [simplifyChanges]);
+    expect(changes.map(change => change.type)).toEqual([
+      ChangeType.DirectiveArgumentAdded,
+      ChangeType.DirectiveArgumentTypeChanged,
+    ]);
+  });
 });

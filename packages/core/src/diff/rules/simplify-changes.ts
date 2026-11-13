@@ -1,10 +1,13 @@
 import { ChangeType } from '../changes/change.js';
 import { Rule } from './types.js';
 
+// A change belongs here only when it adds a whole node, so that every nested change
+// reported under that node's path is implied by it: a new type implies its fields.
+// A change that edits an existing node at its own path, such as a description or an
+// interface added to it, must not be listed, since it would hide every other change
+// to that node and to its children.
 const simpleChangeTypes = new Set([
   ChangeType.DirectiveAdded,
-  ChangeType.DirectiveArgumentAdded,
-  ChangeType.DirectiveLocationAdded,
   ChangeType.DirectiveUsageArgumentAdded,
   ChangeType.DirectiveUsageArgumentDefinitionAdded,
   ChangeType.DirectiveUsageEnumAdded,
@@ -31,13 +34,8 @@ const simpleChangeTypes = new Set([
   ChangeType.EnumValueDeprecationReasonChanged,
 
   ChangeType.FieldDeprecationReasonAdded,
-  ChangeType.FieldDescriptionAdded,
   ChangeType.InputFieldAdded,
-  ChangeType.InputFieldDescriptionAdded,
-  ChangeType.ObjectTypeInterfaceAdded,
   ChangeType.TypeAdded,
-  ChangeType.TypeDescriptionAdded,
-  ChangeType.UnionMemberAdded,
 ]);
 
 const parentPath = (path: string) => {
