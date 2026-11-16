@@ -19,7 +19,7 @@ function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function completeCheckRun(octokit: OctokitInstance, params: UpdateCheckRunParams) {
+async function updateWithNotFoundRetry(octokit: OctokitInstance, params: UpdateCheckRunParams) {
   for (let attempt = 0; ; attempt++) {
     try {
       return await octokit.rest.checks.update(params);
@@ -29,7 +29,7 @@ async function completeCheckRun(octokit: OctokitInstance, params: UpdateCheckRun
         throw error;
       }
       core.warning(
-        `Check run ${params.check_run_id} not found yet, retrying in ${delay}ms (attempt ${attempt + 1} of ${NOT_FOUND_RETRY_DELAYS_MS.length})`,
+        `Check run ${params.check_run_id} not found, retrying in ${delay}ms (attempt ${attempt + 1} of ${NOT_FOUND_RETRY_DELAYS_MS.length})`,
       );
       await sleep(delay);
     }
@@ -48,7 +48,7 @@ export async function updateCheckRun(
 
   core.info(`annotations to be sent: ${annotations.length}`);
 
-  await completeCheckRun(octokit, {
+  await updateWithNotFoundRetry(octokit, {
     check_run_id: checkId,
     completed_at: new Date().toISOString(),
     status: 'completed',
@@ -62,7 +62,7 @@ export async function updateCheckRun(
 
   try {
     for (const chunk of batches) {
-      await octokit.rest.checks.update({
+      await updateWithNotFoundRetry(octokit, {
         check_run_id: checkId,
         ...github.context.repo,
         output: {

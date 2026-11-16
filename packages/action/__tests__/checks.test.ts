@@ -51,6 +51,22 @@ describe('updateCheckRun', () => {
     expect(core.setFailed).not.toHaveBeenCalled();
   });
 
+  it('retries the annotations update when it returns 404 after the check run was completed', async () => {
+    update
+      .mockResolvedValueOnce({ data: {} })
+      .mockRejectedValueOnce(httpError(404))
+      .mockResolvedValue({ data: {} });
+
+    const result = updateCheckRun(octokit, 1, options);
+    await vi.runAllTimersAsync();
+    await result;
+
+    expect(update).toHaveBeenCalledTimes(3);
+    expect(update.mock.calls[2][0]).toMatchObject({ check_run_id: 1, output: { annotations: [] } });
+    expect(core.error).not.toHaveBeenCalled();
+    expect(core.setFailed).not.toHaveBeenCalled();
+  });
+
   it('gives up after three retries when the check run stays not found', async () => {
     update.mockRejectedValue(httpError(404));
 
