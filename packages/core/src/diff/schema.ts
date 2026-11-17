@@ -156,14 +156,14 @@ export function diffSchema(
      * definition and extensions like the GraphQL Type System. Therefore, the extensions must be looped over as well.
      **/
     for (
-      let e = 0;
-      e <
+      let extensionIndex = 0;
+      extensionIndex <
       Math.max(oldSchema?.extensionASTNodes.length ?? 0, newSchema?.extensionASTNodes.length ?? 0);
-      e++
+      extensionIndex++
     ) {
       compareDirectiveLists(
-        oldSchema?.extensionASTNodes[e]?.directives || [],
-        newSchema?.extensionASTNodes[e]?.directives || [],
+        oldSchema?.extensionASTNodes[extensionIndex]?.directives || [],
+        newSchema?.extensionASTNodes[extensionIndex]?.directives || [],
         {
           onAdded(directive) {
             addChange(directiveUsageAdded(Kind.SCHEMA_DEFINITION, directive, newSchema, false));
