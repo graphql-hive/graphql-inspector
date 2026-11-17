@@ -2,6 +2,7 @@ import { createSchema, createYoga } from 'graphql-yoga';
 import type { MockedFunction } from 'vitest';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import { printSchemaFromEndpoint } from '../helpers/loaders.js';
 import { CheckConclusion } from '../helpers/types.js';
 import { updateCheckRun } from '../src/checks.js';
 import { fileLoader } from '../src/files.js';
@@ -183,5 +184,14 @@ describe('Inspector Action - endpoint URLs', () => {
     const result = mockUpdateCheckRun.mock.calls[0][2];
     expect(result.conclusion).toBe(CheckConclusion.Success);
     expect(result.output.summary).toContain('Found 1 change');
+  });
+
+  it('fetches an object endpoint whose headers set a different-cased content-type', async () => {
+    const sdl = await printSchemaFromEndpoint({
+      url: 'http://localhost/rails/graphql',
+      headers: { 'content-type': 'text/plain' },
+    });
+
+    expect(sdl).toContain('hello: String');
   });
 });
