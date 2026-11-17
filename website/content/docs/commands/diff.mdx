@@ -291,3 +291,27 @@ GraphQL Inspector's support for custom directives covers various schema elements
 - ENUM_VALUE
 - INPUT_OBJECT
 - INPUT_FIELD_DEFINITION
+
+### Schemas Built From Introspection
+
+Directive usages are read from the schema's SDL. A schema loaded from a
+[GraphQL endpoint](../api/schema#graphql-endpoint) or an
+[introspection JSON file](../api/schema#json-file) has no SDL, because introspection doesn't include
+applied directives.
+
+When either schema has no SDL, directive usages can't be compared, so GraphQL Inspector skips them.
+When only one of the two schemas has SDL, it also prints a warning:
+
+```sh
+graphql-inspector diff https://api.com/graphql schema.graphql
+```
+
+```
+warning Directive usages were not compared because one schema has no AST (e.g. it was built from introspection)
+```
+
+Deprecations on fields and enum values are still compared, because introspection exposes them as
+`isDeprecated` and `deprecationReason`.
+
+To compare directive usages, provide both schemas as SDL, for example `.graphql` files or
+JavaScript/TypeScript files.

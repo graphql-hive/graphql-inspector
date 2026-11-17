@@ -52,6 +52,22 @@ const schemaCoverage: SchemaCoverage = coverage(schema, documents)
 // ...
 ```
 
+### Diff warnings
+
+`diff` skips directive usage comparison when either schema has no AST, for example when it was
+built from introspection. Pass `onWarning` to be told when the comparison was skipped because only
+one schema has an AST:
+
+```typescript
+import { diff } from '@graphql-inspector/core'
+
+const changes = await diff(oldSchema, newSchema, [], undefined, {
+  onWarning(warning) {
+    console.warn(warning.message)
+  }
+})
+```
+
 ## License
 
 [MIT](https://github.com/graphql-hive/graphql-inspector/blob/master/LICENSE) © Kamil Kisiela
