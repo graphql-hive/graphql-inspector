@@ -2,7 +2,7 @@ import Dataloader from 'dataloader';
 import { buildClientSchema, getIntrospectionQuery, printSchema, Source } from 'graphql';
 import yaml from 'js-yaml';
 import * as probot from 'probot';
-import { fetch } from '@whatwg-node/fetch';
+import { fetch, Headers } from '@whatwg-node/fetch';
 import { Endpoint, NormalizedEnvironment, SchemaPointer } from './config.js';
 import { isNil, objectFromEntries, parseEndpoint } from './utils.js';
 
@@ -178,12 +178,16 @@ export function createConfigLoader(
   return () => loader.load('graphql-inspector');
 }
 
-export async function printSchemaFromEndpoint(endpoint: Endpoint) {
+export async function printSchemaFromEndpoint(endpoint: Endpoint): Promise<string> {
   const config = parseEndpoint(endpoint);
+
+  // The request body is always JSON, so this replaces any caller-supplied content-type, whatever its casing.
+  const headers = new Headers(config.headers);
+  headers.set('Content-Type', 'application/json');
 
   const response = await fetch(config.url, {
     method: config.method,
-    headers: config.headers,
+    headers,
     body: JSON.stringify({
       query: getIntrospectionQuery().replace(/\s+/g, ' ').trim(),
     }),

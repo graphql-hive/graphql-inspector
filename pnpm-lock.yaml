@@ -211,6 +211,9 @@ importers:
       '@types/js-yaml':
         specifier: 4.0.9
         version: 4.0.9
+      graphql-yoga:
+        specifier: 5.22.0
+        version: 5.22.0(graphql@17.0.2)
     publishDirectory: dist
 
   packages/ci:
