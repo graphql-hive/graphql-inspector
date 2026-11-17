@@ -178,12 +178,15 @@ export function createConfigLoader(
   return () => loader.load('graphql-inspector');
 }
 
-export async function printSchemaFromEndpoint(endpoint: Endpoint) {
+export async function printSchemaFromEndpoint(endpoint: Endpoint): Promise<string> {
   const config = parseEndpoint(endpoint);
 
   const response = await fetch(config.url, {
     method: config.method,
-    headers: config.headers,
+    headers: {
+      ...config.headers,
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({
       query: getIntrospectionQuery().replace(/\s+/g, ' ').trim(),
     }),

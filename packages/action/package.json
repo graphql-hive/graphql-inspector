@@ -81,7 +81,8 @@
     "tslib": "~2.6.2"
   },
   "devDependencies": {
-    "@types/js-yaml": "4.0.9"
+    "@types/js-yaml": "4.0.9",
+    "graphql-yoga": "5.22.0"
   },
   "publishConfig": {
     "directory": "dist",
