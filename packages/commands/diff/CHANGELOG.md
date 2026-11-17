@@ -1,5 +1,21 @@
 # @graphql-inspector/diff-command
 
+## 7.0.5
+
+### Patch Changes
+
+- [#2987](https://github.com/graphql-hive/graphql-inspector/pull/2987)
+  [`6a147fc`](https://github.com/graphql-hive/graphql-inspector/commit/6a147fcb9670e4805544e78059bacf1f7678b798)
+  Thanks [@eddeee888](https://github.com/eddeee888)! - `diff` no longer reports directive usages,
+  such as `@deprecated`, as added or removed when one of the two schemas has no AST (for example, it
+  was built from introspection). Those comparisons are skipped for the whole diff. When exactly one
+  schema has an AST, the new optional `onWarning` option is called once with `{ message }`, which
+  the CLI and GitHub Action print as a warning.
+
+- Updated dependencies
+  [[`6a147fc`](https://github.com/graphql-hive/graphql-inspector/commit/6a147fcb9670e4805544e78059bacf1f7678b798)]:
+  - @graphql-inspector/core@8.1.0
+
 ## 7.0.4
 
 ### Patch Changes
