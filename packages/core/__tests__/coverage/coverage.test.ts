@@ -151,7 +151,15 @@ describe('coverage', () => {
         a: Int
       }
     `);
-    const source = new Source('{ a __type(name: "Query") { name } }');
+    const doc = parse(/* GraphQL */ `
+      query {
+        a
+        __type(name: "Query") {
+          name
+        }
+      }
+    `);
+    const source = new Source(print(doc));
 
     expect(() => coverage(typeSchema, [source])).not.toThrowError();
     expect(coverage(typeSchema, [source]).types.Query.children.a.hits).toEqual(1);
