@@ -154,6 +154,12 @@ describe('coverage', () => {
     const doc = parse(/* GraphQL */ `
       query {
         a
+        __typename
+        __schema {
+          queryType {
+            name
+          }
+        }
         __type(name: "Query") {
           name
         }
