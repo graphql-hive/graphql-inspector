@@ -144,4 +144,16 @@ describe('coverage', () => {
     const introspectionQuery = getIntrospectionQuery();
     expect(() => coverage(schema, [new Source(introspectionQuery)])).not.toThrowError();
   });
+
+  test('skips __type alongside __typename and __schema', () => {
+    const typeSchema = buildSchema(/* GraphQL */ `
+      type Query {
+        a: Int
+      }
+    `);
+    const source = new Source('{ a __type(name: "Query") { name } }');
+
+    expect(() => coverage(typeSchema, [source])).not.toThrowError();
+    expect(coverage(typeSchema, [source]).types.Query.children.a.hits).toEqual(1);
+  });
 });
