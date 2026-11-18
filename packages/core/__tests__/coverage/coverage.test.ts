@@ -145,7 +145,7 @@ describe('coverage', () => {
     expect(() => coverage(schema, [new Source(introspectionQuery)])).not.toThrowError();
   });
 
-  test('skips __type alongside __typename and __schema', () => {
+  test('skips meta fields:  __type, __typename and __schema', () => {
     const typeSchema = buildSchema(/* GraphQL */ `
       type Query {
         a: Int
