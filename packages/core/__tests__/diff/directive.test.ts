@@ -195,6 +195,29 @@ describe('directive', () => {
       expect(change.b?.message).toEqual(`Argument 'name' was added to directive 'b'`);
     });
 
+    test('added non-nullable with default value is not breaking', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @d on FIELD
+
+        type Query {
+          f: Int
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @d(a: Int! = 1) on FIELD
+
+        type Query {
+          f: Int
+        }
+      `);
+
+      const change = findFirstChangeByPath(await diff(a, b), '@d');
+
+      expect(change.type).toEqual('DIRECTIVE_ARGUMENT_ADDED');
+      expect(change.message).toEqual(`Argument 'a' was added to directive 'd'`);
+      expect(change.criticality.level).not.toEqual(CriticalityLevel.Breaking);
+    });
+
     test('removed', async () => {
       const a = buildSchema(/* GraphQL */ `
         directive @a(name: String) on FIELD
