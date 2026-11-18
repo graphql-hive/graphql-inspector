@@ -106,6 +106,8 @@ export function coverage(schema: GraphQLSchema, sources: Source[]): SchemaCovera
         parent?.name &&
         !isForIntrospection(parent.name) &&
         fieldDef?.name &&
+        // Skips the introspection meta-fields `__typename`, `__schema` and `__type`,
+        // which are not part of the schema's own fields
         !fieldDef.name.startsWith('__')
       ) {
         const sourceName = source.name;
