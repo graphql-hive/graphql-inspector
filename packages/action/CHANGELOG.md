@@ -1,5 +1,16 @@
 # @graphql-inspector/action
 
+## 6.2.6
+
+### Patch Changes
+
+- [#2994](https://github.com/graphql-hive/graphql-inspector/pull/2994)
+  [`9038fab`](https://github.com/graphql-hive/graphql-inspector/commit/9038fab7d2844cedbf2e19354e69debca3c668c7)
+  Thanks [@ewasarenka](https://github.com/ewasarenka)! - Retry check run updates when GitHub answers
+  404 for a check run the action has just created. Each update, including the annotation batches, is
+  retried up to three times (1s, 2s, 4s) and only for 404; any other error fails the action as
+  before.
+
 ## 6.2.5
 
 ### Patch Changes
