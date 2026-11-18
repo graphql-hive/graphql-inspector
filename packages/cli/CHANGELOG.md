@@ -1,5 +1,18 @@
 # @graphql-inspector/cli
 
+## 7.0.5
+
+### Patch Changes
+
+- Updated dependencies
+  [[`6a147fc`](https://github.com/graphql-hive/graphql-inspector/commit/6a147fcb9670e4805544e78059bacf1f7678b798)]:
+  - @graphql-inspector/diff-command@7.0.5
+  - @graphql-inspector/audit-command@6.0.5
+  - @graphql-inspector/coverage-command@7.0.5
+  - @graphql-inspector/introspect-command@6.0.5
+  - @graphql-inspector/similar-command@6.0.5
+  - @graphql-inspector/validate-command@6.0.5
+
 ## 7.0.4
 
 ### Patch Changes

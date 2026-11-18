@@ -1,5 +1,28 @@
 # @graphql-inspector/action
 
+## 6.2.5
+
+### Patch Changes
+
+- [#2996](https://github.com/graphql-hive/graphql-inspector/pull/2996)
+  [`c4de5e6`](https://github.com/graphql-hive/graphql-inspector/commit/c4de5e6bdbd17ba2e019125cee335f52477cc48c)
+  Thanks [@eddeee888](https://github.com/eddeee888)! - URL endpoints are now fetched with
+  `Content-Type: application/json` (replacing any `content-type` header already set, in any casing),
+  so servers that only parse JSON request bodies (for example Rails/graphql-ruby) no longer reply
+  with "No query string was present".
+
+- [#2987](https://github.com/graphql-hive/graphql-inspector/pull/2987)
+  [`6a147fc`](https://github.com/graphql-hive/graphql-inspector/commit/6a147fcb9670e4805544e78059bacf1f7678b798)
+  Thanks [@eddeee888](https://github.com/eddeee888)! - `diff` no longer reports directive usages,
+  such as `@deprecated`, as added or removed when one of the two schemas has no AST (for example, it
+  was built from introspection). Those comparisons are skipped for the whole diff. When exactly one
+  schema has an AST, the new optional `onWarning` option is called once with `{ message }`, which
+  the CLI and GitHub Action print as a warning.
+
+- Updated dependencies
+  [[`6a147fc`](https://github.com/graphql-hive/graphql-inspector/commit/6a147fcb9670e4805544e78059bacf1f7678b798)]:
+  - @graphql-inspector/core@8.1.0
+
 ## 6.2.4
 
 ### Patch Changes
