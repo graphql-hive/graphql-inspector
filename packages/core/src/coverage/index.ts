@@ -106,8 +106,7 @@ export function coverage(schema: GraphQLSchema, sources: Source[]): SchemaCovera
         parent?.name &&
         !isForIntrospection(parent.name) &&
         fieldDef?.name &&
-        fieldDef.name !== '__typename' &&
-        fieldDef.name !== '__schema'
+        !fieldDef.name.startsWith('__')
       ) {
         const sourceName = source.name;
         const typeCoverage = coverage.types[parent.name];
