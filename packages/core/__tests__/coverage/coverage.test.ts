@@ -144,4 +144,30 @@ describe('coverage', () => {
     const introspectionQuery = getIntrospectionQuery();
     expect(() => coverage(schema, [new Source(introspectionQuery)])).not.toThrowError();
   });
+
+  test('skips meta fields:  __type, __typename and __schema', () => {
+    const typeSchema = buildSchema(/* GraphQL */ `
+      type Query {
+        a: Int
+      }
+    `);
+    const doc = parse(/* GraphQL */ `
+      query {
+        a
+        __typename
+        __schema {
+          queryType {
+            name
+          }
+        }
+        __type(name: "Query") {
+          name
+        }
+      }
+    `);
+    const source = new Source(print(doc));
+
+    expect(() => coverage(typeSchema, [source])).not.toThrowError();
+    expect(coverage(typeSchema, [source]).types.Query.children.a.hits).toEqual(1);
+  });
 });
