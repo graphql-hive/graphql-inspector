@@ -15,7 +15,7 @@ import {
   Kind,
   print,
 } from 'graphql';
-import { compareLists } from '../../utils/compare.js';
+import { compareLists, isValueNodeEqual } from '../../utils/compare.js';
 import { AddChange } from '../schema.js';
 import {
   Change,
@@ -1127,7 +1127,7 @@ export function directiveUsageChanged(
     onMutual(argument) {
       if (
         argument.oldVersion &&
-        print(argument.oldVersion.value) === print(argument.newVersion.value)
+        isValueNodeEqual(argument.oldVersion.value, argument.newVersion.value)
       ) {
         return;
       }

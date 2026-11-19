@@ -1,4 +1,4 @@
-import { NameNode } from 'graphql';
+import { Kind, NameNode, ValueNode } from 'graphql';
 
 export function keyMap<T>(list: readonly T[], keyFn: (item: T) => string): Record<string, T> {
   return list.reduce((map, item) => {
@@ -214,4 +214,60 @@ export function keyMapList<T>(
     map[key] = [...(map[key] ?? []), item];
     return map;
   }, Object.create(null));
+}
+
+/**
+ * Structural equality for GraphQL value AST nodes.
+ * Equivalent to `print(a) === print(b)`, but without serializing either side,
+ * and short-circuits on the first difference.
+ */
+export function isValueNodeEqual(a: ValueNode, b: ValueNode): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a.kind !== b.kind) {
+    return false;
+  }
+  switch (a.kind) {
+    case Kind.NULL:
+      return true;
+    case Kind.INT:
+    case Kind.FLOAT:
+    case Kind.BOOLEAN:
+    case Kind.ENUM:
+      return a.value === (b as typeof a).value;
+    case Kind.STRING:
+      // block and regular strings print differently
+      return a.value === (b as typeof a).value && !!a.block === !!(b as typeof a).block;
+    case Kind.VARIABLE:
+      return a.name.value === (b as typeof a).name.value;
+    case Kind.LIST: {
+      const bValues = (b as typeof a).values;
+      if (a.values.length !== bValues.length) {
+        return false;
+      }
+      for (let i = 0; i < a.values.length; i++) {
+        if (!isValueNodeEqual(a.values[i], bValues[i])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    case Kind.OBJECT: {
+      // field order is significant for print(), so compare positionally
+      const bFields = (b as typeof a).fields;
+      if (a.fields.length !== bFields.length) {
+        return false;
+      }
+      for (let i = 0; i < a.fields.length; i++) {
+        if (
+          a.fields[i].name.value !== bFields[i].name.value ||
+          !isValueNodeEqual(a.fields[i].value, bFields[i].value)
+        ) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
 }
