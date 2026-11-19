@@ -46,20 +46,17 @@ const parentPath = (path: string) => {
 export const simplifyChanges: Rule = ({ changes }) => {
   // Track which paths contained changes that represent a group of changes to the schema
   // e.g. the addition of a type implicity contains the addition of that type's fields.
-  const changePaths: string[] = [];
+  // A Set keeps the lookup constant, so adding a type with many fields stays linear.
+  const changePaths = new Set<string>();
 
   const filteredChanges = changes.filter(({ path, type }) => {
     if (path) {
-      const parent = parentPath(path);
       // check if parent or the current node was changed using a
       // "simple change" (aka a change that encapsulates a group of changes)
-      const matches = changePaths.filter(
-        matchedPath => matchedPath === parent || matchedPath === path,
-      );
-      const hasChangedParent = matches.length > 0;
+      const hasChangedParent = changePaths.has(parentPath(path)) || changePaths.has(path);
 
       if (simpleChangeTypes.has(type)) {
-        changePaths.push(path);
+        changePaths.add(path);
       }
 
       return !hasChangedParent;
