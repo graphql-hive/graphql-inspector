@@ -12,6 +12,7 @@ const schema = buildSchema(/* GraphQL */ `
     title: String
     createdAt: String
     modifiedAt: String
+    deprecatedTitle: String @deprecated(reason: "Will be deleted")
   }
 
   type Query {
@@ -58,6 +59,16 @@ const validate = createCommand({
             }
           `),
           location: 'valid-document.graphql',
+        },
+        {
+          document: parse(/* GraphQL */ `
+            query post {
+              post {
+                deprecatedTitle
+              }
+            }
+          `),
+          location: 'with-deprecated-only.graphql',
         },
       ];
     },
@@ -115,4 +126,11 @@ describe('validate', () => {
 
     expect(spyReporter).not.toHaveBeenCalledNormalized('document.graphql:');
   });
+
+  test('should log deprecation when file has only deprecation', async () => {
+    await mockCommand(validate, 'validate "*.graphql" schema.graphql');
+
+    expect(spyReporter).toHaveBeenCalledNormalized('in with-deprecated-only.graphql');
+    expect(spyReporter).toHaveBeenCalledNormalized('The field Post.deprecatedTitle is deprecated. Will be deleted');
+  })
 });
