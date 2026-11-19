@@ -1,5 +1,14 @@
 # @graphql-inspector/core
 
+## 8.1.2
+
+### Patch Changes
+
+- [#3004](https://github.com/graphql-hive/graphql-inspector/pull/3004)
+  [`a24f2d2`](https://github.com/graphql-hive/graphql-inspector/commit/a24f2d21d5ab4cf553f1d728ef98644c59fa3e1c)
+  Thanks [@n1ru4l](https://github.com/n1ru4l)! - Speed up the `simplifyChanges` diff rule for large
+  additions, such as a new type with many fields.
+
 ## 8.1.1
 
 ### Patch Changes
