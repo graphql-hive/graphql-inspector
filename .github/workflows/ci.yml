@@ -110,8 +110,9 @@ jobs:
         run: pnpm exec vitest run --mode graphql-${{ matrix.graphql_version }}
 
   # Users consume action/index.js straight from master, so the bundle must match
-  # the release PR's dependency/version bumps. Pushes made with GITHUB_TOKEN do
-  # not retrigger workflows, so this cannot loop.
+  # the release PR's dependency/version bumps. The push uses BOT_GITHUB_TOKEN so
+  # CI runs on the bundle commit. That rerun finds action/ unchanged and pushes
+  # nothing, so this cannot loop.
   rebuild-action:
     name: Rebuild Action bundle
     if:
@@ -130,6 +131,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           ref: ${{ github.head_ref }}
+          token: ${{ secrets.BOT_GITHUB_TOKEN }}
 
       - name: Use Node.js
         uses: actions/setup-node@master
@@ -151,8 +153,8 @@ jobs:
       - name: Commit and push bundle if changed
         run: |
           if [ -n "$(git status --porcelain action/)" ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git config user.name "TheGuildBot"
+            git config user.email "59414373+theguild-bot@users.noreply.github.com"
             git add action/
             git commit -m "chore(action): rebuild bundle"
             git push
