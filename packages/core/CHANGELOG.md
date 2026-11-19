@@ -1,5 +1,28 @@
 # @graphql-inspector/core
 
+## 8.1.1
+
+### Patch Changes
+
+- [#2998](https://github.com/graphql-hive/graphql-inspector/pull/2998)
+  [`ab6b90d`](https://github.com/graphql-hive/graphql-inspector/commit/ab6b90d7f2d9de07a0160106f09ea8ff4c14003f)
+  Thanks [@eddeee888](https://github.com/eddeee888)! - `coverage()` no longer throws when a document
+  selects the `__type` introspection field. All `__`-prefixed meta-fields (`__typename`, `__schema`,
+  `__type`) are skipped.
+
+- [#3001](https://github.com/graphql-hive/graphql-inspector/pull/3001)
+  [`c5dbf87`](https://github.com/graphql-hive/graphql-inspector/commit/c5dbf879e9fef48bc093aea0d9f3ab4cdecebea7)
+  Thanks [@n1ru4l](https://github.com/n1ru4l)! - Improve `diff()` performance on schemas with many
+  directive usages (e.g. federation supergraphs). Directive argument values are now compared
+  structurally instead of printing both AST values to strings.
+
+- [#3002](https://github.com/graphql-hive/graphql-inspector/pull/3002)
+  [`9c84845`](https://github.com/graphql-hive/graphql-inspector/commit/9c848454b997c23c98286483167383879558d24e)
+  Thanks [@n1ru4l](https://github.com/n1ru4l)! - Speed up `diff()` for large schemas where most of
+  the schema is unchanged (e.g. federation supergraphs). Unchanged fields are now skipped with a
+  single cheap check, and unchanged directive usages, lists, type references and scalar/enum default
+  values are detected without allocating intermediate maps, strings or coerced values.
+
 ## 8.1.0
 
 ### Minor Changes
