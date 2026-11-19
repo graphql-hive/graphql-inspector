@@ -1,5 +1,11 @@
 import { GraphQLField, GraphQLInterfaceType, GraphQLObjectType, Kind } from 'graphql';
-import { compareDirectiveLists, compareLists, isNotEqual, isVoid } from '../utils/compare.js';
+import {
+  compareDirectiveLists,
+  compareLists,
+  isNotEqual,
+  isTypeRefEqual,
+  isVoid,
+} from '../utils/compare.js';
 import { isDeprecated } from '../utils/is-deprecated.js';
 import { changesInArgument } from './argument.js';
 import {
@@ -64,7 +70,7 @@ export function changesInField(
     }
   }
 
-  if (!isVoid(oldField) && isNotEqual(oldField!.type.toString(), newField.type.toString())) {
+  if (!isVoid(oldField) && !isTypeRefEqual(oldField.type, newField.type)) {
     addChange(fieldTypeChanged(type, oldField!, newField));
   }
 

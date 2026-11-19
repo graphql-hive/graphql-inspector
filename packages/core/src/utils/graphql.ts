@@ -19,6 +19,7 @@ import {
   GraphQLUnionType,
   isInputObjectType,
   isInterfaceType,
+  isLeafType,
   isListType,
   isNonNullType,
   isObjectType,
@@ -31,6 +32,7 @@ import {
   visit,
   visitWithTypeInfo,
 } from 'graphql';
+import { isTypeRefEqual, isValueNodeEqual } from './compare.js';
 import { isDeprecated } from './is-deprecated.js';
 
 type GraphQLInputValue = (GraphQLArgument | GraphQLInputField) & {
@@ -57,6 +59,20 @@ export function defaultValuesAreEqual(
   oldInputValue: GraphQLInputValue | null | undefined,
   newInputValue: GraphQLInputValue,
 ): boolean {
+  // Fast path (graphql v17): identical literals of the same scalar/enum type coerce to the same value.
+  // Input object types are excluded, since coercion fills in their field defaults from the schema.
+  const oldLiteral = oldInputValue?.default?.literal;
+  const newLiteral = newInputValue.default?.literal;
+  if (
+    oldLiteral !== undefined &&
+    newLiteral !== undefined &&
+    isLeafType(getNamedType(newInputValue.type)) &&
+    isTypeRefEqual(oldInputValue!.type, newInputValue.type) &&
+    isValueNodeEqual(oldLiteral, newLiteral)
+  ) {
+    return true;
+  }
+
   return defaultValueEquals(
     oldInputValue == null ? undefined : getDefaultValue(oldInputValue),
     getDefaultValue(newInputValue),

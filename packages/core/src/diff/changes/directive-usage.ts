@@ -1088,6 +1088,27 @@ export function directiveUsageArgumentRemovedFromMeta(
   };
 }
 
+/**
+ * Fast path for the common case where a directive usage did not change at all:
+ * same arguments, in the same order, with the same values.
+ */
+function areDirectiveArgumentsEqual(a: ConstDirectiveNode, b: ConstDirectiveNode): boolean {
+  const aArgs = a.arguments ?? [];
+  const bArgs = b.arguments ?? [];
+  if (aArgs.length !== bArgs.length) {
+    return false;
+  }
+  for (let i = 0; i < aArgs.length; i++) {
+    if (
+      aArgs[i].name.value !== bArgs[i].name.value ||
+      !isValueNodeEqual(aArgs[i].value, bArgs[i].value)
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
 export function directiveUsageChanged(
   oldDirective: ConstDirectiveNode | null,
   newDirective: ConstDirectiveNode,
@@ -1097,6 +1118,10 @@ export function directiveUsageChanged(
   parentArgument?: GraphQLArgument,
   parentEnumValue?: GraphQLEnumValue,
 ) {
+  if (oldDirective && areDirectiveArgumentsEqual(oldDirective, newDirective)) {
+    return;
+  }
+
   compareLists(oldDirective?.arguments || [], newDirective.arguments || [], {
     onAdded(argument) {
       addChange(

@@ -1,11 +1,13 @@
-import { Kind, NameNode, ValueNode } from 'graphql';
-
-export function keyMap<T>(list: readonly T[], keyFn: (item: T) => string): Record<string, T> {
-  return list.reduce((map, item) => {
-    map[keyFn(item)] = item;
-    return map;
-  }, Object.create(null));
-}
+import {
+  GraphQLType,
+  GraphQLWrappingType,
+  isListType,
+  isNonNullType,
+  isWrappingType,
+  Kind,
+  NameNode,
+  ValueNode,
+} from 'graphql';
 
 export function isEqual<T>(a: T, b: T): boolean {
   if (Array.isArray(a) && Array.isArray(b)) {
@@ -70,27 +72,33 @@ export function compareLists<T extends { name: string | NameNode }>(
     onMutual?(t: { newVersion: T; oldVersion: T | null }): void;
   },
 ) {
-  const oldMap = keyMap(oldList, ({ name }) => extractName(name));
-  const newMap = keyMap(newList, ({ name }) => extractName(name));
+  const oldMap = new Map<string, T>();
+  for (const oldItem of oldList) {
+    oldMap.set(extractName(oldItem.name), oldItem);
+  }
+  const newMap = new Map<string, T>();
+  for (const newItem of newList) {
+    newMap.set(extractName(newItem.name), newItem);
+  }
 
   const added: T[] = [];
   const removed: T[] = [];
   const mutual: Array<{ newVersion: T; oldVersion: T }> = [];
 
   for (const oldItem of oldList) {
-    const newItem = newMap[extractName(oldItem.name)] ?? null;
-    if (newItem === null) {
+    const newItem = newMap.get(extractName(oldItem.name));
+    if (newItem === undefined) {
       removed.push(oldItem);
     } else {
       mutual.push({
         newVersion: newItem,
-        oldVersion: oldItem ?? null,
+        oldVersion: oldItem,
       });
     }
   }
 
   for (const newItem of newList) {
-    if (oldMap[extractName(newItem.name)] === undefined) {
+    if (!oldMap.has(extractName(newItem.name))) {
       added.push(newItem);
     }
   }
@@ -136,47 +144,66 @@ export function compareDirectiveLists<T extends { name: string | NameNode }>(
     onMutual?(t: { newVersion: T; oldVersion: T | null }): void;
   },
 ) {
-  // collect all the usages, in order, by name for the old and new version of the schema
-  const oldMap = keyMapList(oldList, ({ name }) => extractName(name));
-  const newMap = keyMapList(newList, ({ name }) => extractName(name));
+  // Fast path: same directive names in the same order means every usage pairs up by position.
+  if (oldList.length === newList.length) {
+    let sameOrder = true;
+    for (let i = 0; i < oldList.length; i++) {
+      if (extractName(oldList[i].name) !== extractName(newList[i].name)) {
+        sameOrder = false;
+        break;
+      }
+    }
+    if (sameOrder) {
+      const mutual: Array<{ newVersion: T; oldVersion: T }> = [];
+      for (let i = 0; i < oldList.length; i++) {
+        mutual.push({ newVersion: newList[i], oldVersion: oldList[i] });
+      }
+      if (callbacks?.onMutual) {
+        for (const item of mutual) {
+          callbacks.onMutual(item);
+        }
+      }
+      return { added: [] as T[], removed: [] as T[], mutual };
+    }
+  }
+
+  // Directives with the same name are matched by position: the n-th old `@foo` is paired with
+  // the n-th new `@foo`. Extra old usages are removed, extra new usages are added.
+  const newByName = new Map<string, T[]>();
+  for (const newItem of newList) {
+    const name = extractName(newItem.name);
+    const items = newByName.get(name);
+    if (items) {
+      items.push(newItem);
+    } else {
+      newByName.set(name, [newItem]);
+    }
+  }
 
   const added: T[] = [];
   const removed: T[] = [];
   const mutual: Array<{ newVersion: T; oldVersion: T }> = [];
 
+  const oldCounts = new Map<string, number>();
   for (const oldItem of oldList) {
-    // check if the oldItem exists in the new schema
-    const newItems = newMap[extractName(oldItem.name)] ?? null;
-    // if not, then it's been removed
-    if (newItems === null) {
+    const name = extractName(oldItem.name);
+    const index = oldCounts.get(name) ?? 0;
+    oldCounts.set(name, index + 1);
+    const newItem = newByName.get(name)?.[index];
+    if (newItem === undefined) {
       removed.push(oldItem);
     } else {
-      // if so, then consider this a mutual change, and remove it from the list of newItems to avoid counting it in the future
-      const [newItem, ...rest] = newItems;
-      if (rest.length > 0) {
-        newMap[extractName(oldItem.name)] = rest as [T] & T[];
-      } else {
-        delete newMap[extractName(oldItem.name)];
-      }
-
-      mutual.push({
-        newVersion: newItem,
-        oldVersion: oldItem ?? null,
-      });
+      mutual.push({ newVersion: newItem, oldVersion: oldItem });
     }
   }
 
+  const newCounts = new Map<string, number>();
   for (const newItem of newList) {
-    const existingItems = oldMap[extractName(newItem.name)] ?? null;
-    if (existingItems === null) {
+    const name = extractName(newItem.name);
+    const index = newCounts.get(name) ?? 0;
+    newCounts.set(name, index + 1);
+    if (index >= (oldCounts.get(name) ?? 0)) {
       added.push(newItem);
-    } else {
-      const [_, ...rest] = existingItems;
-      if (rest.length > 0) {
-        oldMap[extractName(newItem.name)] = rest as [T] & T[];
-      } else {
-        delete oldMap[extractName(newItem.name)];
-      }
     }
   }
 
@@ -203,17 +230,6 @@ export function compareDirectiveLists<T extends { name: string | NameNode }>(
     removed,
     mutual,
   };
-}
-
-export function keyMapList<T>(
-  list: readonly T[],
-  keyFn: (item: T) => string,
-): Record<string, [T] & T[]> {
-  return list.reduce((map, item) => {
-    const key = keyFn(item);
-    map[key] = [...(map[key] ?? []), item];
-    return map;
-  }, Object.create(null));
 }
 
 /**
@@ -270,4 +286,20 @@ export function isValueNodeEqual(a: ValueNode, b: ValueNode): boolean {
       return true;
     }
   }
+}
+
+/**
+ * Equivalent to `a.toString() === b.toString()` for GraphQL type references
+ * (e.g. `[String!]!`), without building the strings.
+ */
+export function isTypeRefEqual(a: GraphQLType, b: GraphQLType): boolean {
+  while (isWrappingType(a)) {
+    // both sides must have the same wrapper (NonNull or List) at this level
+    if (isNonNullType(a) ? !isNonNullType(b) : !isListType(b)) {
+      return false;
+    }
+    a = a.ofType;
+    b = (b as GraphQLWrappingType).ofType;
+  }
+  return !isWrappingType(b) && a.name === b.name;
 }
