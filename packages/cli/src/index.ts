@@ -42,6 +42,16 @@ async function main() {
         describe: 'Http Header - Right',
         type: 'array',
       },
+      includeDeprecatedInputValues: {
+        describe: 'Request deprecated input fields and arguments when introspecting a URL schema',
+        type: 'boolean',
+        default: false,
+      },
+      includeRepeatableDirectives: {
+        describe: 'Request the repeatable flag of directives when introspecting a URL schema',
+        type: 'boolean',
+        default: false,
+      },
     });
 
   // eslint-disable-next-line @typescript-eslint/no-unused-expressions
