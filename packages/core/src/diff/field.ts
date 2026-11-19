@@ -1,5 +1,13 @@
 import { GraphQLField, GraphQLInterfaceType, GraphQLObjectType, Kind } from 'graphql';
-import { compareDirectiveLists, compareLists, isNotEqual, isVoid } from '../utils/compare.js';
+import {
+  compareDirectiveLists,
+  compareLists,
+  isDirectiveListEqual,
+  isNotEqual,
+  isTypeRefEqual,
+  isVoid,
+} from '../utils/compare.js';
+import { defaultValuesAreEqual } from '../utils/graphql.js';
 import { isDeprecated } from '../utils/is-deprecated.js';
 import { changesInArgument } from './argument.js';
 import {
@@ -30,6 +38,10 @@ export function changesInField(
   newField: GraphQLField<any, any>,
   addChange: AddChange,
 ) {
+  if (oldField !== null && isFieldUnchanged(oldField, newField)) {
+    return;
+  }
+
   if (isNotEqual(oldField?.description, newField.description)) {
     if (isVoid(oldField?.description)) {
       addChange(fieldDescriptionAdded(type, newField));
@@ -64,7 +76,7 @@ export function changesInField(
     }
   }
 
-  if (!isVoid(oldField) && isNotEqual(oldField!.type.toString(), newField.type.toString())) {
+  if (!isVoid(oldField) && !isTypeRefEqual(oldField.type, newField.type)) {
     addChange(fieldTypeChanged(type, oldField!, newField));
   }
 
@@ -107,4 +119,44 @@ export function changesInField(
       );
     },
   });
+}
+
+/**
+ * Cheap check for the common case where nothing about a field changed.
+ * Covers everything `changesInField` compares (description, deprecation, type, arguments
+ * and directive usages). Returning `false` only means the full comparison runs.
+ */
+function isFieldUnchanged(
+  oldField: GraphQLField<any, any>,
+  newField: GraphQLField<any, any>,
+): boolean {
+  if (
+    oldField.description !== newField.description ||
+    oldField.deprecationReason !== newField.deprecationReason ||
+    !isTypeRefEqual(oldField.type, newField.type) ||
+    !isDirectiveListEqual(oldField.astNode?.directives, newField.astNode?.directives)
+  ) {
+    return false;
+  }
+
+  const oldArgs = oldField.args;
+  const newArgs = newField.args;
+  if (oldArgs.length !== newArgs.length) {
+    return false;
+  }
+  for (let i = 0; i < oldArgs.length; i++) {
+    const oldArg = oldArgs[i];
+    const newArg = newArgs[i];
+    if (
+      oldArg.name !== newArg.name ||
+      oldArg.description !== newArg.description ||
+      !isTypeRefEqual(oldArg.type, newArg.type) ||
+      !defaultValuesAreEqual(oldArg, newArg) ||
+      !isDirectiveListEqual(oldArg.astNode?.directives, newArg.astNode?.directives)
+    ) {
+      return false;
+    }
+  }
+
+  return true;
 }

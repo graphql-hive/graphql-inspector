@@ -1,5 +1,11 @@
 import { GraphQLInputField, GraphQLInputObjectType, Kind } from 'graphql';
-import { compareDirectiveLists, compareLists, isNotEqual, isVoid } from '../utils/compare.js';
+import {
+  compareDirectiveLists,
+  compareLists,
+  isNotEqual,
+  isTypeRefEqual,
+  isVoid,
+} from '../utils/compare.js';
 import { defaultValuesAreEqual } from '../utils/graphql.js';
 import {
   directiveUsageAdded,
@@ -80,7 +86,7 @@ function changesInInputField(
       addChange(inputFieldDefaultValueChanged(input, oldField, newField));
     }
 
-    if (!isVoid(oldField) && isNotEqual(oldField.type.toString(), newField.type.toString())) {
+    if (!isVoid(oldField) && !isTypeRefEqual(oldField.type, newField.type)) {
       addChange(inputFieldTypeChanged(input, oldField, newField));
     }
   }

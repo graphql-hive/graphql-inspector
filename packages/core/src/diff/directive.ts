@@ -1,5 +1,5 @@
 import { GraphQLArgument, GraphQLDirective } from 'graphql';
-import { compareLists, diffArrays, isNotEqual } from '../utils/compare.js';
+import { compareLists, diffArrays, isNotEqual, isTypeRefEqual } from '../utils/compare.js';
 import { defaultValuesAreEqual } from '../utils/graphql.js';
 import {
   directiveArgumentAdded,
@@ -74,7 +74,7 @@ function changesInDirectiveArgument(
     addChange(directiveArgumentDefaultValueChanged(directive, oldArg, newArg));
   }
 
-  if (isNotEqual(oldArg.type.toString(), newArg.type.toString())) {
+  if (!isTypeRefEqual(oldArg.type, newArg.type)) {
     addChange(directiveArgumentTypeChanged(directive, oldArg, newArg));
   }
 }

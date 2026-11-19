@@ -1438,4 +1438,31 @@ describe('directive-usage', () => {
       expect(onWarning).not.toHaveBeenCalled();
     });
   });
+
+  describe('argument values', () => {
+    const schema = (args: string) =>
+      buildSchema(/* GraphQL */ `
+        directive @meta(a: Int, b: String, c: [String]) on FIELD_DEFINITION
+        type Query {
+          field: String @meta(${args})
+        }
+      `);
+
+    test('identical arguments report no change', async () => {
+      const args = 'a: 1, b: "x", c: ["y", "z"]';
+      expect(await diff(schema(args), schema(args))).toEqual([]);
+    });
+
+    test('reordered arguments report no change', async () => {
+      expect(await diff(schema('a: 1, b: "x"'), schema('b: "x", a: 1'))).toEqual([]);
+    });
+
+    test('changed nested value is reported', async () => {
+      const changes = await diff(schema('c: ["y", "z"]'), schema('c: ["y", "w"]'));
+      expect(changes.map(c => c.type)).toEqual([
+        'DIRECTIVE_USAGE_ARGUMENT_REMOVED',
+        'DIRECTIVE_USAGE_ARGUMENT_ADDED',
+      ]);
+    });
+  });
 });

@@ -5,7 +5,7 @@ import {
   GraphQLObjectType,
   Kind,
 } from 'graphql';
-import { compareDirectiveLists, isNotEqual } from '../utils/compare.js';
+import { compareDirectiveLists, isNotEqual, isTypeRefEqual } from '../utils/compare.js';
 import { defaultValuesAreEqual } from '../utils/graphql.js';
 import {
   fieldArgumentDefaultChanged,
@@ -34,7 +34,7 @@ export function changesInArgument(
     addChange(fieldArgumentDefaultChanged(type, field, oldArg, newArg));
   }
 
-  if (isNotEqual(oldArg?.type.toString(), newArg.type.toString())) {
+  if (!oldArg || !isTypeRefEqual(oldArg.type, newArg.type)) {
     addChange(fieldArgumentTypeChanged(type, field, oldArg, newArg));
   }
 

@@ -224,4 +224,47 @@ describe('argument', () => {
       expect(change.meta.newDefaultValue).toBeUndefined();
     });
   });
+
+  describe('default value', () => {
+    test('unchanged scalar and enum defaults report no change', async () => {
+      const sdl = /* GraphQL */ `
+        enum Sort {
+          ASC
+          DESC
+        }
+        type Query {
+          a(first: Int = 10, sort: Sort = ASC, tags: [String!] = ["x"]): String
+        }
+      `;
+      expect(await diff(buildSchema(sdl), buildSchema(sdl))).toEqual([]);
+    });
+
+    test('changed scalar default is reported', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        type Query {
+          a(first: Int = 10): String
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        type Query {
+          a(first: Int = 11): String
+        }
+      `);
+      const changes = await diff(a, b);
+      expect(changes.map(c => c.type)).toEqual(['FIELD_ARGUMENT_DEFAULT_CHANGED']);
+    });
+
+    test('changed input object default is reported', async () => {
+      const sdl = (value: number) => /* GraphQL */ `
+        input Filter {
+          limit: Int
+        }
+        type Query {
+          a(filter: Filter = { limit: ${value} }): String
+        }
+      `;
+      const changes = await diff(buildSchema(sdl(1)), buildSchema(sdl(2)));
+      expect(changes.map(c => c.type)).toEqual(['FIELD_ARGUMENT_DEFAULT_CHANGED']);
+    });
+  });
 });
