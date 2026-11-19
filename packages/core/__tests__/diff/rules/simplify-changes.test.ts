@@ -1,5 +1,6 @@
 import { buildSchema } from 'graphql';
 import { simplifyChanges } from '../../../src/diff/rules/index.js';
+import { diffSchema } from '../../../src/diff/schema.js';
 import { ChangeType, CriticalityLevel, diff } from '../../../src/index.js';
 import { findFirstChangeByPath } from '../../../utils/testing.js';
 
@@ -508,5 +509,107 @@ describe('simplifyChanges rule', () => {
       ChangeType.DirectiveArgumentAdded,
       ChangeType.DirectiveArgumentTypeChanged,
     ]);
+  });
+
+  describe('skipping nested additions', () => {
+    const rich = /* GraphQL */ `
+      schema @link(url: "x") {
+        query: Query
+      }
+      directive @link(url: String) on SCHEMA
+      directive @tag(
+        name: String! = "a" @deprecated(reason: "r")
+      ) repeatable on FIELD_DEFINITION | OBJECT | INPUT_FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM_VALUE | ENUM | UNION | SCALAR | INTERFACE | INPUT_OBJECT
+      "d"
+      interface I @tag(name: "i") {
+        "fd"
+        id: ID! @tag(name: "x") @deprecated(reason: "y")
+      }
+      interface J implements I {
+        id: ID!
+      }
+      "q"
+      type Query implements I & J @tag(name: "q") {
+        id: ID!
+        "fd"
+        f("ad" a: Int = 1 @tag(name: "a") @deprecated(reason: "z"), b: In): U
+          @tag(name: "f")
+          @deprecated(reason: "old")
+      }
+      union U @tag(name: "u") = Query
+      "in"
+      input In @tag(name: "in") {
+        "x"
+        x: Int = 2 @tag(name: "x") @deprecated(reason: "d")
+        e: E = A
+      }
+      enum E @tag(name: "e") {
+        "a"
+        A @tag(name: "a") @deprecated(reason: "b")
+        B
+      }
+      scalar S @tag(name: "s") @specifiedBy(url: "u")
+    `;
+
+    const cases: Array<[string, string | null, string]> = [
+      ['from null', null, rich],
+      ['from a minimal schema', 'type Query { _: Int }', rich],
+      [
+        'from a partially overlapping schema',
+        /* GraphQL */ `
+          directive @tag(name: String!) repeatable on FIELD_DEFINITION | OBJECT
+          type Query {
+            id: ID! @tag(name: "old")
+          }
+          enum E {
+            A
+          }
+        `,
+        rich,
+      ],
+      ['to a minimal schema', rich, 'type Query { _: Int }'],
+    ];
+
+    test.each(cases)('produces the same result as filtering afterwards (%s)', async (_, a, b) => {
+      const oldSchema = a === null ? null : buildSchema(a);
+      const newSchema = buildSchema(b);
+
+      const expected = await simplifyChanges({
+        changes: diffSchema(oldSchema, newSchema),
+        oldSchema,
+        newSchema,
+        config: undefined,
+      });
+      const actual = await diff(oldSchema, newSchema, [simplifyChanges]);
+
+      expect(actual).toEqual(expected);
+    });
+
+    test('rules running before simplifyChanges do not see changes nested under an addition', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        type Query {
+          a: String
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        type Query {
+          a: String
+        }
+        type Foo {
+          a(b: String): String
+        }
+      `);
+
+      let seen: string[] = [];
+      await diff(a, b, [
+        ({ changes }) => {
+          seen = changes.map(c => `${c.type} ${c.path}`);
+          return changes;
+        },
+        simplifyChanges,
+      ]);
+
+      expect(seen).toEqual([`${ChangeType.TypeAdded} Foo`]);
+    });
   });
 });
