@@ -195,7 +195,7 @@ describe('directive', () => {
       expect(change.b?.message).toEqual(`Argument 'name' was added to directive 'b'`);
     });
 
-    test('added non-nullable with default value is not breaking', async () => {
+    test('added non-nullable with default value', async () => {
       const a = buildSchema(/* GraphQL */ `
         directive @d on FIELD
 
@@ -215,7 +215,51 @@ describe('directive', () => {
 
       expect(change.type).toEqual('DIRECTIVE_ARGUMENT_ADDED');
       expect(change.message).toEqual(`Argument 'a' was added to directive 'd'`);
-      expect(change.criticality.level).not.toEqual(CriticalityLevel.Breaking);
+      expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
+    });
+
+    test('added nullable with default value', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        directive @d on FIELD
+
+        type Query {
+          f: Int
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @d(a: Int = 1) on FIELD
+
+        type Query {
+          f: Int
+        }
+      `);
+
+      const change = findFirstChangeByPath(await diff(a, b), '@d');
+
+      expect(change.type).toEqual('DIRECTIVE_ARGUMENT_ADDED');
+      expect(change.message).toEqual(`Argument 'a' was added to directive 'd'`);
+      expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
+    });
+
+    test('added to a new directive', async () => {
+      const a = buildSchema(/* GraphQL */ `
+        type Query {
+          f: Int
+        }
+      `);
+      const b = buildSchema(/* GraphQL */ `
+        directive @d(a: Int!) on FIELD
+
+        type Query {
+          f: Int
+        }
+      `);
+
+      // DIRECTIVE_ADDED shares the '@d' path, so select the argument change by type.
+      const change = (await diff(a, b)).find(c => c.type === 'DIRECTIVE_ARGUMENT_ADDED')!;
+
+      expect(change.message).toEqual(`Argument 'a' was added to directive 'd'`);
+      expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
     });
 
     test('removed', async () => {
