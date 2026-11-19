@@ -1,6 +1,7 @@
 import { buildSchema, parseValue, print } from 'graphql';
 import {
   compareDirectiveLists,
+  compareLists,
   diffArrays,
   isEqual,
   isNotEqual,
@@ -160,5 +161,45 @@ describe('isTypeRefEqual', () => {
         expect(isTypeRefEqual(a, b)).toBe(a.toString() === b.toString());
       }
     }
+  });
+});
+
+describe('compareLists', () => {
+  test('pairs identical lists by position', () => {
+    const oldList = [
+      { name: 'a', id: 1 },
+      { name: 'b', id: 2 },
+    ];
+    const newList = [
+      { name: 'a', id: 3 },
+      { name: 'b', id: 4 },
+    ];
+    const result = compareLists(oldList, newList);
+    expect(result.added).toEqual([]);
+    expect(result.removed).toEqual([]);
+    expect(result.mutual.map(m => [m.oldVersion.id, m.newVersion.id])).toEqual([
+      [1, 3],
+      [2, 4],
+    ]);
+  });
+
+  test('matches by name when order or membership differs', () => {
+    const oldList = [
+      { name: 'a', id: 1 },
+      { name: 'b', id: 2 },
+      { name: 'c', id: 3 },
+    ];
+    const newList = [
+      { name: 'd', id: 4 },
+      { name: 'b', id: 5 },
+      { name: 'a', id: 6 },
+    ];
+    const result = compareLists(oldList, newList);
+    expect(result.added.map(i => i.id)).toEqual([4]);
+    expect(result.removed.map(i => i.id)).toEqual([3]);
+    expect(result.mutual.map(m => [m.oldVersion.id, m.newVersion.id])).toEqual([
+      [1, 6],
+      [2, 5],
+    ]);
   });
 });

@@ -510,4 +510,87 @@ describe('object', () => {
       expect(change.c.message).toEqual("Argument 'c: String' was removed from field 'Foo.foo'");
     });
   });
+
+  describe('unchanged field detection', () => {
+    const schema = (field: string) =>
+      buildSchema(/* GraphQL */ `
+        directive @meta(value: String) repeatable on FIELD_DEFINITION | ARGUMENT_DEFINITION
+        type Query {
+          ${field}
+        }
+      `);
+
+    const base = '"desc" f(\n"arg desc" a: Int = 1 @meta(value: "x")): String @meta(value: "y")';
+
+    test('identical fields report no change', async () => {
+      expect(await diff(schema(base), schema(base))).toEqual([]);
+    });
+
+    test.each([
+      [
+        'field description',
+        '"other" f(\n"arg desc" a: Int = 1 @meta(value: "x")): String @meta(value: "y")',
+        'FIELD_DESCRIPTION_CHANGED',
+      ],
+      [
+        'field deprecation',
+        '"desc" f(\n"arg desc" a: Int = 1 @meta(value: "x")): String @meta(value: "y") @deprecated',
+        'FIELD_DEPRECATION_ADDED',
+      ],
+      [
+        'field type',
+        '"desc" f(\n"arg desc" a: Int = 1 @meta(value: "x")): Int @meta(value: "y")',
+        'FIELD_TYPE_CHANGED',
+      ],
+      [
+        'field directive argument',
+        '"desc" f(\n"arg desc" a: Int = 1 @meta(value: "x")): String @meta(value: "z")',
+        'DIRECTIVE_USAGE_ARGUMENT_ADDED',
+      ],
+      [
+        'field directive added',
+        '"desc" f(\n"arg desc" a: Int = 1 @meta(value: "x")): String @meta(value: "y") @meta',
+        'DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED',
+      ],
+      [
+        'argument description',
+        '"desc" f(\n"other" a: Int = 1 @meta(value: "x")): String @meta(value: "y")',
+        'FIELD_ARGUMENT_DESCRIPTION_CHANGED',
+      ],
+      [
+        'argument type',
+        '"desc" f(\n"arg desc" a: Float = 1 @meta(value: "x")): String @meta(value: "y")',
+        'FIELD_ARGUMENT_TYPE_CHANGED',
+      ],
+      [
+        'argument default',
+        '"desc" f(\n"arg desc" a: Int = 2 @meta(value: "x")): String @meta(value: "y")',
+        'FIELD_ARGUMENT_DEFAULT_CHANGED',
+      ],
+      [
+        'argument directive',
+        '"desc" f(\n"arg desc" a: Int = 1 @meta(value: "z")): String @meta(value: "y")',
+        'DIRECTIVE_USAGE_ARGUMENT_ADDED',
+      ],
+      [
+        'argument added',
+        '"desc" f(\n"arg desc" a: Int = 1 @meta(value: "x"), b: Int): String @meta(value: "y")',
+        'FIELD_ARGUMENT_ADDED',
+      ],
+      [
+        'argument renamed',
+        '"desc" f(\n"arg desc" b: Int = 1 @meta(value: "x")): String @meta(value: "y")',
+        'FIELD_ARGUMENT_ADDED',
+      ],
+    ])('detects a changed %s', async (_, changed, expectedType) => {
+      const changes = await diff(schema(base), schema(changed));
+      expect(changes.map(c => c.type)).toContain(expectedType);
+    });
+
+    test('reordered arguments report no change', async () => {
+      expect(
+        await diff(schema('f(a: Int, b: String): String'), schema('f(b: String, a: Int): String')),
+      ).toEqual([]);
+    });
+  });
 });

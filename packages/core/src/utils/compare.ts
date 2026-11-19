@@ -1,4 +1,5 @@
 import {
+  ConstDirectiveNode,
   GraphQLType,
   GraphQLWrappingType,
   isListType,
@@ -72,6 +73,29 @@ export function compareLists<T extends { name: string | NameNode }>(
     onMutual?(t: { newVersion: T; oldVersion: T | null }): void;
   },
 ) {
+  // Fast path: same names in the same order means every item pairs up by position.
+  if (oldList.length === newList.length) {
+    let sameOrder = true;
+    for (let i = 0; i < oldList.length; i++) {
+      if (extractName(oldList[i].name) !== extractName(newList[i].name)) {
+        sameOrder = false;
+        break;
+      }
+    }
+    if (sameOrder) {
+      const mutual: Array<{ newVersion: T; oldVersion: T }> = [];
+      for (let i = 0; i < oldList.length; i++) {
+        mutual.push({ newVersion: newList[i], oldVersion: oldList[i] });
+      }
+      if (callbacks?.onMutual) {
+        for (const item of mutual) {
+          callbacks.onMutual(item);
+        }
+      }
+      return { added: [] as T[], removed: [] as T[], mutual };
+    }
+  }
+
   const oldMap = new Map<string, T>();
   for (const oldItem of oldList) {
     oldMap.set(extractName(oldItem.name), oldItem);
@@ -302,4 +326,48 @@ export function isTypeRefEqual(a: GraphQLType, b: GraphQLType): boolean {
     b = (b as GraphQLWrappingType).ofType;
   }
   return !isWrappingType(b) && a.name === b.name;
+}
+
+/**
+ * Whether a directive usage is unchanged: same name and the same arguments,
+ * in the same order, with the same values.
+ */
+export function isDirectiveNodeEqual(a: ConstDirectiveNode, b: ConstDirectiveNode): boolean {
+  if (a.name.value !== b.name.value) {
+    return false;
+  }
+  const aArgs = a.arguments ?? [];
+  const bArgs = b.arguments ?? [];
+  if (aArgs.length !== bArgs.length) {
+    return false;
+  }
+  for (let i = 0; i < aArgs.length; i++) {
+    if (
+      aArgs[i].name.value !== bArgs[i].name.value ||
+      !isValueNodeEqual(aArgs[i].value, bArgs[i].value)
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Whether two lists of directive usages are unchanged, compared by position.
+ */
+export function isDirectiveListEqual(
+  a: readonly ConstDirectiveNode[] | undefined,
+  b: readonly ConstDirectiveNode[] | undefined,
+): boolean {
+  const aList = a ?? [];
+  const bList = b ?? [];
+  if (aList.length !== bList.length) {
+    return false;
+  }
+  for (let i = 0; i < aList.length; i++) {
+    if (!isDirectiveNodeEqual(aList[i], bList[i])) {
+      return false;
+    }
+  }
+  return true;
 }
