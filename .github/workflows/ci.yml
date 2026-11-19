@@ -108,3 +108,52 @@ jobs:
 
       - name: Test GraphQL ${{ matrix.graphql_version }}
         run: pnpm exec vitest run --mode graphql-${{ matrix.graphql_version }}
+
+  # Users consume action/index.js straight from master, so the bundle must match
+  # the release PR's dependency/version bumps. Pushes made with GITHUB_TOKEN do
+  # not retrigger workflows, so this cannot loop.
+  rebuild-action:
+    name: Rebuild Action bundle
+    if: github.event_name == 'pull_request' && github.head_ref == 'changeset-release/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: rebuild-action-${{ github.head_ref }}
+      cancel-in-progress: true
+    env:
+      CI: true
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Use Node.js
+        uses: actions/setup-node@master
+        with:
+          node-version-file: .node-version
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
+
+      - name: Install
+        run: pnpm i --no-frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Build Action bundle
+        run: pnpm action
+
+      - name: Commit and push bundle if changed
+        run: |
+          if [ -n "$(git status --porcelain action/)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add action/
+            git commit -m "chore(action): rebuild bundle"
+            git push
+          else
+            echo "Action bundle is up to date"
+          fi
