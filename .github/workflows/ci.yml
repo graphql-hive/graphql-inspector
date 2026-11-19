@@ -114,7 +114,9 @@ jobs:
   # not retrigger workflows, so this cannot loop.
   rebuild-action:
     name: Rebuild Action bundle
-    if: github.event_name == 'pull_request' && github.head_ref == 'changeset-release/master'
+    if:
+      github.event_name == 'pull_request' && github.head_ref == 'changeset-release/master' &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
       contents: write
