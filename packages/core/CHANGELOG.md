@@ -1,5 +1,17 @@
 # @graphql-inspector/core
 
+## 8.1.3
+
+### Patch Changes
+
+- [#3006](https://github.com/graphql-hive/graphql-inspector/pull/3006)
+  [`2820dd8`](https://github.com/graphql-hive/graphql-inspector/commit/2820dd8b9bd28c9680737d442831f991ffe80320)
+  Thanks [@n1ru4l](https://github.com/n1ru4l)! - Speed up `diff` with the `simplifyChanges` rule for
+  large schema additions. The changes nested under an added type or directive (its fields,
+  arguments, directive usages, ...) are no longer computed, since `simplifyChanges` removes them
+  anyway. The result is unchanged, but rules that run before `simplifyChanges` no longer receive
+  these nested changes.
+
 ## 8.1.2
 
 ### Patch Changes

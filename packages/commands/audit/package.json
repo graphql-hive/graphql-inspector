@@ -1,6 +1,6 @@
 {
   "name": "@graphql-inspector/audit-command",
-  "version": "6.0.7",
+  "version": "6.0.8",
   "type": "module",
   "description": "Audit Documents in GraphQL Inspector",
   "repository": {
