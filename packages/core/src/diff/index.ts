@@ -19,7 +19,13 @@ export function diff(
   config?: rules.ConsiderUsageConfig,
   options: DiffOptions = {},
 ): Promise<Change[]> {
-  const changes = diffSchema(oldSchema, newSchema, options);
+  const changes = diffSchema(oldSchema, newSchema, {
+    ...options,
+    // The changes nested under an added type or directive are dropped by `simplifyChanges`,
+    // so there is no need to compute them in the first place. Rules that run before
+    // `simplifyChanges` therefore do not see them either.
+    skipNestedAdditions: rules.includes(DiffRule.simplifyChanges),
+  });
 
   return rules.reduce(async (prev, rule) => {
     const prevChanges = await prev;

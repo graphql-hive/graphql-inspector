@@ -51,10 +51,20 @@ export interface DiffOptions {
   onWarning?: (warning: DiffWarning) => void;
 }
 
+export interface InternalDiffOptions extends DiffOptions {
+  /**
+   * Skip computing the changes nested under an added type or directive (its fields,
+   * arguments, directive usages, ...). These are implied by the addition itself and
+   * would be removed by the `simplifyChanges` rule anyway, so computing them is wasted
+   * work that dominates the cost of diffing large schema additions.
+   */
+  skipNestedAdditions?: boolean;
+}
+
 export function diffSchema(
   oldSchema: GraphQLSchema | null,
   newSchema: GraphQLSchema | null,
-  options: DiffOptions = {},
+  options: InternalDiffOptions = {},
 ): Change[] {
   const changes: Change[] = [];
 
@@ -99,7 +109,9 @@ export function diffSchema(
     {
       onAdded(directive) {
         addChange(directiveAdded(directive));
-        changesInDirective(null, directive, addChange);
+        if (!options.skipNestedAdditions) {
+          changesInDirective(null, directive, addChange);
+        }
       },
       onRemoved(directive) {
         addChange(directiveRemoved(directive));
@@ -122,7 +134,9 @@ export function diffSchema(
     {
       onAdded(type) {
         addChange(typeAdded(type));
-        changesInType(null, type, addChange);
+        if (!options.skipNestedAdditions) {
+          changesInType(null, type, addChange);
+        }
       },
       onRemoved(type) {
         addChange(typeRemoved(type));
