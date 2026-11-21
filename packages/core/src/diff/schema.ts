@@ -68,7 +68,13 @@ export function diffSchema(
 ): Change[] {
   const changes: Change[] = [];
 
-  // A schema built from SDL has AST nodes on its types even without a schema definition.
+  // Whether the schema was built from SDL (has AST nodes) rather than from introspection.
+  // Checks run cheapest first and stop at the first hit:
+  // - `schema { query: Query }` -> schema.astNode -> true
+  // - `extend schema @link(...)` -> schema.extensionASTNodes -> true
+  // - `type User { id: ID! }` with no schema definition or root types -> User.astNode -> true
+  //   (the type map walk stops at the first type with an AST node)
+  // An introspection-built schema has no AST nodes, so the whole type map is walked -> false.
   function hasAst(schema: GraphQLSchema): boolean {
     return (
       !!schema.astNode ||
