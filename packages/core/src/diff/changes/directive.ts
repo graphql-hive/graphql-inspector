@@ -234,26 +234,34 @@ export function directiveLocationRemoved(
   });
 }
 
-const directiveArgumentAddedBreakingReason = `A directive could be in use of a client application. Adding a non-nullable argument will break those clients.`;
-const directiveArgumentNonBreakingReason = `A directive could be in use of a client application. Adding a nullable argument will not break those clients.`;
+const directiveArgumentAddedBreakingReason = `A directive could be in use of a client application. Adding a non-nullable argument without a default value will break those clients.`;
+const directiveArgumentAddedDangerousReason = `A directive could be in use of a client application. Adding an argument with a default value will not break those clients, but existing usages now receive the default value, which may change runtime behaviour.`;
+const directiveArgumentNonBreakingReason = `A directive could be in use of a client application. Adding a nullable argument without a default value will not break those clients.`;
 const directiveArgumentNewReason = `Refer to the directive usage for the breaking status. If the directive is new and therefore unused, then adding an argument does not risk breaking clients.`;
 
 export function directiveArgumentAddedFromMeta(args: DirectiveArgumentAddedChange) {
+  const hasDefaultValue = args.meta.addedDirectiveDefaultValue !== undefined;
+
   return {
     criticality: args.meta.addedToNewDirective
       ? {
           level: CriticalityLevel.NonBreaking,
           reason: directiveArgumentNewReason,
         }
-      : args.meta.addedDirectiveArgumentTypeIsNonNull
+      : args.meta.addedDirectiveArgumentTypeIsNonNull && !hasDefaultValue
         ? {
             level: CriticalityLevel.Breaking,
             reason: directiveArgumentAddedBreakingReason,
           }
-        : {
-            level: CriticalityLevel.NonBreaking,
-            reason: directiveArgumentNonBreakingReason,
-          },
+        : hasDefaultValue
+          ? {
+              level: CriticalityLevel.Dangerous,
+              reason: directiveArgumentAddedDangerousReason,
+            }
+          : {
+              level: CriticalityLevel.NonBreaking,
+              reason: directiveArgumentNonBreakingReason,
+            },
     type: ChangeType.DirectiveArgumentAdded,
     message: `Argument '${args.meta.addedDirectiveArgumentName}' was added to directive '${args.meta.directiveName}'`,
     path: `@${args.meta.directiveName}`,
