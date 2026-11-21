@@ -145,6 +145,58 @@ describe('coverage', () => {
     expect(() => coverage(schema, [new Source(introspectionQuery)])).not.toThrowError();
   });
 
+  test('counts each covered root field once across repeated selections', () => {
+    const repeatedSchema = buildSchema(/* GraphQL */ `
+      type Query {
+        a: Int
+        b: Int
+      }
+
+      type Mutation {
+        m: Int
+        n: Int
+      }
+    `);
+
+    const { stats } = coverage(repeatedSchema, [
+      new Source('{ a }'),
+      new Source('{ a }'),
+      new Source('query X { a }'),
+      new Source('mutation { m }'),
+      new Source('mutation Y { m }'),
+    ]);
+
+    expect(stats.numQueries).toEqual(2);
+    expect(stats.numCoveredQueries).toEqual(1);
+    expect(stats.numMutations).toEqual(2);
+    expect(stats.numCoveredMutations).toEqual(1);
+  });
+
+  test('uses the root operation type names configured in the schema', () => {
+    const customRootSchema = buildSchema(/* GraphQL */ `
+      schema {
+        query: RootQuery
+        mutation: RootMutation
+      }
+
+      type RootQuery {
+        a: Int
+        b: Int
+      }
+
+      type RootMutation {
+        m: Int
+      }
+    `);
+
+    const { stats } = coverage(customRootSchema, [new Source('{ a }'), new Source('mutation { m }')]);
+
+    expect(stats.numQueries).toEqual(2);
+    expect(stats.numCoveredQueries).toEqual(1);
+    expect(stats.numMutations).toEqual(1);
+    expect(stats.numCoveredMutations).toEqual(1);
+  });
+
   test('skips meta fields:  __type, __typename and __schema', () => {
     const typeSchema = buildSchema(/* GraphQL */ `
       type Query {
