@@ -266,5 +266,21 @@ describe('argument', () => {
       const changes = await diff(buildSchema(sdl(1)), buildSchema(sdl(2)));
       expect(changes.map(c => c.type)).toEqual(['FIELD_ARGUMENT_DEFAULT_CHANGED']);
     });
+
+    test('changed nested input field default is reported on the argument', async () => {
+      const sdl = (value: number) => /* GraphQL */ `
+        input Filter {
+          limit: Int = ${value}
+        }
+        type Query {
+          a(filter: Filter = {}): String
+        }
+      `;
+      const changes = await diff(buildSchema(sdl(1)), buildSchema(sdl(2)));
+      expect(changes.map(c => `${c.path} ${c.type}`).sort()).toEqual([
+        'Filter.limit INPUT_FIELD_DEFAULT_VALUE_CHANGED',
+        'Query.a.filter FIELD_ARGUMENT_DEFAULT_CHANGED',
+      ]);
+    });
   });
 });
