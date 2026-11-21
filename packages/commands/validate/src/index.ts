@@ -274,7 +274,7 @@ export default createCommand<
         });
     },
     async handler(args) {
-      const { headers, token } = parseGlobalArgs(args);
+      const { headers, token, introspection } = parseGlobalArgs(args);
       const apollo = args.apollo || false;
       const aws = args.aws || false;
       const apolloFederation = args.federation || false;
@@ -311,6 +311,7 @@ export default createCommand<
           headers,
           token,
           method,
+          ...introspection,
         },
         apolloFederation,
         apolloFederationV2,

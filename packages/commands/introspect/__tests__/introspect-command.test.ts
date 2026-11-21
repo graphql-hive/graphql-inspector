@@ -116,4 +116,52 @@ describe('introspect', () => {
 
     expect(builtSchema.getQueryType()!.getFields()).toHaveProperty('post');
   });
+
+  describe('introspection options', () => {
+    const richSchema = buildSchema(/* GraphQL */ `
+      directive @tag(name: String) repeatable on FIELD_DEFINITION
+
+      input PostFilter {
+        oldStatus: String @deprecated(reason: "Use status")
+        status: String
+      }
+
+      type Query {
+        posts(where: PostFilter): [String!] @tag(name: "a") @tag(name: "b")
+      }
+    `);
+
+    async function introspectWith(flags: string) {
+      const done = mockGraphQLServer({
+        schema: richSchema,
+        host: 'https://example.com',
+        path: '/graphql',
+      });
+      await mockCommand(
+        introspect,
+        `introspect https://example.com/graphql -w schema.graphql ${flags}`,
+      );
+      await sleepFor(500);
+      done();
+      const printed = readFileSync('schema.graphql', 'utf8');
+      unlinkSync('schema.graphql');
+      return printed;
+    }
+
+    test('omits deprecated input fields and repeatable by default', async () => {
+      const printed = await introspectWith('');
+
+      expect(printed).not.toContain('oldStatus');
+      expect(printed).not.toContain('repeatable');
+    });
+
+    test('includes deprecated input fields and repeatable when requested', async () => {
+      const printed = await introspectWith(
+        '--include-deprecated-input-values --include-repeatable-directives',
+      );
+
+      expect(printed).toContain('oldStatus: String @deprecated(reason: "Use status")');
+      expect(printed).toContain('directive @tag(name: String) repeatable on FIELD_DEFINITION');
+    });
+  });
 });
