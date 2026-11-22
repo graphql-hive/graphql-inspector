@@ -378,12 +378,7 @@ function printInvalidDocuments(
 }
 
 function renderErrors(sourceName: string, errors: GraphQLError[], isError = false): string[] {
-  const errorsAsString = errors.map(e => ` - ${bolderize(e.message)}`).join('\n');
-
-  return [
-    isError ? chalk.redBright('error') : chalk.yellowBright('warn'),
-    `in ${sourceName}:\n\n`,
-    errorsAsString,
-    '\n\n',
-  ];
+  return errors.map(e => {
+    return `${isError ? chalk.redBright('error') : chalk.yellowBright('warn')} in ${sourceName}: ${bolderize(e.message)}`;
+  });
 }
