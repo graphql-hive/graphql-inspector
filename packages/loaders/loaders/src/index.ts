@@ -132,20 +132,74 @@ export class LoadersRegistry {
                   scalar BigInt
                   scalar Double
 
-                  directive @aws_subscribe(mutations: [String!]!) on FIELD_DEFINITION
-
                   directive @deprecated(
-                    reason: String
-                  ) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION | ENUM | ENUM_VALUE
+                    reason: String = "No longer supported"
+                  ) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-                  directive @aws_auth(cognito_groups: [String!]!) on FIELD_DEFINITION
-                  directive @aws_api_key on FIELD_DEFINITION | OBJECT
-                  directive @aws_iam on FIELD_DEFINITION | OBJECT
-                  directive @aws_oidc on FIELD_DEFINITION | OBJECT
-                  directive @aws_cognito_user_pools(
-                    cognito_groups: [String!]
-                  ) on FIELD_DEFINITION | OBJECT
+                  """
+                  This directive allows results to be deferred during execution
+                  """
+                  directive @defer on FIELD
+
+                  """
+                  Tells the service this field/object has access authorized by an OIDC token.
+                  """
+                  directive @aws_oidc on OBJECT | FIELD_DEFINITION
+
+                  """
+                  Tells the service this field/object has access authorized by a Lambda Authorizer.
+                  """
                   directive @aws_lambda on FIELD_DEFINITION | OBJECT
+
+                  """
+                  Directs the schema to enforce authorization on a field
+                  """
+                  directive @aws_auth(
+                    """
+                    List of cognito user pool groups which have access on this field
+                    """
+                    cognito_groups: [String]
+                  ) on FIELD_DEFINITION
+
+                  """
+                  Tells the service which subscriptions will be published to when this mutation is called. This directive is deprecated use @aws_susbscribe directive instead.
+                  """
+                  directive @aws_publish(
+                    """
+                    List of subscriptions which will be published to when this mutation is called.
+                    """
+                    subscriptions: [String]
+                  ) on FIELD_DEFINITION
+
+                  """
+                  Tells the service this field/object has access authorized by a Cognito User Pools token.
+                  """
+                  directive @aws_cognito_user_pools(
+                    """
+                    List of cognito user pool groups which have access on this field
+                    """
+                    cognito_groups: [String]
+                  ) on OBJECT | FIELD_DEFINITION | INPUT_OBJECT
+
+                  """
+                  Tells the service which mutation triggers this subscription.
+                  """
+                  directive @aws_subscribe(
+                    """
+                    List of mutations which will trigger this subscription when they are called.
+                    """
+                    mutations: [String]
+                  ) on FIELD_DEFINITION
+
+                  """
+                  Tells the service this field/object has access authorized by sigv4 signing.
+                  """
+                  directive @aws_iam on OBJECT | FIELD_DEFINITION | INPUT_OBJECT
+
+                  """
+                  Tells the service this field/object has access authorized by an API key.
+                  """
+                  directive @aws_api_key on OBJECT | FIELD_DEFINITION
                 `),
               ],
             }
