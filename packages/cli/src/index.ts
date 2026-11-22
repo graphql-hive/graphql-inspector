@@ -1,15 +1,48 @@
 #!/usr/bin/env node
-import yargs, { Argv } from 'yargs';
-import { useCommands } from '@graphql-inspector/commands';
-import { useLoaders } from '@graphql-inspector/loaders';
+import yargs, { Argv, CommandModule } from 'yargs';
+import auditCommand from '@graphql-inspector/audit-command';
+import codeLoader from '@graphql-inspector/code-loader';
+import coverageCommand from '@graphql-inspector/coverage-command';
+import diffCommand from '@graphql-inspector/diff-command';
+import docsCommand from '@graphql-inspector/docs-command';
+import gitLoader from '@graphql-inspector/git-loader';
+import githubLoader from '@graphql-inspector/github-loader';
+import graphqlLoader from '@graphql-inspector/graphql-loader';
+import introspectCommand from '@graphql-inspector/introspect-command';
+import jsonLoader from '@graphql-inspector/json-loader';
+import { LoadersRegistry } from '@graphql-inspector/loaders';
+import serveCommand from '@graphql-inspector/serve-command';
+import similarCommand from '@graphql-inspector/similar-command';
+import urlLoader from '@graphql-inspector/url-loader';
+import validateCommand from '@graphql-inspector/validate-command';
 
 async function main() {
   const config = {
     loaders: ['code', 'git', 'github', 'graphql', 'json', 'url'],
     commands: ['docs', 'serve', 'diff', 'validate', 'coverage', 'introspect', 'similar', 'audit'],
   };
-  const loaders = useLoaders(config);
-  const commands = useCommands({ config, loaders });
+  const loaders = new LoadersRegistry();
+  for (const loader of [
+    codeLoader,
+    gitLoader,
+    githubLoader,
+    graphqlLoader,
+    jsonLoader,
+    urlLoader,
+  ]) {
+    loaders.register(loader);
+  }
+  // Each command has its own argument type, so the list is typed with `any` arguments
+  const commands: CommandModule<{}, any>[] = [
+    docsCommand,
+    serveCommand,
+    diffCommand,
+    validateCommand,
+    coverageCommand,
+    introspectCommand,
+    similarCommand,
+    auditCommand,
+  ].map(commandFactory => commandFactory({ config, loaders }));
 
   const root: Argv = yargs
     .scriptName('graphql-inspector')
