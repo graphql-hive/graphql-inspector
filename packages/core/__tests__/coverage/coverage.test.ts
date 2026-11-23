@@ -189,7 +189,10 @@ describe('coverage', () => {
       }
     `);
 
-    const { stats } = coverage(customRootSchema, [new Source('{ a }'), new Source('mutation { m }')]);
+    const { stats } = coverage(customRootSchema, [
+      new Source('{ a }'),
+      new Source('mutation { m }'),
+    ]);
 
     expect(stats.numQueries).toEqual(2);
     expect(stats.numCoveredQueries).toEqual(1);
