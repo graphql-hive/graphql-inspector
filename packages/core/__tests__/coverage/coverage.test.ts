@@ -148,7 +148,7 @@ describe('coverage', () => {
   test('counts each covered root field once across repeated selections', () => {
     const repeatedSchema = buildSchema(/* GraphQL */ `
       type Query {
-        a: Int
+        a(id: ID!): Int
         b: Int
       }
 
@@ -162,12 +162,13 @@ describe('coverage', () => {
       new Source('{ a }'),
       new Source('{ a }'),
       new Source('query X { a }'),
+      new Source('query XX { b }'),
       new Source('mutation { m }'),
       new Source('mutation Y { m }'),
     ]);
 
     expect(stats.numQueries).toEqual(2);
-    expect(stats.numCoveredQueries).toEqual(1);
+    expect(stats.numCoveredQueries).toEqual(2);
     expect(stats.numMutations).toEqual(2);
     expect(stats.numCoveredMutations).toEqual(1);
   });
