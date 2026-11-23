@@ -32,8 +32,15 @@ import {
   visit,
   visitWithTypeInfo,
 } from 'graphql';
+import * as graphql from 'graphql';
 import { isTypeRefEqual, isValueNodeEqual } from './compare.js';
 import { isDeprecated } from './is-deprecated.js';
+
+// graphql v17 deprecated `valueFromAST`, which no longer applies input object field defaults.
+// `coerceInputLiteral` (v17 only) does, matching the v16 `valueFromAST` behavior.
+const coerceInputLiteral:
+  | ((valueNode: ConstValueNode, type: GraphQLInputType) => unknown)
+  | undefined = (graphql as Record<string, any>)['coerceInputLiteral'];
 
 type GraphQLInputValue = (GraphQLArgument | GraphQLInputField) & {
   default?: { literal: ConstValueNode; value?: never } | { value: unknown; literal?: never };
@@ -42,7 +49,9 @@ type GraphQLInputValue = (GraphQLArgument | GraphQLInputField) & {
 export function getDefaultValue(inputValue: GraphQLInputValue): unknown {
   if (inputValue.default !== undefined) {
     if (inputValue.default.literal !== undefined) {
-      return valueFromAST(inputValue.default.literal, inputValue.type);
+      return coerceInputLiteral
+        ? coerceInputLiteral(inputValue.default.literal, inputValue.type)
+        : valueFromAST(inputValue.default.literal, inputValue.type);
     }
 
     return coerceInputValue(inputValue.default.value, inputValue.type);
