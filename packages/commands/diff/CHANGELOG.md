@@ -1,5 +1,13 @@
 # @graphql-inspector/diff-command
 
+## 7.0.9
+
+### Patch Changes
+
+- Updated dependencies
+  [[`877ad2b`](https://github.com/graphql-hive/graphql-inspector/commit/877ad2baaf7604ac33f15b8f234b90e8e479684e)]:
+  - @graphql-inspector/core@8.1.4
+
 ## 7.0.8
 
 ### Patch Changes

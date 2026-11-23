@@ -1,5 +1,15 @@
 # @graphql-inspector/core
 
+## 8.1.4
+
+### Patch Changes
+
+- [#3003](https://github.com/graphql-hive/graphql-inspector/pull/3003)
+  [`877ad2b`](https://github.com/graphql-hive/graphql-inspector/commit/877ad2baaf7604ac33f15b8f234b90e8e479684e)
+  Thanks [@n1ru4l](https://github.com/n1ru4l)! - Report `FIELD_ARGUMENT_DEFAULT_CHANGED` (and the
+  directive/input field equivalents) when a nested input field default changes on GraphQL 17,
+  matching GraphQL 16 behavior.
+
 ## 8.1.3
 
 ### Patch Changes
