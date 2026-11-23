@@ -197,20 +197,20 @@ export function coverage(schema: GraphQLSchema, sources: Source[]): SchemaCovera
     const me = coverage.types[key];
     processStats(me);
 
-    const rootFields = Object.values(me.children);
-    const coveredRootFieldCount = rootFields.filter(field => field.hits > 0).length;
+    const fields = Object.values(me.children);
+    const coveredFieldCount = fields.filter(field => field.hits > 0).length;
 
     if (me.type === schema.getQueryType()) {
-      coverage.stats.numQueries += rootFields.length;
-      coverage.stats.numCoveredQueries += coveredRootFieldCount;
+      coverage.stats.numQueries += fields.length;
+      coverage.stats.numCoveredQueries += coveredFieldCount;
     }
     if (me.type === schema.getMutationType()) {
-      coverage.stats.numMutations += rootFields.length;
-      coverage.stats.numCoveredMutations += coveredRootFieldCount;
+      coverage.stats.numMutations += fields.length;
+      coverage.stats.numCoveredMutations += coveredFieldCount;
     }
     if (me.type === schema.getSubscriptionType()) {
-      coverage.stats.numSubscriptions += rootFields.length;
-      coverage.stats.numCoveredSubscriptions += coveredRootFieldCount;
+      coverage.stats.numSubscriptions += fields.length;
+      coverage.stats.numCoveredSubscriptions += coveredFieldCount;
     }
 
     coverage.stats.numTypes++;
