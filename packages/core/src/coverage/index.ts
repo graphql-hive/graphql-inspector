@@ -115,18 +115,6 @@ export function coverage(schema: GraphQLSchema, sources: Source[]): SchemaCovera
         const fieldCoverage = typeCoverage.children[fieldDef.name];
         const locations = fieldCoverage.locations[sourceName];
 
-        switch (typeCoverage.type.name) {
-          case 'Query':
-            coverage.stats.numCoveredQueries++;
-            break;
-          case 'Mutation':
-            coverage.stats.numCoveredMutations++;
-            break;
-          case 'Subscription':
-            coverage.stats.numCoveredSubscriptions++;
-            break;
-        }
-
         typeCoverage.hits++;
         fieldCoverage.hits++;
 
@@ -168,20 +156,6 @@ export function coverage(schema: GraphQLSchema, sources: Source[]): SchemaCovera
         const fieldMap = type.getFields();
 
         for (const fieldname in fieldMap) {
-          if (isObjectType(type) || isInterfaceType(type)) {
-            switch (type.name) {
-              case 'Query':
-                coverage.stats.numQueries++;
-                break;
-              case 'Mutation':
-                coverage.stats.numMutations++;
-                break;
-              case 'Subscription':
-                coverage.stats.numSubscriptions++;
-                break;
-            }
-          }
-
           const field = fieldMap[fieldname];
 
           typeCoverage.children[field.name] = {
@@ -222,6 +196,22 @@ export function coverage(schema: GraphQLSchema, sources: Source[]): SchemaCovera
   for (const key in coverage.types) {
     const me = coverage.types[key];
     processStats(me);
+
+    const fields = Object.values(me.children);
+    const coveredFieldCount = fields.filter(field => field.hits > 0).length;
+
+    if (me.type === schema.getQueryType()) {
+      coverage.stats.numQueries += fields.length;
+      coverage.stats.numCoveredQueries += coveredFieldCount;
+    }
+    if (me.type === schema.getMutationType()) {
+      coverage.stats.numMutations += fields.length;
+      coverage.stats.numCoveredMutations += coveredFieldCount;
+    }
+    if (me.type === schema.getSubscriptionType()) {
+      coverage.stats.numSubscriptions += fields.length;
+      coverage.stats.numCoveredSubscriptions += coveredFieldCount;
+    }
 
     coverage.stats.numTypes++;
     if (me.fieldsCountCovered > 0) coverage.stats.numTypesCovered++;

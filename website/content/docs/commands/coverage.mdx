@@ -61,9 +61,11 @@ graphql-inspector coverage example/documents/post.graphql example/schemas/new-va
 - Fields covered: This shows the percentage of fields in your schema that have been covered by your
   tests. In your case, you have achieved 50% coverage for fields, which means that only half of the
   fields in your schema have been tested.
-- Total Queries: This shows the total number of queries in your schema that have been tested.
-- Total Mutations: This shows the total number of mutations in your schema that have been tested.
-- Total Subscriptions: This shows the total number of subscriptions in your schema that have been
-  tested.
+- Total Queries: The number of fields on your schema's query root type (`Query` by default, or the
+  type set with `schema { query: ... }`).
+- Covered Queries: How many of those query fields are selected at least once in your documents.
+  Selecting the same field several times counts it once, so this is never more than Total Queries.
+- Total Mutations / Covered Mutations: The same, for the mutation root type.
+- Total Subscriptions / Covered Subscriptions: The same, for the subscription root type.
 
 ![CoverageStats](/assets/img/cli/coverageStats.png)
