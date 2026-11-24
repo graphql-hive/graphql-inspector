@@ -1,5 +1,22 @@
 # @graphql-inspector/core
 
+## 8.1.5
+
+### Patch Changes
+
+- [#2999](https://github.com/graphql-hive/graphql-inspector/pull/2999)
+  [`3e5344e`](https://github.com/graphql-hive/graphql-inspector/commit/3e5344ec57b30a656c3ef31b4017a41556cb1ec6)
+  Thanks [@eddeee888](https://github.com/eddeee888)! - `DIRECTIVE_ARGUMENT_ADDED` now takes the
+  argument's default value into account, the same way `FIELD_ARGUMENT_ADDED` does. Adding an
+  argument with a default value to an existing directive is reported as `DANGEROUS` instead of
+  `BREAKING` (non-null) or `NON_BREAKING` (nullable). Adding a non-null argument without a default
+  value is still `BREAKING`.
+
+- [#3012](https://github.com/graphql-hive/graphql-inspector/pull/3012)
+  [`1b386ed`](https://github.com/graphql-hive/graphql-inspector/commit/1b386ed18e58c8d40ca236c5d57adc421e4e0c45)
+  Thanks [@eddeee888](https://github.com/eddeee888)! - Fix `coverage()` root operation stats so each
+  root field is counted once and custom root type names are supported.
+
 ## 8.1.4
 
 ### Patch Changes
