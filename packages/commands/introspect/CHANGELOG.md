@@ -1,5 +1,14 @@
 # @graphql-inspector/introspect-command
 
+## 6.0.10
+
+### Patch Changes
+
+- Updated dependencies
+  [[`3e5344e`](https://github.com/graphql-hive/graphql-inspector/commit/3e5344ec57b30a656c3ef31b4017a41556cb1ec6),
+  [`1b386ed`](https://github.com/graphql-hive/graphql-inspector/commit/1b386ed18e58c8d40ca236c5d57adc421e4e0c45)]:
+  - @graphql-inspector/core@8.1.5
+
 ## 6.0.9
 
 ### Patch Changes
