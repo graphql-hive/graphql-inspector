@@ -632,7 +632,7 @@ export function directiveUsageUnionMemberAddedFromMeta(args: DirectiveUsageUnion
       level: args.meta.addedToNewType
         ? CriticalityLevel.NonBreaking
         : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '@${args.meta.addedDirectiveName}' was added to union '${args.meta.unionName}'`,
+      reason: `Directive '@${args.meta.addedDirectiveName}' was added to union '${args.meta.unionName}' (member '${args.meta.addedUnionMemberTypeName}')`,
     },
     type: ChangeType.DirectiveUsageUnionMemberAdded,
     message: buildDirectiveUsageUnionMemberAddedMessage(args.meta),
@@ -653,7 +653,7 @@ export function directiveUsageUnionMemberRemovedFromMeta(
   return {
     criticality: {
       level: removedSpecialDirective(args.meta.removedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '@${args.meta.removedDirectiveName}' was removed from union '${args.meta.unionName}'`,
+      reason: `Directive '@${args.meta.removedDirectiveName}' was removed from union '${args.meta.unionName}' (member '${args.meta.removedUnionMemberTypeName}')`,
     },
     type: ChangeType.DirectiveUsageUnionMemberRemoved,
     message: buildDirectiveUsageUnionMemberRemovedMessage(args.meta),
@@ -1049,7 +1049,7 @@ export function directiveUsageArgumentAddedFromMeta(
     criticality: {
       level: CriticalityLevel.NonBreaking,
     },
-    message: `Argument '@${args.meta.directiveName}(${args.meta.addedArgumentName}:)' was added`,
+    message: `Argument '${args.meta.addedArgumentName}' was added to usage of '@${args.meta.directiveName}'`,
     path: [
       /** If the type is missing then this must be a directive on a schema */
       args.meta.parentTypeName ?? '',
@@ -1073,7 +1073,7 @@ export function directiveUsageArgumentRemovedFromMeta(
       level: CriticalityLevel.Dangerous,
       reason: `Changing an argument on a directive can change runtime behavior.`,
     },
-    message: `Argument '@${args.meta.directiveName}(${args.meta.removedArgumentName}:)' was removed`,
+    message: `Argument '${args.meta.removedArgumentName}' was removed from usage of '@${args.meta.directiveName}'`,
     path: [
       /** If the type is missing then this must be a directive on a schema */
       args.meta.parentTypeName ?? '',
