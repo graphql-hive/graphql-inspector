@@ -14,9 +14,9 @@ import {
 } from './change.js';
 
 function buildEnumValueRemovedMessage(args: EnumValueRemovedChange['meta']) {
-  return `Enum value '${args.removedEnumValueName}' ${
+  return `Enum value '${args.enumName}.${args.removedEnumValueName}' ${
     args.isEnumValueDeprecated ? '(deprecated) ' : ''
-  }was removed from enum '${args.enumName}'`;
+  }was removed`;
 }
 
 const enumValueRemovedCriticalityBreakingReason = `Removing an enum value will cause existing queries that use this enum value to error.`;
@@ -49,7 +49,7 @@ export function enumValueRemoved(
 }
 
 function buildEnumValueAddedMessage(args: EnumValueAddedChange) {
-  return `Enum value '${args.meta.addedEnumValueName}' was added to enum '${args.meta.enumName}'`;
+  return `Enum value '${args.meta.enumName}.${args.meta.addedEnumValueName}' was added`;
 }
 
 const enumValueAddedCriticalityDangerousReason = `Adding an enum value may break existing clients that were not programming defensively against an added case when querying an enum.`;

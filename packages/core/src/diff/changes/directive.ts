@@ -20,7 +20,7 @@ import {
 } from './change.js';
 
 function buildDirectiveRemovedMessage(args: DirectiveRemovedChange['meta']): string {
-  return `Directive '${args.removedDirectiveName}' was removed`;
+  return `Directive '@${args.removedDirectiveName}' was removed`;
 }
 
 const directiveRemovedCriticalityBreakingReason = `A directive could be in use of a client application. Removing it could break the client application.`;
@@ -50,7 +50,7 @@ export function directiveRemoved(
 }
 
 function buildDirectiveAddedMessage(args: DirectiveAddedChange['meta']): string {
-  return `Directive '${args.addedDirectiveName}' was added`;
+  return `Directive '@${args.addedDirectiveName}' was added`;
 }
 
 export function directiveAddedFromMeta(args: DirectiveAddedChange) {
@@ -83,12 +83,12 @@ function buildDirectiveDescriptionChangedMessage(
   args: DirectiveDescriptionChangedChange['meta'],
 ): string {
   if (args.oldDirectiveDescription === null && args.newDirectiveDescription !== null) {
-    return `Directive '${args.directiveName}' description '${fmt(args.newDirectiveDescription)}' was added`;
+    return `Directive '@${args.directiveName}' description '${fmt(args.newDirectiveDescription)}' was added`;
   }
   if (args.newDirectiveDescription === null && args.oldDirectiveDescription !== null) {
-    return `Directive '${args.directiveName}' description '${fmt(args.oldDirectiveDescription)}' was removed`;
+    return `Directive '@${args.directiveName}' description '${fmt(args.oldDirectiveDescription)}' was removed`;
   }
-  return `Directive '${args.directiveName}' description changed from '${fmt(args.oldDirectiveDescription ?? '')}' to '${fmt(args.newDirectiveDescription ?? '')}'`;
+  return `Directive '@${args.directiveName}' description changed from '${fmt(args.oldDirectiveDescription ?? '')}' to '${fmt(args.newDirectiveDescription ?? '')}'`;
 }
 
 export function directiveDescriptionChangedFromMeta(args: DirectiveDescriptionChangedChange) {
@@ -118,7 +118,7 @@ export function directiveDescriptionChanged(
 }
 
 function buildDirectiveRepeatableAddedMessage(args: DirectiveRepeatableAddedChange['meta']) {
-  return `Directive '${args.directiveName}' added repeatable.`;
+  return `Directive '@${args.directiveName}' added repeatable.`;
 }
 
 export function directiveRepeatableAddedFromMeta(
@@ -145,7 +145,7 @@ export function directiveRepeatableAdded(directive: GraphQLDirective) {
 }
 
 function buildDirectiveRepeatableRemovedMessage(args: DirectiveRepeatableAddedChange['meta']) {
-  return `Directive '${args.directiveName}' removed repeatable.`;
+  return `Directive '@${args.directiveName}' removed repeatable.`;
 }
 
 export function directiveRepeatableRemovedFromMeta(
@@ -172,7 +172,7 @@ export function directiveRepeatableRemoved(directive: GraphQLDirective) {
 }
 
 function buildDirectiveLocationAddedMessage(args: DirectiveLocationAddedChange['meta']): string {
-  return `Location '${args.addedDirectiveLocation}' was added to directive '${args.directiveName}'`;
+  return `Location '${args.addedDirectiveLocation}' was added to directive '@${args.directiveName}'`;
 }
 
 export function directiveLocationAddedFromMeta(args: DirectiveLocationAddedChange) {
@@ -203,7 +203,7 @@ export function directiveLocationAdded(
 function buildDirectiveLocationRemovedMessage(
   args: DirectiveLocationRemovedChange['meta'],
 ): string {
-  return `Location '${args.removedDirectiveLocation}' was removed from directive '${args.directiveName}'`;
+  return `Location '${args.removedDirectiveLocation}' was removed from directive '@${args.directiveName}'`;
 }
 
 const directiveLocationRemovedBreakingReason = `A directive could be in use of a client application. Removing it could break the client application.`;
@@ -263,7 +263,7 @@ export function directiveArgumentAddedFromMeta(args: DirectiveArgumentAddedChang
               reason: directiveArgumentNonBreakingReason,
             },
     type: ChangeType.DirectiveArgumentAdded,
-    message: `Argument '${args.meta.addedDirectiveArgumentName}' was added to directive '${args.meta.directiveName}'`,
+    message: `Argument '@${args.meta.directiveName}(${args.meta.addedDirectiveArgumentName}:)' was added`,
     path: `@${args.meta.directiveName}`,
     meta: args.meta,
   } as const;
@@ -293,7 +293,7 @@ export function directiveArgumentAdded(
 function buildDirectiveArgumentRemovedMessage(
   args: DirectiveArgumentRemovedChange['meta'],
 ): string {
-  return `Argument '${args.removedDirectiveArgumentName}' was removed from directive '${args.directiveName}'`;
+  return `Argument '@${args.directiveName}(${args.removedDirectiveArgumentName}:)' was removed`;
 }
 
 const directiveArgumentRemovedBreakingReason = `A directive argument could be in use of a client application. Removing the argument can break client applications.`;
@@ -331,15 +331,15 @@ function buildDirectiveArgumentDescriptionChangedMessage(
     args.oldDirectiveArgumentDescription === null &&
     args.newDirectiveArgumentDescription !== null
   ) {
-    return `Description '${fmt(args.newDirectiveArgumentDescription)}' was added to argument '${args.directiveArgumentName}' on directive '${args.directiveName}'`;
+    return `Argument '@${args.directiveName}(${args.directiveArgumentName}:)' description '${fmt(args.newDirectiveArgumentDescription)}' was added`;
   }
   if (
     args.newDirectiveArgumentDescription === null &&
     args.oldDirectiveArgumentDescription !== null
   ) {
-    return `Description '${fmt(args.oldDirectiveArgumentDescription)}' was removed from argument '${args.directiveArgumentName}' on directive '${args.directiveName}'`;
+    return `Argument '@${args.directiveName}(${args.directiveArgumentName}:)' description '${fmt(args.oldDirectiveArgumentDescription)}' was removed`;
   }
-  return `Description for argument '${args.directiveArgumentName}' on directive '${args.directiveName}' changed from '${fmt(args.oldDirectiveArgumentDescription ?? '')}' to '${fmt(args.newDirectiveArgumentDescription ?? '')}'`;
+  return `Argument '@${args.directiveName}(${args.directiveArgumentName}:)' description changed from '${fmt(args.oldDirectiveArgumentDescription ?? '')}' to '${fmt(args.newDirectiveArgumentDescription ?? '')}'`;
 }
 
 export function directiveArgumentDescriptionChangedFromMeta(
@@ -376,8 +376,8 @@ function buildDirectiveArgumentDefaultValueChanged(
   args: DirectiveArgumentDefaultValueChangedChange['meta'],
 ): string {
   return args.oldDirectiveArgumentDefaultValue === undefined
-    ? `Default value '${args.newDirectiveArgumentDefaultValue}' was added to argument '${args.directiveArgumentName}' on directive '${args.directiveName}'`
-    : `Default value for argument '${args.directiveArgumentName}' on directive '${args.directiveName}' changed from '${args.oldDirectiveArgumentDefaultValue}' to '${args.newDirectiveArgumentDefaultValue}'`;
+    ? `Argument '@${args.directiveName}(${args.directiveArgumentName}:)' default value '${args.newDirectiveArgumentDefaultValue}' was added`
+    : `Argument '@${args.directiveName}(${args.directiveArgumentName}:)' default value changed from '${args.oldDirectiveArgumentDefaultValue}' to '${args.newDirectiveArgumentDefaultValue}'`;
 }
 
 const directiveArgumentDefaultValueChangedDangerousReason =
@@ -426,7 +426,7 @@ export function directiveArgumentDefaultValueChanged(
 function buildDirectiveArgumentTypeChangedMessage(
   args: DirectiveArgumentTypeChangedChange,
 ): string {
-  return `Type for argument '${args.meta.directiveArgumentName}' on directive '${args.meta.directiveName}' changed from '${args.meta.oldDirectiveArgumentType}' to '${args.meta.newDirectiveArgumentType}'`;
+  return `Argument '@${args.meta.directiveName}(${args.meta.directiveArgumentName}:)' changed type from '${args.meta.oldDirectiveArgumentType}' to '${args.meta.newDirectiveArgumentType}'`;
 }
 
 const directiveArgumentTypeChangedNonBreakingReason =

@@ -29,9 +29,9 @@ import {
 } from './change.js';
 
 function buildFieldRemovedMessage(args: FieldRemovedChange['meta']) {
-  return `Field '${args.removedFieldName}' ${
+  return `${args.typeType === 'interface' ? 'Interface field' : 'Object field'} '${args.typeName}.${args.removedFieldName}' ${
     args.isRemovedFieldDeprecated ? '(deprecated) ' : ''
-  }was removed from ${args.typeType} '${args.typeName}'`;
+  }was removed`;
 }
 
 export function fieldRemovedFromMeta(args: FieldRemovedChange) {
@@ -66,7 +66,7 @@ export function fieldRemoved(
 }
 
 function buildFieldAddedMessage(args: FieldAddedChange['meta']) {
-  return `Field '${args.addedFieldName}' was added to ${args.typeType} '${args.typeName}'`;
+  return `${args.typeType === 'interface' ? 'Interface field' : 'Object field'} '${args.typeName}.${args.addedFieldName}' was added`;
 }
 
 export function fieldAddedFromMeta(args: FieldAddedChange) {
@@ -386,9 +386,9 @@ export function fieldTypeChanged(
 }
 
 function buildFieldArgumentAddedMessage(args: FieldArgumentAddedChange['meta']) {
-  return `Argument '${args.addedArgumentName}: ${args.addedArgumentType}'${
+  return `Argument '${args.typeName}.${args.fieldName}(${args.addedArgumentName}:)' of type '${args.addedArgumentType}'${
     args.hasDefaultValue ? ' (with default value) ' : ' '
-  }added to field '${args.typeName}.${args.fieldName}'`;
+  }was added`;
 }
 
 const fieldArgumentAddedNewFieldReason = 'The field is new, so no existing query uses it.';
@@ -447,7 +447,7 @@ export function fieldArgumentAdded(
 }
 
 function buildFieldArgumentRemovedMessage(args: FieldArgumentRemovedChange) {
-  return `Argument '${args.meta.removedFieldArgumentName}: ${args.meta.removedFieldType}' was removed from field '${args.meta.typeName}.${args.meta.fieldName}'`;
+  return `Argument '${args.meta.typeName}.${args.meta.fieldName}(${args.meta.removedFieldArgumentName}:)' of type '${args.meta.removedFieldType}' was removed`;
 }
 
 export function fieldArgumentRemovedFromMeta(args: FieldArgumentRemovedChange) {

@@ -120,15 +120,15 @@ enum Level {
   "environment": "production",
   "changes": [
     {
-      "message": "Field 'user' was removed from object type 'Query'",
+      "message": "Object field 'Query.user' was removed",
       "level": "breaking"
     },
     {
-      "message": "Argument 'limit: Int' (with default value) added to field 'Query.users'",
+      "message": "Argument 'Query.users(limit:)' of type 'Int' (with default value) was added",
       "level": "dangerous"
     },
     {
-      "message": "Field 'role' added to object type 'User'",
+      "message": "Object field 'User.role' was added",
       "level": "safe"
     }
   ]

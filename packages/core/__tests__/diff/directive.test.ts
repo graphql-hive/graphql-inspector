@@ -21,7 +21,7 @@ describe('directive', () => {
 
     expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
     expect(change.type).toEqual('DIRECTIVE_ADDED');
-    expect(change.message).toEqual(`Directive 'foo' was added`);
+    expect(change.message).toEqual(`Directive '@foo' was added`);
   });
   test('removed', async () => {
     const a = buildSchema(/* GraphQL */ `
@@ -41,7 +41,7 @@ describe('directive', () => {
 
     expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
     expect(change.type).toEqual('DIRECTIVE_REMOVED');
-    expect(change.message).toEqual(`Directive 'foo' was removed`);
+    expect(change.message).toEqual(`Directive '@foo' was removed`);
   });
 
   test('description', async () => {
@@ -86,15 +86,15 @@ describe('directive', () => {
     // changed
     expect(change.a.criticality.level).toEqual(CriticalityLevel.NonBreaking);
     expect(change.a.type).toEqual('DIRECTIVE_DESCRIPTION_CHANGED');
-    expect(change.a.message).toEqual(`Directive 'a' description changed from 'AAA' to 'aaa'`);
+    expect(change.a.message).toEqual(`Directive '@a' description changed from 'AAA' to 'aaa'`);
     // added
     expect(change.b.criticality.level).toEqual(CriticalityLevel.NonBreaking);
     expect(change.b.type).toEqual('DIRECTIVE_DESCRIPTION_CHANGED');
-    expect(change.b.message).toEqual(`Directive 'b' description 'Bbb' was added`);
+    expect(change.b.message).toEqual(`Directive '@b' description 'Bbb' was added`);
     // removed
     expect(change.c.criticality.level).toEqual(CriticalityLevel.NonBreaking);
     expect(change.c.type).toEqual('DIRECTIVE_DESCRIPTION_CHANGED');
-    expect(change.c.message).toEqual(`Directive 'c' description 'Ccc' was removed`);
+    expect(change.c.message).toEqual(`Directive '@c' description 'Ccc' was removed`);
   });
 
   describe('location', () => {
@@ -119,7 +119,7 @@ describe('directive', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.type).toEqual('DIRECTIVE_LOCATION_ADDED');
-      expect(change.message).toEqual(`Location 'ENUM_VALUE' was added to directive 'a'`);
+      expect(change.message).toEqual(`Location 'ENUM_VALUE' was added to directive '@a'`);
     });
 
     test('removed', async () => {
@@ -143,7 +143,7 @@ describe('directive', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.type).toEqual('DIRECTIVE_LOCATION_REMOVED');
-      expect(change.message).toEqual(`Location 'ENUM_VALUE' was removed from directive 'a'`);
+      expect(change.message).toEqual(`Location 'ENUM_VALUE' was removed from directive '@a'`);
     });
   });
 
@@ -188,11 +188,11 @@ describe('directive', () => {
       // Nullable
       expect(change.a?.type).toEqual('DIRECTIVE_ARGUMENT_ADDED');
       expect(change.a?.criticality.level).toEqual(CriticalityLevel.NonBreaking);
-      expect(change.a?.message).toEqual(`Argument 'name' was added to directive 'a'`);
+      expect(change.a?.message).toEqual(`Argument '@a(name:)' was added`);
       // Non-nullable
       expect(change.b?.type).toEqual('DIRECTIVE_ARGUMENT_ADDED');
       expect(change.b?.criticality.level).toEqual(CriticalityLevel.Breaking);
-      expect(change.b?.message).toEqual(`Argument 'name' was added to directive 'b'`);
+      expect(change.b?.message).toEqual(`Argument '@b(name:)' was added`);
     });
 
     test('added non-nullable with default value', async () => {
@@ -214,7 +214,7 @@ describe('directive', () => {
       const change = findFirstChangeByPath(await diff(a, b), '@d');
 
       expect(change.type).toEqual('DIRECTIVE_ARGUMENT_ADDED');
-      expect(change.message).toEqual(`Argument 'a' was added to directive 'd'`);
+      expect(change.message).toEqual(`Argument '@d(a:)' was added`);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
     });
 
@@ -237,7 +237,7 @@ describe('directive', () => {
       const change = findFirstChangeByPath(await diff(a, b), '@d');
 
       expect(change.type).toEqual('DIRECTIVE_ARGUMENT_ADDED');
-      expect(change.message).toEqual(`Argument 'a' was added to directive 'd'`);
+      expect(change.message).toEqual(`Argument '@d(a:)' was added`);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
     });
 
@@ -258,7 +258,7 @@ describe('directive', () => {
       // DIRECTIVE_ADDED shares the '@d' path, so select the argument change by type.
       const change = (await diff(a, b)).find(c => c.type === 'DIRECTIVE_ARGUMENT_ADDED')!;
 
-      expect(change.message).toEqual(`Argument 'a' was added to directive 'd'`);
+      expect(change.message).toEqual(`Argument '@d(a:)' was added`);
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
     });
 
@@ -289,11 +289,11 @@ describe('directive', () => {
       // Nullable
       expect(change.a.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.a.type).toEqual('DIRECTIVE_ARGUMENT_REMOVED');
-      expect(change.a.message).toEqual(`Argument 'name' was removed from directive 'a'`);
+      expect(change.a.message).toEqual(`Argument '@a(name:)' was removed`);
       // Non-nullable
       expect(change.b.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.b.type).toEqual('DIRECTIVE_ARGUMENT_REMOVED');
-      expect(change.b.message).toEqual(`Argument 'name' was removed from directive 'b'`);
+      expect(change.b.message).toEqual(`Argument '@b(name:)' was removed`);
     });
 
     test('changed', async () => {
@@ -326,20 +326,18 @@ describe('directive', () => {
       // Type
       expect(change.a.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.a.type).toEqual('DIRECTIVE_ARGUMENT_TYPE_CHANGED');
-      expect(change.a.message).toEqual(
-        `Type for argument 'name' on directive 'a' changed from 'String' to 'Int'`,
-      );
+      expect(change.a.message).toEqual(`Argument '@a(name:)' changed type from 'String' to 'Int'`);
       // Non-nullable
       expect(change.b.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.b.type).toEqual('DIRECTIVE_ARGUMENT_TYPE_CHANGED');
       expect(change.b.message).toEqual(
-        `Type for argument 'name' on directive 'b' changed from 'String!' to 'String'`,
+        `Argument '@b(name:)' changed type from 'String!' to 'String'`,
       );
       // Nullable
       expect(change.c.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.c.type).toEqual('DIRECTIVE_ARGUMENT_TYPE_CHANGED');
       expect(change.c.message).toEqual(
-        `Type for argument 'name' on directive 'c' changed from 'String' to 'String!'`,
+        `Argument '@c(name:)' changed type from 'String' to 'String!'`,
       );
     });
   });
@@ -381,31 +379,27 @@ describe('directive', () => {
     expect(change.a.criticality.level).toEqual(CriticalityLevel.Dangerous);
     expect(change.a.type).toEqual('DIRECTIVE_ARGUMENT_DEFAULT_VALUE_CHANGED');
     expect(change.a.message).toEqual(
-      `Default value for argument 'name' on directive 'a' changed from '"aaa"' to '"AAA"'`,
+      `Argument '@a(name:)' default value changed from '"aaa"' to '"AAA"'`,
     );
     // added on nullable
     expect(change.b.criticality.level).toEqual(CriticalityLevel.Dangerous);
     expect(change.b.type).toEqual('DIRECTIVE_ARGUMENT_DEFAULT_VALUE_CHANGED');
-    expect(change.b.message).toEqual(
-      `Default value '"Bbb"' was added to argument 'name' on directive 'b'`,
-    );
+    expect(change.b.message).toEqual(`Argument '@b(name:)' default value '"Bbb"' was added`);
     // added on non-nullable
     expect(change.c.criticality.level).toEqual(CriticalityLevel.Dangerous);
     expect(change.c.type).toEqual('DIRECTIVE_ARGUMENT_DEFAULT_VALUE_CHANGED');
-    expect(change.c.message).toEqual(
-      `Default value '"Ccc"' was added to argument 'name' on directive 'c'`,
-    );
+    expect(change.c.message).toEqual(`Argument '@c(name:)' default value '"Ccc"' was added`);
     // removed from non-nullable
     expect(change.d.criticality.level).toEqual(CriticalityLevel.Dangerous);
     expect(change.d.type).toEqual('DIRECTIVE_ARGUMENT_DEFAULT_VALUE_CHANGED');
     expect(change.d.message).toEqual(
-      `Default value for argument 'name' on directive 'd' changed from '"Ddd"' to 'undefined'`,
+      `Argument '@d(name:)' default value changed from '"Ddd"' to 'undefined'`,
     );
     // removed from nullable
     expect(change.e.criticality.level).toEqual(CriticalityLevel.Dangerous);
     expect(change.e.type).toEqual('DIRECTIVE_ARGUMENT_DEFAULT_VALUE_CHANGED');
     expect(change.e.message).toEqual(
-      `Default value for argument 'name' on directive 'e' changed from '"Eee"' to 'undefined'`,
+      `Argument '@e(name:)' default value changed from '"Eee"' to 'undefined'`,
     );
   });
 
@@ -433,7 +427,7 @@ describe('directive', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.type).toEqual('DIRECTIVE_REPEATABLE_ADDED');
-      expect(change.message).toEqual("Directive 'a' added repeatable.");
+      expect(change.message).toEqual("Directive '@a' added repeatable.");
     });
 
     test('removed', async () => {
@@ -459,7 +453,7 @@ describe('directive', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_REPEATABLE_REMOVED');
-      expect(change.message).toEqual("Directive 'a' removed repeatable.");
+      expect(change.message).toEqual("Directive '@a' removed repeatable.");
     });
 
     test('complex remove', async () => {
@@ -483,14 +477,14 @@ describe('directive', () => {
       expect(changes.map(c => `[${c.criticality.level}] ${c.path}: ${c.message}`))
         .toMatchInlineSnapshot(`
         [
-          "[DANGEROUS] Pancake.@flavor: Directive 'flavor' was added to object 'Pancake'",
-          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to '@flavor'",
-          "[DANGEROUS] Pancake.@flavor: Directive 'flavor' was added to object 'Pancake'",
-          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to '@flavor'",
-          "[DANGEROUS] Pancake.@flavor: Directive 'flavor' was added to object 'Pancake'",
-          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to '@flavor'",
-          "[DANGEROUS] Pancake.@flavor.flavor: Argument 'flavor' was removed from '@flavor'",
-          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to '@flavor'",
+          "[DANGEROUS] Pancake.@flavor: Directive '@flavor' was added to object 'Pancake'",
+          "[NON_BREAKING] Pancake.@flavor.flavor: Argument '@flavor(flavor:)' was added",
+          "[DANGEROUS] Pancake.@flavor: Directive '@flavor' was added to object 'Pancake'",
+          "[NON_BREAKING] Pancake.@flavor.flavor: Argument '@flavor(flavor:)' was added",
+          "[DANGEROUS] Pancake.@flavor: Directive '@flavor' was added to object 'Pancake'",
+          "[NON_BREAKING] Pancake.@flavor.flavor: Argument '@flavor(flavor:)' was added",
+          "[DANGEROUS] Pancake.@flavor.flavor: Argument '@flavor(flavor:)' was removed",
+          "[NON_BREAKING] Pancake.@flavor.flavor: Argument '@flavor(flavor:)' was added",
         ]
       `);
     });

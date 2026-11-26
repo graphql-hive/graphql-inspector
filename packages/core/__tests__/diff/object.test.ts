@@ -184,7 +184,7 @@ describe('object', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.type).toEqual('FIELD_ADDED');
-      expect(change.message).toEqual("Field 'c' was added to object type 'Foo'");
+      expect(change.message).toEqual("Object field 'Foo.c' was added");
     });
     test('removed', async () => {
       const a = buildSchema(/* GraphQL */ `
@@ -205,7 +205,7 @@ describe('object', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.type).toEqual('FIELD_REMOVED');
-      expect(change.message).toEqual("Field 'c' was removed from object type 'Foo'");
+      expect(change.message).toEqual("Object field 'Foo.c' was removed");
     });
 
     test('order changed', async () => {
@@ -397,7 +397,7 @@ describe('object', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.type).toEqual('FIELD_REMOVED');
-      expect(change.message).toEqual("Field 'b' (deprecated) was removed from object type 'Foo'");
+      expect(change.message).toEqual("Object field 'Foo.b' (deprecated) was removed");
 
       // suppressRemovalOfDeprecatedField rule should make it only Dangerous
 
@@ -408,9 +408,7 @@ describe('object', () => {
 
       expect(changeWithRule.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(changeWithRule.type).toEqual('FIELD_REMOVED');
-      expect(changeWithRule.message).toEqual(
-        "Field 'b' (deprecated) was removed from object type 'Foo'",
-      );
+      expect(changeWithRule.message).toEqual("Object field 'Foo.b' (deprecated) was removed");
     });
   });
 
@@ -438,19 +436,19 @@ describe('object', () => {
       expect(change.a.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.a.type).toEqual('FIELD_ARGUMENT_TYPE_CHANGED');
       expect(change.a.message).toEqual(
-        "Type for argument 'a' on field 'Foo.foo' changed from 'String' to 'Int'",
+        "Argument 'Foo.foo(a:)' changed type from 'String' to 'Int'",
       );
       // Nullable to non-nullable
       expect(change.b.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.b.type).toEqual('FIELD_ARGUMENT_TYPE_CHANGED');
       expect(change.b.message).toEqual(
-        "Type for argument 'b' on field 'Foo.foo' changed from 'String' to 'String!'",
+        "Argument 'Foo.foo(b:)' changed type from 'String' to 'String!'",
       );
       // Non-nullable to nullable
       expect(change.c.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.c.type).toEqual('FIELD_ARGUMENT_TYPE_CHANGED');
       expect(change.c.message).toEqual(
-        "Type for argument 'c' on field 'Foo.foo' changed from 'String!' to 'String'",
+        "Argument 'Foo.foo(c:)' changed type from 'String!' to 'String'",
       );
     });
 
@@ -475,11 +473,11 @@ describe('object', () => {
       // Added non-nullable
       expect(change.b.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.b.type).toEqual('FIELD_ARGUMENT_ADDED');
-      expect(change.b.message).toEqual("Argument 'b: String!' added to field 'Foo.foo'");
+      expect(change.b.message).toEqual("Argument 'Foo.foo(b:)' of type 'String!' was added");
       // Added nullable
       expect(change.c.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.c.type).toEqual('FIELD_ARGUMENT_ADDED');
-      expect(change.c.message).toEqual("Argument 'c: String' added to field 'Foo.foo'");
+      expect(change.c.message).toEqual("Argument 'Foo.foo(c:)' of type 'String' was added");
     });
 
     test('removed', async () => {
@@ -503,11 +501,11 @@ describe('object', () => {
       // Removed non-nullable
       expect(change.b.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.b.type).toEqual('FIELD_ARGUMENT_REMOVED');
-      expect(change.b.message).toEqual("Argument 'b: String!' was removed from field 'Foo.foo'");
+      expect(change.b.message).toEqual("Argument 'Foo.foo(b:)' of type 'String!' was removed");
       // Removed nullable
       expect(change.c.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.c.type).toEqual('FIELD_ARGUMENT_REMOVED');
-      expect(change.c.message).toEqual("Argument 'c: String' was removed from field 'Foo.foo'");
+      expect(change.c.message).toEqual("Argument 'Foo.foo(c:)' of type 'String' was removed");
     });
   });
 

@@ -28,15 +28,11 @@ describe('input', () => {
       // Non-nullable
       expect(change.c.type).toEqual('INPUT_FIELD_ADDED');
       expect(change.c.criticality.level).toEqual(CriticalityLevel.Breaking);
-      expect(change.c.message).toEqual(
-        "Input field 'c' of type 'String!' was added to input object type 'Foo'",
-      );
+      expect(change.c.message).toEqual("Input field 'Foo.c' of type 'String!' was added");
       // Nullable
       expect(change.d.type).toEqual('INPUT_FIELD_ADDED');
       expect(change.d.criticality.level).toEqual(CriticalityLevel.NonBreaking);
-      expect(change.d.message).toEqual(
-        "Input field 'd' of type 'String' was added to input object type 'Foo'",
-      );
+      expect(change.d.message).toEqual("Input field 'Foo.d' of type 'String' was added");
     });
 
     test('added with a default value', async () => {
@@ -64,7 +60,7 @@ describe('input', () => {
         isAddedInputFieldTypeNullable: false,
       });
       expect(change.message).toEqual(
-        `Input field 'b' of type 'String!' with default value '"B"' was added to input object type 'Foo'`,
+        `Input field 'Foo.b' of type 'String!' with default value '"B"' was added`,
       );
     });
 
@@ -101,9 +97,7 @@ describe('input', () => {
 
       expect(change.type).toEqual('INPUT_FIELD_ADDED');
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
-      expect(change.message).toEqual(
-        "Input field 'a' of type 'String!' was added to input object type 'Foo'",
-      );
+      expect(change.message).toEqual("Input field 'Foo.a' of type 'String!' was added");
     });
 
     test('removed', async () => {
@@ -125,7 +119,7 @@ describe('input', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.type).toEqual('INPUT_FIELD_REMOVED');
-      expect(change.message).toEqual("Input field 'c' was removed from input object type 'Foo'");
+      expect(change.message).toEqual("Input field 'Foo.c' was removed");
     });
 
     test('order changed', async () => {
@@ -321,7 +315,7 @@ describe('input', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.type).toEqual('INPUT_FIELD_REMOVED');
-      expect(change.message).toEqual("Input field 'c' was removed from input object type 'Foo'");
+      expect(change.message).toEqual("Input field 'Foo.c' was removed");
     });
 
     test('field made optional', async () => {
@@ -430,9 +424,7 @@ describe('input', () => {
 
     expect(changes.length).toEqual(1);
     expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
-    expect(change.message).toEqual(
-      `Input field 'c' (deprecated) was removed from input object type 'Foo'`,
-    );
+    expect(change.message).toEqual(`Input field 'Foo.c' (deprecated) was removed`);
 
     // suppressRemovalOfDeprecatedField rule should make it only Dangerous
 
@@ -441,8 +433,6 @@ describe('input', () => {
 
     expect(changesWithRule.length).toEqual(1);
     expect(changeWithRule.criticality.level).toEqual(CriticalityLevel.Dangerous);
-    expect(changeWithRule.message).toEqual(
-      "Input field 'c' (deprecated) was removed from input object type 'Foo'",
-    );
+    expect(changeWithRule.message).toEqual("Input field 'Foo.c' (deprecated) was removed");
   });
 });

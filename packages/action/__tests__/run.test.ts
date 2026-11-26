@@ -212,10 +212,10 @@ describe('Inspector Action', () => {
         "Field 'Query.value' changed type from 'String' to 'Int'",
       ]);
       expect(core.setOutput).toHaveBeenCalledWith('dangerous-changes', [
-        "Enum value 'B' was added to enum 'Choice'",
+        "Enum value 'Choice.B' was added",
       ]);
       expect(core.setOutput).toHaveBeenCalledWith('safe-changes', [
-        "Field 'added' was added to object type 'Query'",
+        "Object field 'Query.added' was added",
       ]);
     });
 
@@ -245,9 +245,9 @@ describe('Inspector Action', () => {
 
       expect(core.setOutput).toHaveBeenCalledWith('breaking-changes', []);
       expect(core.setOutput).toHaveBeenCalledWith('dangerous-changes', [
-        "Field 'added' was added to object type 'Query'",
+        "Object field 'Query.added' was added",
         "Field 'Query.value' changed type from 'String' to 'Int'",
-        "Enum value 'B' was added to enum 'Choice'",
+        "Enum value 'Choice.B' was added",
       ]);
       expect(core.setOutput).toHaveBeenCalledWith('safe-changes', []);
     });
@@ -422,7 +422,7 @@ describe('Inspector Action', () => {
               message: expect.any(String),
               path: 'schema.graphql',
               start_line: 2,
-              title: "Field 'oldQuery' (deprecated) was removed from object type 'Query'",
+              title: "Object field 'Query.oldQuery' (deprecated) was removed",
             },
           ],
         },
@@ -485,7 +485,7 @@ describe('Inspector Action', () => {
               message: expect.any(String),
               path: 'schema.graphql',
               start_line: 2,
-              title: "Field 'oldQuery' (deprecated) was removed from object type 'Query'",
+              title: "Object field 'Query.oldQuery' (deprecated) was removed",
             },
           ],
         },
@@ -548,7 +548,7 @@ describe('Inspector Action', () => {
               message: expect.any(String),
               path: 'schema.graphql',
               start_line: 2,
-              title: "Field 'oldQuery' (deprecated) was removed from object type 'Query'",
+              title: "Object field 'Query.oldQuery' (deprecated) was removed",
             },
           ],
         },
