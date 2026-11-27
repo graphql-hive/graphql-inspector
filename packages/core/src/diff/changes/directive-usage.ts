@@ -1041,6 +1041,36 @@ function isOfKind<K extends keyof KindToPayload>(
   return kind === expectedKind;
 }
 
+/**
+ * Describes where a directive usage lives, using schema coordinates.
+ *
+ * { parentTypeName: 'Query', parentFieldName: 'a', parentArgumentName: null, parentEnumValueName: null } -> "field 'Query.a'"
+ * { parentTypeName: 'Query', parentFieldName: 'a', parentArgumentName: 'id', parentEnumValueName: null } -> "argument 'Query.a(id:)'"
+ * { parentTypeName: 'Color', parentFieldName: null, parentArgumentName: null, parentEnumValueName: 'RED' } -> "enum value 'Color.RED'"
+ * { parentTypeName: 'Query', parentFieldName: null, parentArgumentName: null, parentEnumValueName: null } -> "type 'Query'"
+ * { parentTypeName: null, ... } -> "schema"
+ */
+function describeDirectiveUsageLocation(args: {
+  parentTypeName: string | null;
+  parentFieldName: string | null;
+  parentArgumentName: string | null;
+  parentEnumValueName: string | null;
+}): string {
+  if (args.parentTypeName === null) {
+    return 'schema';
+  }
+  if (args.parentFieldName !== null && args.parentArgumentName !== null) {
+    return `argument '${args.parentTypeName}.${args.parentFieldName}(${args.parentArgumentName}:)'`;
+  }
+  if (args.parentFieldName !== null) {
+    return `field '${args.parentTypeName}.${args.parentFieldName}'`;
+  }
+  if (args.parentEnumValueName !== null) {
+    return `enum value '${args.parentTypeName}.${args.parentEnumValueName}'`;
+  }
+  return `type '${args.parentTypeName}'`;
+}
+
 export function directiveUsageArgumentAddedFromMeta(
   args: DirectiveUsageArgumentAddedChange,
 ): Change {
@@ -1049,7 +1079,7 @@ export function directiveUsageArgumentAddedFromMeta(
     criticality: {
       level: CriticalityLevel.NonBreaking,
     },
-    message: `Argument '${args.meta.addedArgumentName}' was added to usage of '@${args.meta.directiveName}'`,
+    message: `Argument '${args.meta.addedArgumentName}' was added to '@${args.meta.directiveName}' on ${describeDirectiveUsageLocation(args.meta)}`,
     path: [
       /** If the type is missing then this must be a directive on a schema */
       args.meta.parentTypeName ?? '',
@@ -1073,7 +1103,7 @@ export function directiveUsageArgumentRemovedFromMeta(
       level: CriticalityLevel.Dangerous,
       reason: `Changing an argument on a directive can change runtime behavior.`,
     },
-    message: `Argument '${args.meta.removedArgumentName}' was removed from usage of '@${args.meta.directiveName}'`,
+    message: `Argument '${args.meta.removedArgumentName}' was removed from '@${args.meta.directiveName}' on ${describeDirectiveUsageLocation(args.meta)}`,
     path: [
       /** If the type is missing then this must be a directive on a schema */
       args.meta.parentTypeName ?? '',

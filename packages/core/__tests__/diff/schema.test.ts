@@ -308,8 +308,8 @@ test('huge test', async () => {
         "[NON_BREAKING] CType.b: Object field 'CType.b' was added",
         "[NON_BREAKING] CType.a.@deprecated: Deprecation reason on field 'CType.a' has changed from 'whynot' to 'cuz'",
         "[NON_BREAKING] CType.a.arg: Argument 'CType.a(arg:)' of type 'Int' was added",
-        "[DANGEROUS] CType.a.@deprecated.reason: Argument 'reason' was removed from usage of '@deprecated'",
-        "[NON_BREAKING] CType.a.@deprecated.reason: Argument 'reason' was added to usage of '@deprecated'",
+        "[DANGEROUS] CType.a.@deprecated.reason: Argument 'reason' was removed from '@deprecated' on field 'CType.a'",
+        "[NON_BREAKING] CType.a.@deprecated.reason: Argument 'reason' was added to '@deprecated' on field 'CType.a'",
         "[DANGEROUS] CType.d.arg: Argument 'CType.d(arg:)' default value '10' was added",
         "[BREAKING] MyUnion: Member 'BType' was removed from Union type 'MyUnion'",
         "[DANGEROUS] MyUnion: Member 'DType' was added to Union type 'MyUnion'",
@@ -325,8 +325,8 @@ test('huge test', async () => {
         "[NON_BREAKING] Options.E.@deprecated: Enum value 'Options.E' was deprecated with reason 'No longer supported'",
         "[NON_BREAKING] Options.E.@deprecated: Directive '@deprecated' was added to enum value 'Options.E'",
         "[NON_BREAKING] Options.F.@deprecated: Enum value 'Options.F' deprecation reason changed from 'Old' to 'New'",
-        "[DANGEROUS] Options.F.@deprecated.reason: Argument 'reason' was removed from usage of '@deprecated'",
-        "[NON_BREAKING] Options.F.@deprecated.reason: Argument 'reason' was added to usage of '@deprecated'",
+        "[DANGEROUS] Options.F.@deprecated.reason: Argument 'reason' was removed from '@deprecated' on enum value 'Options.F'",
+        "[NON_BREAKING] Options.F.@deprecated.reason: Argument 'reason' was added to '@deprecated' on enum value 'Options.F'",
       ]
     `);
 });

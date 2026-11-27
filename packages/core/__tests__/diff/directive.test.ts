@@ -478,13 +478,13 @@ describe('directive', () => {
         .toMatchInlineSnapshot(`
         [
           "[DANGEROUS] Pancake.@flavor: Directive '@flavor' was added to object 'Pancake'",
-          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to usage of '@flavor'",
+          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to '@flavor' on type 'Pancake'",
           "[DANGEROUS] Pancake.@flavor: Directive '@flavor' was added to object 'Pancake'",
-          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to usage of '@flavor'",
+          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to '@flavor' on type 'Pancake'",
           "[DANGEROUS] Pancake.@flavor: Directive '@flavor' was added to object 'Pancake'",
-          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to usage of '@flavor'",
-          "[DANGEROUS] Pancake.@flavor.flavor: Argument 'flavor' was removed from usage of '@flavor'",
-          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to usage of '@flavor'",
+          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to '@flavor' on type 'Pancake'",
+          "[DANGEROUS] Pancake.@flavor.flavor: Argument 'flavor' was removed from '@flavor' on type 'Pancake'",
+          "[NON_BREAKING] Pancake.@flavor.flavor: Argument 'flavor' was added to '@flavor' on type 'Pancake'",
         ]
       `);
     });

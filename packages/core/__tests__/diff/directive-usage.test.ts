@@ -105,7 +105,7 @@ describe('directive-usage', () => {
             "criticality": {
               "level": "NON_BREAKING",
             },
-            "message": "Argument 'name' was added to usage of '@tag'",
+            "message": "Argument 'name' was added to '@tag' on field 'Query.a'",
             "meta": {
               "addedArgumentName": "name",
               "addedArgumentValue": ""second"",
@@ -180,7 +180,7 @@ describe('directive-usage', () => {
             "criticality": {
               "level": "NON_BREAKING",
             },
-            "message": "Argument 'name' was added to usage of '@tag'",
+            "message": "Argument 'name' was added to '@tag' on field 'Query.a'",
             "meta": {
               "addedArgumentName": "name",
               "addedArgumentValue": ""bar"",
@@ -224,7 +224,7 @@ describe('directive-usage', () => {
               "level": "DANGEROUS",
               "reason": "Changing an argument on a directive can change runtime behavior.",
             },
-            "message": "Argument 'name' was removed from usage of '@tag'",
+            "message": "Argument 'name' was removed from '@tag' on field 'Query.a'",
             "meta": {
               "directiveName": "tag",
               "directiveRepeatedTimes": 2,
@@ -241,7 +241,7 @@ describe('directive-usage', () => {
             "criticality": {
               "level": "NON_BREAKING",
             },
-            "message": "Argument 'name' was added to usage of '@tag'",
+            "message": "Argument 'name' was added to '@tag' on field 'Query.a'",
             "meta": {
               "addedArgumentName": "name",
               "addedArgumentValue": ""bar"",
@@ -354,7 +354,7 @@ describe('directive-usage', () => {
               "level": "DANGEROUS",
               "reason": "Changing an argument on a directive can change runtime behavior.",
             },
-            "message": "Argument 'name' was removed from usage of '@tag'",
+            "message": "Argument 'name' was removed from '@tag' on field 'Query.a'",
             "meta": {
               "directiveName": "tag",
               "directiveRepeatedTimes": 1,
@@ -371,7 +371,7 @@ describe('directive-usage', () => {
             "criticality": {
               "level": "NON_BREAKING",
             },
-            "message": "Argument 'name' was added to usage of '@tag'",
+            "message": "Argument 'name' was added to '@tag' on field 'Query.a'",
             "meta": {
               "addedArgumentName": "name",
               "addedArgumentValue": ""mid"",

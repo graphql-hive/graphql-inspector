@@ -239,7 +239,9 @@ describe('enum', () => {
     {
       const change = findFirstChangeByPath(changes, 'enumA.A.@deprecated.reason');
       expect(change.type).toEqual(ChangeType.DirectiveUsageArgumentAdded);
-      expect(change.message).toEqual(`Argument 'reason' was added to usage of '@deprecated'`);
+      expect(change.message).toEqual(
+        `Argument 'reason' was added to '@deprecated' on enum value 'enumA.A'`,
+      );
     }
   });
 
