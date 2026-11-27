@@ -42,7 +42,7 @@ describe('enum', () => {
       const change = findFirstChangeByPath(changes, 'enumA.A');
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.criticality.reason).not.toBeDefined();
-      expect(change.message).toEqual(`Enum value 'A' was added to enum 'enumA'`);
+      expect(change.message).toEqual(`Enum value 'enumA.A' was added`);
       expect(change.meta).toMatchObject({
         addedEnumValueName: 'A',
         enumName: 'enumA',
@@ -81,7 +81,7 @@ describe('enum', () => {
     expect(changes.length).toEqual(1);
     expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
     expect(change.criticality.reason).toBeDefined();
-    expect(change.message).toEqual(`Enum value 'C' was added to enum 'enumA'`);
+    expect(change.message).toEqual(`Enum value 'enumA.C' was added`);
     expect(change.meta).toMatchObject({
       addedEnumValueName: 'C',
       enumName: 'enumA',
@@ -117,7 +117,7 @@ describe('enum', () => {
     expect(changes.length).toEqual(1);
     expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
     expect(change.criticality.reason).toBeDefined();
-    expect(change.message).toEqual(`Enum value 'B' was removed from enum 'enumA'`);
+    expect(change.message).toEqual(`Enum value 'enumA.B' was removed`);
     expect(change.meta).toMatchObject({
       removedEnumValueName: 'B',
       enumName: 'enumA',
@@ -232,14 +232,16 @@ describe('enum', () => {
           `Enum value 'enumA.A' was deprecated with reason 'New Reason'`,
         );
       } else if (change.type === ChangeType.DirectiveUsageEnumValueAdded) {
-        expect(change.message).toEqual(`Directive 'deprecated' was added to enum value 'enumA.A'`);
+        expect(change.message).toEqual(`Directive '@deprecated' was added to enum value 'enumA.A'`);
       }
     }
 
     {
       const change = findFirstChangeByPath(changes, 'enumA.A.@deprecated.reason');
       expect(change.type).toEqual(ChangeType.DirectiveUsageArgumentAdded);
-      expect(change.message).toEqual(`Argument 'reason' was added to '@deprecated'`);
+      expect(change.message).toEqual(
+        `Argument 'reason' was added to '@deprecated' on enum value 'enumA.A'`,
+      );
     }
   });
 
@@ -301,7 +303,7 @@ describe('enum', () => {
 
     expect(changes.length).toEqual(1);
     expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
-    expect(change.message).toEqual(`Enum value 'A' (deprecated) was removed from enum 'enumA'`);
+    expect(change.message).toEqual(`Enum value 'enumA.A' (deprecated) was removed`);
 
     // suppressRemovalOfDeprecatedField rule should make it only Dangerous
 
@@ -310,9 +312,7 @@ describe('enum', () => {
 
     expect(changesWithRule.length).toEqual(1);
     expect(changeWithRule.criticality.level).toEqual(CriticalityLevel.Dangerous);
-    expect(changeWithRule.message).toEqual(
-      "Enum value 'A' (deprecated) was removed from enum 'enumA'",
-    );
+    expect(changeWithRule.message).toEqual("Enum value 'enumA.A' (deprecated) was removed");
   });
 
   test('value added should be Breaking when dangerousBreaking rule is used', async () => {
@@ -345,7 +345,7 @@ describe('enum', () => {
     expect(changes.length).toEqual(1);
     expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
     expect(change.criticality.reason).toBeDefined();
-    expect(change.message).toEqual(`Enum value 'C' was added to enum 'enumA'`);
+    expect(change.message).toEqual(`Enum value 'enumA.C' was added`);
   });
 
   describe('string escaping', () => {

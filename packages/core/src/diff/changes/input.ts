@@ -15,10 +15,10 @@ import {
   InputFieldTypeChangedChange,
 } from './change.js';
 
-function buildInputFieldRemovedMessage(args: InputFieldRemovedChange['meta']) {
-  return `Input field '${args.removedFieldName}' ${
+function buildInputFieldRemovedMessage(args: InputFieldRemovedChange['meta']): string {
+  return `Input field '${args.inputName}.${args.removedFieldName}' ${
     args.isInputFieldDeprecated ? '(deprecated) ' : ''
-  }was removed from input object type '${args.inputName}'`;
+  }was removed`;
 }
 
 export function inputFieldRemovedFromMeta(args: InputFieldRemovedChange) {
@@ -49,8 +49,8 @@ export function inputFieldRemoved(
   });
 }
 
-export function buildInputFieldAddedMessage(args: InputFieldAddedChange['meta']) {
-  return `Input field '${args.addedInputFieldName}' of type '${args.addedInputFieldType}'${args.addedFieldDefault ? ` with default value '${args.addedFieldDefault}'` : ''} was added to input object type '${args.inputName}'`;
+export function buildInputFieldAddedMessage(args: InputFieldAddedChange['meta']): string {
+  return `Input field '${args.inputName}.${args.addedInputFieldName}' of type '${args.addedInputFieldType}'${args.addedFieldDefault ? ` with default value '${args.addedFieldDefault}'` : ''} was added`;
 }
 
 export function inputFieldAddedFromMeta(args: InputFieldAddedChange) {

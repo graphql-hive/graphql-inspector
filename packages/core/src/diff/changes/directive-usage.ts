@@ -151,7 +151,7 @@ type KindToPayload = {
 function buildDirectiveUsageArgumentDefinitionAddedMessage(
   args: DirectiveUsageArgumentDefinitionAddedChange['meta'],
 ): string {
-  return `Directive '${args.addedDirectiveName}' was added to argument '${args.argumentName}' of field '${args.fieldName}' in type '${args.typeName}'`;
+  return `Directive '@${args.addedDirectiveName}' was added to argument '${args.typeName}.${args.fieldName}(${args.argumentName}:)'`;
 }
 
 export function directiveUsageArgumentDefinitionAddedFromMeta(
@@ -162,7 +162,7 @@ export function directiveUsageArgumentDefinitionAddedFromMeta(
       level: args.meta.addedToNewType
         ? CriticalityLevel.NonBreaking
         : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.addedDirectiveName}' was added to argument '${args.meta.argumentName}'`,
+      reason: `Directive '@${args.meta.addedDirectiveName}' was added to argument '${args.meta.typeName}.${args.meta.fieldName}(${args.meta.argumentName}:)'`,
     },
     type: ChangeType.DirectiveUsageArgumentDefinitionAdded,
     message: buildDirectiveUsageArgumentDefinitionAddedMessage(args.meta),
@@ -179,7 +179,7 @@ export function directiveUsageArgumentDefinitionAddedFromMeta(
 function buildDirectiveUsageArgumentDefinitionRemovedMessage(
   args: DirectiveUsageArgumentDefinitionRemovedChange['meta'],
 ): string {
-  return `Directive '${args.removedDirectiveName}' was removed from argument '${args.argumentName}' of field '${args.fieldName}' in type '${args.typeName}'`;
+  return `Directive '@${args.removedDirectiveName}' was removed from argument '${args.typeName}.${args.fieldName}(${args.argumentName}:)'`;
 }
 
 export function directiveUsageArgumentDefinitionRemovedFromMeta(
@@ -188,7 +188,7 @@ export function directiveUsageArgumentDefinitionRemovedFromMeta(
   return {
     criticality: {
       level: removedSpecialDirective(args.meta.removedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.removedDirectiveName}' was removed from argument '${args.meta.argumentName}'`,
+      reason: `Directive '@${args.meta.removedDirectiveName}' was removed from argument '${args.meta.typeName}.${args.meta.fieldName}(${args.meta.argumentName}:)'`,
     },
     type: ChangeType.DirectiveUsageArgumentDefinitionRemoved,
     message: buildDirectiveUsageArgumentDefinitionRemovedMessage(args.meta),
@@ -205,7 +205,7 @@ export function directiveUsageArgumentDefinitionRemovedFromMeta(
 function buildDirectiveUsageInputObjectAddedMessage(
   args: DirectiveUsageInputObjectAddedChange['meta'],
 ): string {
-  return `Directive '${args.addedDirectiveName}' was added to input object '${args.inputObjectName}'`;
+  return `Directive '@${args.addedDirectiveName}' was added to input object '${args.inputObjectName}'`;
 }
 
 export function directiveUsageInputObjectAddedFromMeta(args: DirectiveUsageInputObjectAddedChange) {
@@ -214,7 +214,7 @@ export function directiveUsageInputObjectAddedFromMeta(args: DirectiveUsageInput
       level: args.meta.addedToNewType
         ? CriticalityLevel.NonBreaking
         : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.addedDirectiveName}' was added to input object '${args.meta.inputObjectName}'`,
+      reason: `Directive '@${args.meta.addedDirectiveName}' was added to input object '${args.meta.inputObjectName}'`,
     },
     type: ChangeType.DirectiveUsageInputObjectAdded,
     message: buildDirectiveUsageInputObjectAddedMessage(args.meta),
@@ -226,7 +226,7 @@ export function directiveUsageInputObjectAddedFromMeta(args: DirectiveUsageInput
 function buildDirectiveUsageInputObjectRemovedMessage(
   args: DirectiveUsageInputObjectRemovedChange['meta'],
 ): string {
-  return `Directive '${args.removedDirectiveName}' was removed from input object '${args.inputObjectName}'`;
+  return `Directive '@${args.removedDirectiveName}' was removed from input object '${args.inputObjectName}'`;
 }
 
 export function directiveUsageInputObjectRemovedFromMeta(
@@ -235,7 +235,7 @@ export function directiveUsageInputObjectRemovedFromMeta(
   return {
     criticality: {
       level: removedSpecialDirective(args.meta.removedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.removedDirectiveName}' was removed from input object '${args.meta.inputObjectName}'`,
+      reason: `Directive '@${args.meta.removedDirectiveName}' was removed from input object '${args.meta.inputObjectName}'`,
     },
     type: ChangeType.DirectiveUsageInputObjectRemoved,
     message: buildDirectiveUsageInputObjectRemovedMessage(args.meta),
@@ -247,7 +247,7 @@ export function directiveUsageInputObjectRemovedFromMeta(
 function buildDirectiveUsageInterfaceAddedMessage(
   args: DirectiveUsageInterfaceAddedChange['meta'],
 ): string {
-  return `Directive '${args.addedDirectiveName}' was added to interface '${args.interfaceName}'`;
+  return `Directive '@${args.addedDirectiveName}' was added to interface '${args.interfaceName}'`;
 }
 
 export function directiveUsageInterfaceAddedFromMeta(args: DirectiveUsageInterfaceAddedChange) {
@@ -256,7 +256,7 @@ export function directiveUsageInterfaceAddedFromMeta(args: DirectiveUsageInterfa
       level: args.meta.addedToNewType
         ? CriticalityLevel.NonBreaking
         : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.addedDirectiveName}' was added to interface '${args.meta.interfaceName}'`,
+      reason: `Directive '@${args.meta.addedDirectiveName}' was added to interface '${args.meta.interfaceName}'`,
     },
     type: ChangeType.DirectiveUsageInterfaceAdded,
     message: buildDirectiveUsageInterfaceAddedMessage(args.meta),
@@ -268,14 +268,14 @@ export function directiveUsageInterfaceAddedFromMeta(args: DirectiveUsageInterfa
 function buildDirectiveUsageInterfaceRemovedMessage(
   args: DirectiveUsageInterfaceRemovedChange['meta'],
 ): string {
-  return `Directive '${args.removedDirectiveName}' was removed from interface '${args.interfaceName}'`;
+  return `Directive '@${args.removedDirectiveName}' was removed from interface '${args.interfaceName}'`;
 }
 
 export function directiveUsageInterfaceRemovedFromMeta(args: DirectiveUsageInterfaceRemovedChange) {
   return {
     criticality: {
       level: removedSpecialDirective(args.meta.removedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.removedDirectiveName}' was removed from interface '${args.meta.interfaceName}'`,
+      reason: `Directive '@${args.meta.removedDirectiveName}' was removed from interface '${args.meta.interfaceName}'`,
     },
     type: ChangeType.DirectiveUsageInterfaceRemoved,
     message: buildDirectiveUsageInterfaceRemovedMessage(args.meta),
@@ -287,7 +287,7 @@ export function directiveUsageInterfaceRemovedFromMeta(args: DirectiveUsageInter
 function buildDirectiveUsageInputFieldDefinitionAddedMessage(
   args: DirectiveUsageInputFieldDefinitionAddedChange['meta'],
 ): string {
-  return `Directive '${args.addedDirectiveName}' was added to input field '${args.inputFieldName}' in input object '${args.inputObjectName}'`;
+  return `Directive '@${args.addedDirectiveName}' was added to input field '${args.inputObjectName}.${args.inputFieldName}'`;
 }
 
 export function directiveUsageInputFieldDefinitionAddedFromMeta(
@@ -298,7 +298,7 @@ export function directiveUsageInputFieldDefinitionAddedFromMeta(
       level: args.meta.addedToNewType
         ? CriticalityLevel.NonBreaking
         : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.addedDirectiveName}' was added to input field '${args.meta.inputFieldName}'`,
+      reason: `Directive '@${args.meta.addedDirectiveName}' was added to input field '${args.meta.inputObjectName}.${args.meta.inputFieldName}'`,
     },
     type: ChangeType.DirectiveUsageInputFieldDefinitionAdded,
     message: buildDirectiveUsageInputFieldDefinitionAddedMessage(args.meta),
@@ -314,7 +314,7 @@ export function directiveUsageInputFieldDefinitionAddedFromMeta(
 function buildDirectiveUsageInputFieldDefinitionRemovedMessage(
   args: DirectiveUsageInputFieldDefinitionRemovedChange['meta'],
 ): string {
-  return `Directive '${args.removedDirectiveName}' was removed from input field '${args.inputFieldName}' in input object '${args.inputObjectName}'`;
+  return `Directive '@${args.removedDirectiveName}' was removed from input field '${args.inputObjectName}.${args.inputFieldName}'`;
 }
 
 export function directiveUsageInputFieldDefinitionRemovedFromMeta(
@@ -323,7 +323,7 @@ export function directiveUsageInputFieldDefinitionRemovedFromMeta(
   return {
     criticality: {
       level: removedSpecialDirective(args.meta.removedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.removedDirectiveName}' was removed from input field '${args.meta.inputFieldName}'`,
+      reason: `Directive '@${args.meta.removedDirectiveName}' was removed from input field '${args.meta.inputObjectName}.${args.meta.inputFieldName}'`,
     },
     type: ChangeType.DirectiveUsageInputFieldDefinitionRemoved,
     message: buildDirectiveUsageInputFieldDefinitionRemovedMessage(args.meta),
@@ -339,7 +339,7 @@ export function directiveUsageInputFieldDefinitionRemovedFromMeta(
 function buildDirectiveUsageObjectAddedMessage(
   args: DirectiveUsageObjectAddedChange['meta'],
 ): string {
-  return `Directive '${args.addedDirectiveName}' was added to object '${args.objectName}'`;
+  return `Directive '@${args.addedDirectiveName}' was added to object '${args.objectName}'`;
 }
 
 export function directiveUsageObjectAddedFromMeta(args: DirectiveUsageObjectAddedChange) {
@@ -348,7 +348,7 @@ export function directiveUsageObjectAddedFromMeta(args: DirectiveUsageObjectAdde
       level: args.meta.addedToNewType
         ? CriticalityLevel.NonBreaking
         : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.addedDirectiveName}' was added to object '${args.meta.objectName}'`,
+      reason: `Directive '@${args.meta.addedDirectiveName}' was added to object '${args.meta.objectName}'`,
     },
     type: ChangeType.DirectiveUsageObjectAdded,
     message: buildDirectiveUsageObjectAddedMessage(args.meta),
@@ -360,14 +360,14 @@ export function directiveUsageObjectAddedFromMeta(args: DirectiveUsageObjectAdde
 function buildDirectiveUsageObjectRemovedMessage(
   args: DirectiveUsageObjectRemovedChange['meta'],
 ): string {
-  return `Directive '${args.removedDirectiveName}' was removed from object '${args.objectName}'`;
+  return `Directive '@${args.removedDirectiveName}' was removed from object '${args.objectName}'`;
 }
 
 export function directiveUsageObjectRemovedFromMeta(args: DirectiveUsageObjectRemovedChange) {
   return {
     criticality: {
       level: removedSpecialDirective(args.meta.removedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.removedDirectiveName}' was removed from object '${args.meta.objectName}'`,
+      reason: `Directive '@${args.meta.removedDirectiveName}' was removed from object '${args.meta.objectName}'`,
     },
     type: ChangeType.DirectiveUsageObjectRemoved,
     message: buildDirectiveUsageObjectRemovedMessage(args.meta),
@@ -377,7 +377,7 @@ export function directiveUsageObjectRemovedFromMeta(args: DirectiveUsageObjectRe
 }
 
 function buildDirectiveUsageEnumAddedMessage(args: DirectiveUsageEnumAddedChange['meta']): string {
-  return `Directive '${args.addedDirectiveName}' was added to enum '${args.enumName}'`;
+  return `Directive '@${args.addedDirectiveName}' was added to enum '${args.enumName}'`;
 }
 
 export function directiveUsageEnumAddedFromMeta(args: DirectiveUsageEnumAddedChange) {
@@ -386,7 +386,7 @@ export function directiveUsageEnumAddedFromMeta(args: DirectiveUsageEnumAddedCha
       level: args.meta.addedToNewType
         ? CriticalityLevel.NonBreaking
         : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.addedDirectiveName}' was added to enum '${args.meta.enumName}'`,
+      reason: `Directive '@${args.meta.addedDirectiveName}' was added to enum '${args.meta.enumName}'`,
     },
     type: ChangeType.DirectiveUsageEnumAdded,
     message: buildDirectiveUsageEnumAddedMessage(args.meta),
@@ -398,14 +398,14 @@ export function directiveUsageEnumAddedFromMeta(args: DirectiveUsageEnumAddedCha
 function buildDirectiveUsageEnumRemovedMessage(
   args: DirectiveUsageEnumRemovedChange['meta'],
 ): string {
-  return `Directive '${args.removedDirectiveName}' was removed from enum '${args.enumName}'`;
+  return `Directive '@${args.removedDirectiveName}' was removed from enum '${args.enumName}'`;
 }
 
 export function directiveUsageEnumRemovedFromMeta(args: DirectiveUsageEnumRemovedChange) {
   return {
     criticality: {
       level: removedSpecialDirective(args.meta.removedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.removedDirectiveName}' was removed from enum '${args.meta.enumName}'`,
+      reason: `Directive '@${args.meta.removedDirectiveName}' was removed from enum '${args.meta.enumName}'`,
     },
     type: ChangeType.DirectiveUsageEnumRemoved,
     message: buildDirectiveUsageEnumRemovedMessage(args.meta),
@@ -417,14 +417,14 @@ export function directiveUsageEnumRemovedFromMeta(args: DirectiveUsageEnumRemove
 function buildDirectiveUsageFieldAddedMessage(
   args: DirectiveUsageFieldAddedChange['meta'],
 ): string {
-  return `Directive '${args.addedDirectiveName}' was added to field '${args.typeName}.${args.fieldName}'`;
+  return `Directive '@${args.addedDirectiveName}' was added to field '${args.typeName}.${args.fieldName}'`;
 }
 
 export function directiveUsageFieldAddedFromMeta(args: DirectiveUsageFieldAddedChange) {
   return {
     criticality: {
       level: addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.addedDirectiveName}' was added to field '${args.meta.fieldName}'`,
+      reason: `Directive '@${args.meta.addedDirectiveName}' was added to field '${args.meta.typeName}.${args.meta.fieldName}'`,
     },
     type: ChangeType.DirectiveUsageFieldAdded,
     message: buildDirectiveUsageFieldAddedMessage(args.meta),
@@ -436,7 +436,7 @@ export function directiveUsageFieldAddedFromMeta(args: DirectiveUsageFieldAddedC
 function buildDirectiveUsageFieldDefinitionAddedMessage(
   args: DirectiveUsageFieldDefinitionAddedChange['meta'],
 ): string {
-  return `Directive '${args.addedDirectiveName}' was added to field '${args.typeName}.${args.fieldName}'`;
+  return `Directive '@${args.addedDirectiveName}' was added to field '${args.typeName}.${args.fieldName}'`;
 }
 
 export function directiveUsageFieldDefinitionAddedFromMeta(
@@ -447,7 +447,7 @@ export function directiveUsageFieldDefinitionAddedFromMeta(
       level: args.meta.addedToNewType
         ? CriticalityLevel.NonBreaking
         : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.addedDirectiveName}' was added to field '${args.meta.fieldName}'`,
+      reason: `Directive '@${args.meta.addedDirectiveName}' was added to field '${args.meta.typeName}.${args.meta.fieldName}'`,
     },
     type: ChangeType.DirectiveUsageFieldDefinitionAdded,
     message: buildDirectiveUsageFieldDefinitionAddedMessage(args.meta),
@@ -459,14 +459,14 @@ export function directiveUsageFieldDefinitionAddedFromMeta(
 function buildDirectiveUsageFieldRemovedMessage(
   args: DirectiveUsageFieldRemovedChange['meta'],
 ): string {
-  return `Directive '${args.removedDirectiveName}' was removed from field '${args.typeName}.${args.fieldName}'`;
+  return `Directive '@${args.removedDirectiveName}' was removed from field '${args.typeName}.${args.fieldName}'`;
 }
 
 export function directiveUsageFieldRemovedFromMeta(args: DirectiveUsageFieldRemovedChange) {
   return {
     criticality: {
       level: removedSpecialDirective(args.meta.removedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.removedDirectiveName}' was removed from field '${args.meta.fieldName}'`,
+      reason: `Directive '@${args.meta.removedDirectiveName}' was removed from field '${args.meta.typeName}.${args.meta.fieldName}'`,
     },
     type: ChangeType.DirectiveUsageFieldRemoved,
     message: buildDirectiveUsageFieldRemovedMessage(args.meta),
@@ -478,7 +478,7 @@ export function directiveUsageFieldRemovedFromMeta(args: DirectiveUsageFieldRemo
 function buildDirectiveUsageFieldDefinitionRemovedMessage(
   args: DirectiveUsageFieldDefinitionRemovedChange['meta'],
 ): string {
-  return `Directive '${args.removedDirectiveName}' was removed from field '${args.typeName}.${args.fieldName}'`;
+  return `Directive '@${args.removedDirectiveName}' was removed from field '${args.typeName}.${args.fieldName}'`;
 }
 
 export function directiveUsageFieldDefinitionRemovedFromMeta(
@@ -487,7 +487,7 @@ export function directiveUsageFieldDefinitionRemovedFromMeta(
   return {
     criticality: {
       level: removedSpecialDirective(args.meta.removedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.removedDirectiveName}' was removed from field '${args.meta.fieldName}'`,
+      reason: `Directive '@${args.meta.removedDirectiveName}' was removed from field '${args.meta.typeName}.${args.meta.fieldName}'`,
     },
     type: ChangeType.DirectiveUsageFieldDefinitionRemoved,
     message: buildDirectiveUsageFieldDefinitionRemovedMessage(args.meta),
@@ -499,7 +499,7 @@ export function directiveUsageFieldDefinitionRemovedFromMeta(
 function buildDirectiveUsageEnumValueAddedMessage(
   args: DirectiveUsageEnumValueAddedChange['meta'],
 ): string {
-  return `Directive '${args.addedDirectiveName}' was added to enum value '${args.enumName}.${args.enumValueName}'`;
+  return `Directive '@${args.addedDirectiveName}' was added to enum value '${args.enumName}.${args.enumValueName}'`;
 }
 
 export function directiveUsageEnumValueAddedFromMeta(args: DirectiveUsageEnumValueAddedChange) {
@@ -508,7 +508,7 @@ export function directiveUsageEnumValueAddedFromMeta(args: DirectiveUsageEnumVal
       level: args.meta.addedToNewType
         ? CriticalityLevel.NonBreaking
         : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.addedDirectiveName}' was added to enum value '${args.meta.enumName}.${args.meta.enumValueName}'`,
+      reason: `Directive '@${args.meta.addedDirectiveName}' was added to enum value '${args.meta.enumName}.${args.meta.enumValueName}'`,
     },
     type: ChangeType.DirectiveUsageEnumValueAdded,
     message: buildDirectiveUsageEnumValueAddedMessage(args.meta),
@@ -522,14 +522,14 @@ export function directiveUsageEnumValueAddedFromMeta(args: DirectiveUsageEnumVal
 function buildDirectiveUsageEnumValueRemovedMessage(
   args: DirectiveUsageEnumValueRemovedChange['meta'],
 ): string {
-  return `Directive '${args.removedDirectiveName}' was removed from enum value '${args.enumName}.${args.enumValueName}'`;
+  return `Directive '@${args.removedDirectiveName}' was removed from enum value '${args.enumName}.${args.enumValueName}'`;
 }
 
 export function directiveUsageEnumValueRemovedFromMeta(args: DirectiveUsageEnumValueRemovedChange) {
   return {
     criticality: {
       level: removedSpecialDirective(args.meta.removedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.removedDirectiveName}' was removed from enum value '${args.meta.enumName}.${args.meta.enumValueName}'`,
+      reason: `Directive '@${args.meta.removedDirectiveName}' was removed from enum value '${args.meta.enumName}.${args.meta.enumValueName}'`,
     },
     type: ChangeType.DirectiveUsageEnumValueRemoved,
     message: buildDirectiveUsageEnumValueRemovedMessage(args.meta),
@@ -543,7 +543,7 @@ export function directiveUsageEnumValueRemovedFromMeta(args: DirectiveUsageEnumV
 function buildDirectiveUsageSchemaAddedMessage(
   args: DirectiveUsageSchemaAddedChange['meta'],
 ): string {
-  return `Directive '${args.addedDirectiveName}' was added to schema`;
+  return `Directive '@${args.addedDirectiveName}' was added to schema`;
 }
 
 export function directiveUsageSchemaAddedFromMeta(args: DirectiveUsageSchemaAddedChange) {
@@ -552,7 +552,7 @@ export function directiveUsageSchemaAddedFromMeta(args: DirectiveUsageSchemaAdde
       level: args.meta.addedToNewType
         ? CriticalityLevel.NonBreaking
         : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.addedDirectiveName}' was added to schema`,
+      reason: `Directive '@${args.meta.addedDirectiveName}' was added to schema`,
     },
     type: ChangeType.DirectiveUsageSchemaAdded,
     message: buildDirectiveUsageSchemaAddedMessage(args.meta),
@@ -564,14 +564,14 @@ export function directiveUsageSchemaAddedFromMeta(args: DirectiveUsageSchemaAdde
 function buildDirectiveUsageSchemaRemovedMessage(
   args: DirectiveUsageSchemaRemovedChange['meta'],
 ): string {
-  return `Directive '${args.removedDirectiveName}' was removed from schema`;
+  return `Directive '@${args.removedDirectiveName}' was removed from schema`;
 }
 
 export function directiveUsageSchemaRemovedFromMeta(args: DirectiveUsageSchemaRemovedChange) {
   return {
     criticality: {
       level: removedSpecialDirective(args.meta.removedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.removedDirectiveName}' was removed from schema`,
+      reason: `Directive '@${args.meta.removedDirectiveName}' was removed from schema`,
     },
     type: ChangeType.DirectiveUsageSchemaRemoved,
     message: buildDirectiveUsageSchemaRemovedMessage(args.meta),
@@ -583,7 +583,7 @@ export function directiveUsageSchemaRemovedFromMeta(args: DirectiveUsageSchemaRe
 function buildDirectiveUsageScalarAddedMessage(
   args: DirectiveUsageScalarAddedChange['meta'],
 ): string {
-  return `Directive '${args.addedDirectiveName}' was added to scalar '${args.scalarName}'`;
+  return `Directive '@${args.addedDirectiveName}' was added to scalar '${args.scalarName}'`;
 }
 
 export function directiveUsageScalarAddedFromMeta(args: DirectiveUsageScalarAddedChange) {
@@ -592,7 +592,7 @@ export function directiveUsageScalarAddedFromMeta(args: DirectiveUsageScalarAdde
       level: args.meta.addedToNewType
         ? CriticalityLevel.NonBreaking
         : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.addedDirectiveName}' was added to scalar '${args.meta.scalarName}'`,
+      reason: `Directive '@${args.meta.addedDirectiveName}' was added to scalar '${args.meta.scalarName}'`,
     },
     type: ChangeType.DirectiveUsageScalarAdded,
     message: buildDirectiveUsageScalarAddedMessage(args.meta),
@@ -604,14 +604,14 @@ export function directiveUsageScalarAddedFromMeta(args: DirectiveUsageScalarAdde
 function buildDirectiveUsageScalarRemovedMessage(
   args: DirectiveUsageScalarRemovedChange['meta'],
 ): string {
-  return `Directive '${args.removedDirectiveName}' was removed from scalar '${args.scalarName}'`;
+  return `Directive '@${args.removedDirectiveName}' was removed from scalar '${args.scalarName}'`;
 }
 
 export function directiveUsageScalarRemovedFromMeta(args: DirectiveUsageScalarRemovedChange) {
   return {
     criticality: {
       level: removedSpecialDirective(args.meta.removedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.removedDirectiveName}' was removed from scalar '${args.meta.scalarName}'`,
+      reason: `Directive '@${args.meta.removedDirectiveName}' was removed from scalar '${args.meta.scalarName}'`,
     },
     type: ChangeType.DirectiveUsageScalarRemoved,
     message: buildDirectiveUsageScalarRemovedMessage(args.meta),
@@ -623,7 +623,7 @@ export function directiveUsageScalarRemovedFromMeta(args: DirectiveUsageScalarRe
 function buildDirectiveUsageUnionMemberAddedMessage(
   args: DirectiveUsageUnionMemberAddedChange['meta'],
 ): string {
-  return `Directive '${args.addedDirectiveName}' was added to union member '${args.unionName}'`;
+  return `Directive '@${args.addedDirectiveName}' was added to union '${args.unionName}'`;
 }
 
 export function directiveUsageUnionMemberAddedFromMeta(args: DirectiveUsageUnionMemberAddedChange) {
@@ -632,7 +632,7 @@ export function directiveUsageUnionMemberAddedFromMeta(args: DirectiveUsageUnion
       level: args.meta.addedToNewType
         ? CriticalityLevel.NonBreaking
         : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.addedDirectiveName}' was added to union member '${args.meta.unionName}.${args.meta.addedUnionMemberTypeName}'`,
+      reason: `Directive '@${args.meta.addedDirectiveName}' was added to union '${args.meta.unionName}'`,
     },
     type: ChangeType.DirectiveUsageUnionMemberAdded,
     message: buildDirectiveUsageUnionMemberAddedMessage(args.meta),
@@ -644,7 +644,7 @@ export function directiveUsageUnionMemberAddedFromMeta(args: DirectiveUsageUnion
 function buildDirectiveUsageUnionMemberRemovedMessage(
   args: DirectiveUsageUnionMemberRemovedChange['meta'],
 ): string {
-  return `Directive '${args.removedDirectiveName}' was removed from union member '${args.unionName}'`;
+  return `Directive '@${args.removedDirectiveName}' was removed from union '${args.unionName}'`;
 }
 
 export function directiveUsageUnionMemberRemovedFromMeta(
@@ -653,7 +653,7 @@ export function directiveUsageUnionMemberRemovedFromMeta(
   return {
     criticality: {
       level: removedSpecialDirective(args.meta.removedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '${args.meta.removedDirectiveName}' was removed from union member '${args.meta.unionName}.${args.meta.removedUnionMemberTypeName}'`,
+      reason: `Directive '@${args.meta.removedDirectiveName}' was removed from union '${args.meta.unionName}'`,
     },
     type: ChangeType.DirectiveUsageUnionMemberRemoved,
     message: buildDirectiveUsageUnionMemberRemovedMessage(args.meta),
@@ -1041,6 +1041,36 @@ function isOfKind<K extends keyof KindToPayload>(
   return kind === expectedKind;
 }
 
+/**
+ * Describes where a directive usage lives, using schema coordinates.
+ *
+ * { parentTypeName: 'Query', parentFieldName: 'a', parentArgumentName: null, parentEnumValueName: null } -> "field 'Query.a'"
+ * { parentTypeName: 'Query', parentFieldName: 'a', parentArgumentName: 'id', parentEnumValueName: null } -> "argument 'Query.a(id:)'"
+ * { parentTypeName: 'Color', parentFieldName: null, parentArgumentName: null, parentEnumValueName: 'RED' } -> "enum value 'Color.RED'"
+ * { parentTypeName: 'Query', parentFieldName: null, parentArgumentName: null, parentEnumValueName: null } -> "type 'Query'"
+ * { parentTypeName: null, ... } -> "schema"
+ */
+function describeDirectiveUsageLocation(args: {
+  parentTypeName: string | null;
+  parentFieldName: string | null;
+  parentArgumentName: string | null;
+  parentEnumValueName: string | null;
+}): string {
+  if (args.parentTypeName === null) {
+    return 'schema';
+  }
+  if (args.parentFieldName !== null && args.parentArgumentName !== null) {
+    return `argument '${args.parentTypeName}.${args.parentFieldName}(${args.parentArgumentName}:)'`;
+  }
+  if (args.parentFieldName !== null) {
+    return `field '${args.parentTypeName}.${args.parentFieldName}'`;
+  }
+  if (args.parentEnumValueName !== null) {
+    return `enum value '${args.parentTypeName}.${args.parentEnumValueName}'`;
+  }
+  return `type '${args.parentTypeName}'`;
+}
+
 export function directiveUsageArgumentAddedFromMeta(
   args: DirectiveUsageArgumentAddedChange,
 ): Change {
@@ -1049,7 +1079,7 @@ export function directiveUsageArgumentAddedFromMeta(
     criticality: {
       level: CriticalityLevel.NonBreaking,
     },
-    message: `Argument '${args.meta.addedArgumentName}' was added to '@${args.meta.directiveName}'`,
+    message: `Argument '${args.meta.addedArgumentName}' was added to '@${args.meta.directiveName}' on ${describeDirectiveUsageLocation(args.meta)}`,
     path: [
       /** If the type is missing then this must be a directive on a schema */
       args.meta.parentTypeName ?? '',
@@ -1073,7 +1103,7 @@ export function directiveUsageArgumentRemovedFromMeta(
       level: CriticalityLevel.Dangerous,
       reason: `Changing an argument on a directive can change runtime behavior.`,
     },
-    message: `Argument '${args.meta.removedArgumentName}' was removed from '@${args.meta.directiveName}'`,
+    message: `Argument '${args.meta.removedArgumentName}' was removed from '@${args.meta.directiveName}' on ${describeDirectiveUsageLocation(args.meta)}`,
     path: [
       /** If the type is missing then this must be a directive on a schema */
       args.meta.parentTypeName ?? '',

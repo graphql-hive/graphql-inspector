@@ -319,7 +319,7 @@ describe('simplifyChanges rule', () => {
             "level": "DANGEROUS",
             "reason": "Adding an enum value may break existing clients that were not programming defensively against an added case when querying an enum.",
           },
-          "message": "Enum value 'VIEWER' was added to enum 'UserRole'",
+          "message": "Enum value 'UserRole.VIEWER' was added",
           "meta": {
             "addedDirectiveDescription": null,
             "addedEnumValueName": "VIEWER",
@@ -334,7 +334,7 @@ describe('simplifyChanges rule', () => {
             "level": "BREAKING",
             "reason": "Removing a field is a breaking change. It is preferable to deprecate the field before removing it. This applies to removed union fields as well, since removal breaks client operations that contain fragments that reference the removed type through direct (... on RemovedType) or indirect means such as __typename in the consumers.",
           },
-          "message": "Field 'email' was removed from object type 'User'",
+          "message": "Object field 'User.email' was removed",
           "meta": {
             "isRemovedFieldDeprecated": false,
             "removedFieldName": "email",
@@ -348,7 +348,7 @@ describe('simplifyChanges rule', () => {
           "criticality": {
             "level": "NON_BREAKING",
           },
-          "message": "Field 'address' was added to object type 'User'",
+          "message": "Object field 'User.address' was added",
           "meta": {
             "addedFieldName": "address",
             "addedFieldReturnType": "String",

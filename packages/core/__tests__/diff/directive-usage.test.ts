@@ -32,9 +32,9 @@ describe('directive-usage', () => {
           {
             "criticality": {
               "level": "DANGEROUS",
-              "reason": "Directive 'tag' was added to field 'a'",
+              "reason": "Directive '@tag' was added to field 'Query.a'",
             },
-            "message": "Directive 'tag' was added to field 'Query.a'",
+            "message": "Directive '@tag' was added to field 'Query.a'",
             "meta": {
               "addedDirectiveName": "tag",
               "addedToNewType": false,
@@ -72,9 +72,9 @@ describe('directive-usage', () => {
           {
             "criticality": {
               "level": "DANGEROUS",
-              "reason": "Directive 'tag' was added to field 'a'",
+              "reason": "Directive '@tag' was added to field 'Query.a'",
             },
-            "message": "Directive 'tag' was added to field 'Query.a'",
+            "message": "Directive '@tag' was added to field 'Query.a'",
             "meta": {
               "addedDirectiveName": "tag",
               "addedToNewType": false,
@@ -88,9 +88,9 @@ describe('directive-usage', () => {
           {
             "criticality": {
               "level": "DANGEROUS",
-              "reason": "Directive 'tag' was added to field 'a'",
+              "reason": "Directive '@tag' was added to field 'Query.a'",
             },
-            "message": "Directive 'tag' was added to field 'Query.a'",
+            "message": "Directive '@tag' was added to field 'Query.a'",
             "meta": {
               "addedDirectiveName": "tag",
               "addedToNewType": false,
@@ -105,7 +105,7 @@ describe('directive-usage', () => {
             "criticality": {
               "level": "NON_BREAKING",
             },
-            "message": "Argument 'name' was added to '@tag'",
+            "message": "Argument 'name' was added to '@tag' on field 'Query.a'",
             "meta": {
               "addedArgumentName": "name",
               "addedArgumentValue": ""second"",
@@ -123,9 +123,9 @@ describe('directive-usage', () => {
           {
             "criticality": {
               "level": "DANGEROUS",
-              "reason": "Directive 'tag' was added to field 'a'",
+              "reason": "Directive '@tag' was added to field 'Query.a'",
             },
-            "message": "Directive 'tag' was added to field 'Query.a'",
+            "message": "Directive '@tag' was added to field 'Query.a'",
             "meta": {
               "addedDirectiveName": "tag",
               "addedToNewType": false,
@@ -163,9 +163,9 @@ describe('directive-usage', () => {
           {
             "criticality": {
               "level": "DANGEROUS",
-              "reason": "Directive 'tag' was added to field 'a'",
+              "reason": "Directive '@tag' was added to field 'Query.a'",
             },
-            "message": "Directive 'tag' was added to field 'Query.a'",
+            "message": "Directive '@tag' was added to field 'Query.a'",
             "meta": {
               "addedDirectiveName": "tag",
               "addedToNewType": false,
@@ -180,7 +180,7 @@ describe('directive-usage', () => {
             "criticality": {
               "level": "NON_BREAKING",
             },
-            "message": "Argument 'name' was added to '@tag'",
+            "message": "Argument 'name' was added to '@tag' on field 'Query.a'",
             "meta": {
               "addedArgumentName": "name",
               "addedArgumentValue": ""bar"",
@@ -224,7 +224,7 @@ describe('directive-usage', () => {
               "level": "DANGEROUS",
               "reason": "Changing an argument on a directive can change runtime behavior.",
             },
-            "message": "Argument 'name' was removed from '@tag'",
+            "message": "Argument 'name' was removed from '@tag' on field 'Query.a'",
             "meta": {
               "directiveName": "tag",
               "directiveRepeatedTimes": 2,
@@ -241,7 +241,7 @@ describe('directive-usage', () => {
             "criticality": {
               "level": "NON_BREAKING",
             },
-            "message": "Argument 'name' was added to '@tag'",
+            "message": "Argument 'name' was added to '@tag' on field 'Query.a'",
             "meta": {
               "addedArgumentName": "name",
               "addedArgumentValue": ""bar"",
@@ -283,9 +283,9 @@ describe('directive-usage', () => {
           {
             "criticality": {
               "level": "DANGEROUS",
-              "reason": "Directive 'tag' was removed from field 'a'",
+              "reason": "Directive '@tag' was removed from field 'Query.a'",
             },
-            "message": "Directive 'tag' was removed from field 'Query.a'",
+            "message": "Directive '@tag' was removed from field 'Query.a'",
             "meta": {
               "directiveRepeatedTimes": 2,
               "fieldName": "a",
@@ -322,9 +322,9 @@ describe('directive-usage', () => {
           {
             "criticality": {
               "level": "DANGEROUS",
-              "reason": "Directive 'tag' was removed from field 'a'",
+              "reason": "Directive '@tag' was removed from field 'Query.a'",
             },
-            "message": "Directive 'tag' was removed from field 'Query.a'",
+            "message": "Directive '@tag' was removed from field 'Query.a'",
             "meta": {
               "directiveRepeatedTimes": 2,
               "fieldName": "a",
@@ -337,9 +337,9 @@ describe('directive-usage', () => {
           {
             "criticality": {
               "level": "DANGEROUS",
-              "reason": "Directive 'tag' was removed from field 'a'",
+              "reason": "Directive '@tag' was removed from field 'Query.a'",
             },
-            "message": "Directive 'tag' was removed from field 'Query.a'",
+            "message": "Directive '@tag' was removed from field 'Query.a'",
             "meta": {
               "directiveRepeatedTimes": 3,
               "fieldName": "a",
@@ -354,7 +354,7 @@ describe('directive-usage', () => {
               "level": "DANGEROUS",
               "reason": "Changing an argument on a directive can change runtime behavior.",
             },
-            "message": "Argument 'name' was removed from '@tag'",
+            "message": "Argument 'name' was removed from '@tag' on field 'Query.a'",
             "meta": {
               "directiveName": "tag",
               "directiveRepeatedTimes": 1,
@@ -371,7 +371,7 @@ describe('directive-usage', () => {
             "criticality": {
               "level": "NON_BREAKING",
             },
-            "message": "Argument 'name' was added to '@tag'",
+            "message": "Argument 'name' was added to '@tag' on field 'Query.a'",
             "meta": {
               "addedArgumentName": "name",
               "addedArgumentValue": ""mid"",
@@ -413,9 +413,9 @@ describe('directive-usage', () => {
           {
             "criticality": {
               "level": "DANGEROUS",
-              "reason": "Directive 'tag' was removed from field 'a'",
+              "reason": "Directive '@tag' was removed from field 'Query.a'",
             },
-            "message": "Directive 'tag' was removed from field 'Query.a'",
+            "message": "Directive '@tag' was removed from field 'Query.a'",
             "meta": {
               "directiveRepeatedTimes": 2,
               "fieldName": "a",
@@ -452,7 +452,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED');
-      expect(change.message).toEqual("Directive 'external' was added to field 'Query.a'");
+      expect(change.message).toEqual("Directive '@external' was added to field 'Query.a'");
     });
 
     test('added directive on added field', async () => {
@@ -475,7 +475,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED');
-      expect(change.message).toEqual("Directive 'external' was added to field 'Query.a'");
+      expect(change.message).toEqual("Directive '@external' was added to field 'Query.a'");
     });
 
     test('removed directive', async () => {
@@ -498,7 +498,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_DEFINITION_REMOVED');
-      expect(change.message).toEqual("Directive 'external' was removed from field 'Query.a'");
+      expect(change.message).toEqual("Directive '@external' was removed from field 'Query.a'");
     });
 
     test('added oneOf directive', async () => {
@@ -522,7 +522,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_DEFINITION_ADDED');
-      expect(change.message).toEqual("Directive 'oneOf' was added to field 'Query.a'");
+      expect(change.message).toEqual("Directive '@oneOf' was added to field 'Query.a'");
     });
 
     test('removed oneOf directive', async () => {
@@ -545,7 +545,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_DEFINITION_REMOVED');
-      expect(change.message).toEqual("Directive 'oneOf' was removed from field 'Query.a'");
+      expect(change.message).toEqual("Directive '@oneOf' was removed from field 'Query.a'");
     });
   });
 
@@ -582,7 +582,8 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_UNION_MEMBER_ADDED');
-      expect(change.message).toEqual("Directive 'external' was added to union member 'Foo'");
+      expect(change.message).toEqual("Directive '@external' was added to union 'Foo'");
+      expect(change.criticality.reason).toEqual("Directive '@external' was added to union 'Foo'");
     });
 
     test('remove directive', async () => {
@@ -618,7 +619,10 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_UNION_MEMBER_REMOVED');
-      expect(change.message).toEqual("Directive 'external' was removed from union member 'Foo'");
+      expect(change.message).toEqual("Directive '@external' was removed from union 'Foo'");
+      expect(change.criticality.reason).toEqual(
+        "Directive '@external' was removed from union 'Foo'",
+      );
     });
 
     test('added oneOf directive', async () => {
@@ -653,7 +657,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.type).toEqual('DIRECTIVE_USAGE_UNION_MEMBER_ADDED');
-      expect(change.message).toEqual("Directive 'oneOf' was added to union member 'Foo'");
+      expect(change.message).toEqual("Directive '@oneOf' was added to union 'Foo'");
     });
 
     test('removed oneOf directive', async () => {
@@ -689,7 +693,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.type).toEqual('DIRECTIVE_USAGE_UNION_MEMBER_REMOVED');
-      expect(change.message).toEqual("Directive 'oneOf' was removed from union member 'Foo'");
+      expect(change.message).toEqual("Directive '@oneOf' was removed from union 'Foo'");
     });
   });
 
@@ -724,7 +728,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.criticality.reason).toBeDefined();
-      expect(change.message).toEqual(`Directive 'external' was added to enum 'enumA'`);
+      expect(change.message).toEqual(`Directive '@external' was added to enum 'enumA'`);
     });
 
     test('removed directive', async () => {
@@ -756,7 +760,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_ENUM_REMOVED');
-      expect(change.message).toEqual("Directive 'external' was removed from enum 'enumA'");
+      expect(change.message).toEqual("Directive '@external' was removed from enum 'enumA'");
     });
   });
 
@@ -793,7 +797,7 @@ describe('directive-usage', () => {
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.criticality.reason).toBeDefined();
-      expect(change.message).toEqual(`Directive 'external' was added to enum value 'enumA.B'`);
+      expect(change.message).toEqual(`Directive '@external' was added to enum value 'enumA.B'`);
     });
 
     test('removed directive', async () => {
@@ -828,7 +832,7 @@ describe('directive-usage', () => {
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.criticality.reason).toBeDefined();
-      expect(change.message).toEqual(`Directive 'external' was added to enum value 'enumA.A'`);
+      expect(change.message).toEqual(`Directive '@external' was added to enum value 'enumA.A'`);
     });
   });
 
@@ -855,7 +859,7 @@ describe('directive-usage', () => {
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_INPUT_OBJECT_REMOVED');
-      expect(change.message).toEqual("Directive 'external' was removed from input object 'Foo'");
+      expect(change.message).toEqual("Directive '@external' was removed from input object 'Foo'");
     });
     test('added directive', async () => {
       const a = buildSchema(/* GraphQL */ `
@@ -879,7 +883,7 @@ describe('directive-usage', () => {
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_INPUT_OBJECT_ADDED');
-      expect(change.message).toEqual("Directive 'external' was added to input object 'Foo'");
+      expect(change.message).toEqual("Directive '@external' was added to input object 'Foo'");
     });
   });
 
@@ -906,9 +910,7 @@ describe('directive-usage', () => {
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_INPUT_FIELD_DEFINITION_ADDED');
-      expect(change.message).toEqual(
-        "Directive 'external' was added to input field 'a' in input object 'Foo'",
-      );
+      expect(change.message).toEqual("Directive '@external' was added to input field 'Foo.a'");
     });
     test('removed directive', async () => {
       const a = buildSchema(/* GraphQL */ `
@@ -932,9 +934,7 @@ describe('directive-usage', () => {
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_INPUT_FIELD_DEFINITION_REMOVED');
-      expect(change.message).toEqual(
-        "Directive 'external' was removed from input field 'a' in input object 'Foo'",
-      );
+      expect(change.message).toEqual("Directive '@external' was removed from input field 'Foo.a'");
     });
   });
 
@@ -955,7 +955,7 @@ describe('directive-usage', () => {
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_SCALAR_ADDED');
-      expect(change.message).toEqual("Directive 'external' was added to scalar 'Foo'");
+      expect(change.message).toEqual("Directive '@external' was added to scalar 'Foo'");
     });
     test('removed directive', async () => {
       const a = buildSchema(/* GraphQL */ `
@@ -973,7 +973,7 @@ describe('directive-usage', () => {
       expect(changes.length).toEqual(1);
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_SCALAR_REMOVED');
-      expect(change.message).toEqual("Directive 'external' was removed from scalar 'Foo'");
+      expect(change.message).toEqual("Directive '@external' was removed from scalar 'Foo'");
     });
   });
 
@@ -997,7 +997,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_OBJECT_ADDED');
-      expect(change.message).toEqual("Directive 'external' was added to object 'Foo'");
+      expect(change.message).toEqual("Directive '@external' was added to object 'Foo'");
     });
     test('removed directive', async () => {
       const a = buildSchema(/* GraphQL */ `
@@ -1018,7 +1018,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_OBJECT_REMOVED');
-      expect(change.message).toEqual("Directive 'external' was removed from object 'Foo'");
+      expect(change.message).toEqual("Directive '@external' was removed from object 'Foo'");
     });
   });
 
@@ -1042,7 +1042,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_INTERFACE_ADDED');
-      expect(change.message).toEqual("Directive 'external' was added to interface 'Foo'");
+      expect(change.message).toEqual("Directive '@external' was added to interface 'Foo'");
     });
 
     test('removed directive', async () => {
@@ -1064,7 +1064,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_INTERFACE_REMOVED');
-      expect(change.message).toEqual("Directive 'external' was removed from interface 'Foo'");
+      expect(change.message).toEqual("Directive '@external' was removed from interface 'Foo'");
     });
   });
 
@@ -1088,9 +1088,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_ARGUMENT_DEFINITION_ADDED');
-      expect(change.message).toEqual(
-        "Directive 'external' was added to argument 'a' of field 'a' in type 'Foo'",
-      );
+      expect(change.message).toEqual("Directive '@external' was added to argument 'Foo.a(a:)'");
     });
 
     test('removed directive', async () => {
@@ -1112,9 +1110,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_ARGUMENT_DEFINITION_REMOVED');
-      expect(change.message).toEqual(
-        "Directive 'external' was removed from argument 'a' of field 'a' in type 'Foo'",
-      );
+      expect(change.message).toEqual("Directive '@external' was removed from argument 'Foo.a(a:)'");
     });
   });
 
@@ -1144,7 +1140,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_SCHEMA_ADDED');
-      expect(change.message).toEqual("Directive 'external' was added to schema");
+      expect(change.message).toEqual("Directive '@external' was added to schema");
     });
     test('removed directive', async () => {
       const a = buildSchema(/* GraphQL */ `
@@ -1171,7 +1167,7 @@ describe('directive-usage', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_SCHEMA_REMOVED');
-      expect(change.message).toEqual("Directive 'external' was removed from schema");
+      expect(change.message).toEqual("Directive '@external' was removed from schema");
     });
   });
 
@@ -1189,8 +1185,10 @@ describe('directive-usage', () => {
 
       expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_ADDED');
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
-      expect(change.criticality.reason).toEqual("Directive 'external' was added to field 'email'");
-      expect(change.message).toEqual("Directive 'external' was added to field 'User.email'");
+      expect(change.criticality.reason).toEqual(
+        "Directive '@external' was added to field 'User.email'",
+      );
+      expect(change.message).toEqual("Directive '@external' was added to field 'User.email'");
       expect(change.path).toEqual('User.email.external');
       expect(change.meta).toEqual({
         typeName: 'User',
@@ -1242,9 +1240,9 @@ describe('directive-usage', () => {
       expect(change.type).toEqual('DIRECTIVE_USAGE_FIELD_REMOVED');
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.criticality.reason).toEqual(
-        "Directive 'external' was removed from field 'email'",
+        "Directive '@external' was removed from field 'User.email'",
       );
-      expect(change.message).toEqual("Directive 'external' was removed from field 'User.email'");
+      expect(change.message).toEqual("Directive '@external' was removed from field 'User.email'");
       expect(change.path).toEqual('User.email.external');
       expect(change.meta).toEqual({
         typeName: 'User',

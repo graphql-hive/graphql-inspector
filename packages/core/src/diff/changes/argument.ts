@@ -14,12 +14,12 @@ function buildFieldArgumentDescriptionChangedMessage(
   args: FieldArgumentDescriptionChangedChange['meta'],
 ): string {
   if (args.oldDescription === null && args.newDescription !== null) {
-    return `Description '${fmt(args.newDescription)}' was added to argument '${args.argumentName}' on field '${args.typeName}.${args.fieldName}'`;
+    return `Argument '${args.typeName}.${args.fieldName}(${args.argumentName}:)' description '${fmt(args.newDescription)}' was added`;
   }
   if (args.newDescription === null && args.oldDescription !== null) {
-    return `Description '${fmt(args.oldDescription)}' was removed from argument '${args.argumentName}' on field '${args.typeName}.${args.fieldName}'`;
+    return `Argument '${args.typeName}.${args.fieldName}(${args.argumentName}:)' description '${fmt(args.oldDescription)}' was removed`;
   }
-  return `Description for argument '${args.argumentName}' on field '${args.typeName}.${args.fieldName}' changed from '${fmt(args.oldDescription ?? '')}' to '${fmt(args.newDescription ?? '')}'`;
+  return `Argument '${args.typeName}.${args.fieldName}(${args.argumentName}:)' description changed from '${fmt(args.oldDescription ?? '')}' to '${fmt(args.newDescription ?? '')}'`;
 }
 
 export function fieldArgumentDescriptionChangedFromMeta(
@@ -58,8 +58,8 @@ function buildFieldArgumentDefaultChangedMessage(
   args: FieldArgumentDefaultChangedChange['meta'],
 ): string {
   return args.oldDefaultValue === undefined
-    ? `Default value '${args.newDefaultValue}' was added to argument '${args.argumentName}' on field '${args.typeName}.${args.fieldName}'`
-    : `Default value for argument '${args.argumentName}' on field '${args.typeName}.${args.fieldName}' changed from '${args.oldDefaultValue}' to '${args.newDefaultValue}'`;
+    ? `Argument '${args.typeName}.${args.fieldName}(${args.argumentName}:)' default value '${args.newDefaultValue}' was added`
+    : `Argument '${args.typeName}.${args.fieldName}(${args.argumentName}:)' default value changed from '${args.oldDefaultValue}' to '${args.newDefaultValue}'`;
 }
 
 const fieldArgumentDefaultChangedCriticalityDangerousReason =
@@ -109,7 +109,7 @@ export function fieldArgumentDefaultChanged(
 function buildFieldArgumentTypeChangedMessage(
   args: FieldArgumentTypeChangedChange['meta'],
 ): string {
-  return `Type for argument '${args.argumentName}' on field '${args.typeName}.${args.fieldName}' changed from '${args.oldArgumentType}' to '${args.newArgumentType}'`;
+  return `Argument '${args.typeName}.${args.fieldName}(${args.argumentName}:)' changed type from '${args.oldArgumentType}' to '${args.newArgumentType}'`;
 }
 
 const fieldArgumentTypeChangedCriticalityNonBreakingReason = `Changing an input field from non-null to null is considered non-breaking.`;

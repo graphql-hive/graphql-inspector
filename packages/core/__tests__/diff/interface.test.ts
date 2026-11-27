@@ -23,7 +23,7 @@ describe('interface', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
       expect(change.type).toEqual('FIELD_ADDED');
-      expect(change.message).toEqual("Field 'c' was added to interface 'Foo'");
+      expect(change.message).toEqual("Interface field 'Foo.c' was added");
     });
     test('removed', async () => {
       const a = buildSchema(/* GraphQL */ `
@@ -44,7 +44,7 @@ describe('interface', () => {
 
       expect(change.criticality.level).toEqual(CriticalityLevel.Breaking);
       expect(change.type).toEqual('FIELD_REMOVED');
-      expect(change.message).toEqual("Field 'c' was removed from interface 'Foo'");
+      expect(change.message).toEqual("Interface field 'Foo.c' was removed");
     });
 
     test('order changed', async () => {

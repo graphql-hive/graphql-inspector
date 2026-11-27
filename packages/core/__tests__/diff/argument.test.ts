@@ -23,7 +23,7 @@ describe('argument', () => {
     );
     expect(change.type).toEqual('FIELD_ARGUMENT_ADDED');
     expect(change.message).toEqual(
-      "Argument 'b: Boolean!' (with default value) added to field 'Query.a'",
+      "Argument 'Query.a(b:)' of type 'Boolean!' (with default value) was added",
     );
   });
 
@@ -46,7 +46,7 @@ describe('argument', () => {
       'Adding a non-null argument without a default value to an existing field will cause existing queries that do not provide it to error.',
     );
     expect(change.type).toEqual('FIELD_ARGUMENT_ADDED');
-    expect(change.message).toEqual("Argument 'b: Boolean!' added to field 'Query.a'");
+    expect(change.message).toEqual("Argument 'Query.a(b:)' of type 'Boolean!' was added");
   });
 
   test('added nullable with default value', async () => {
@@ -69,7 +69,7 @@ describe('argument', () => {
     );
     expect(change.type).toEqual('FIELD_ARGUMENT_ADDED');
     expect(change.message).toEqual(
-      "Argument 'b: Boolean' (with default value) added to field 'Query.a'",
+      "Argument 'Query.a(b:)' of type 'Boolean' (with default value) was added",
     );
   });
 
@@ -92,7 +92,7 @@ describe('argument', () => {
       'Adding a nullable argument without a default value to an existing field does not affect existing queries: they remain valid and the field receives no value for it.',
     );
     expect(change.type).toEqual('FIELD_ARGUMENT_ADDED');
-    expect(change.message).toEqual("Argument 'b: Boolean' added to field 'Query.a'");
+    expect(change.message).toEqual("Argument 'Query.a(b:)' of type 'Boolean' was added");
   });
 
   test('added to a new field', async () => {
@@ -113,7 +113,7 @@ describe('argument', () => {
     expect(change.criticality.level).toEqual(CriticalityLevel.NonBreaking);
     expect(change.criticality.reason).toEqual('The field is new, so no existing query uses it.');
     expect(change.type).toEqual('FIELD_ARGUMENT_ADDED');
-    expect(change.message).toEqual("Argument 'b: Boolean!' added to field 'Query.c'");
+    expect(change.message).toEqual("Argument 'Query.c(b:)' of type 'Boolean!' was added");
   });
 
   describe('default value', () => {
@@ -142,7 +142,7 @@ describe('argument', () => {
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('FIELD_ARGUMENT_DEFAULT_CHANGED');
       expect(change.message).toEqual(
-        "Default value '{ a: 'a' }' was added to argument 'foo' on field 'Dummy.field'",
+        "Argument 'Dummy.field(foo:)' default value '{ a: 'a' }' was added",
       );
     });
 
@@ -171,7 +171,7 @@ describe('argument', () => {
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('FIELD_ARGUMENT_DEFAULT_CHANGED');
       expect(change.message).toEqual(
-        "Default value for argument 'foo' on field 'Dummy.field' changed from '{ a: 'a' }' to '{ a: 'new-value' }'",
+        "Argument 'Dummy.field(foo:)' default value changed from '{ a: 'a' }' to '{ a: 'new-value' }'",
       );
     });
 
@@ -185,7 +185,7 @@ describe('argument', () => {
 
       expect(change.type).toEqual('FIELD_ARGUMENT_DEFAULT_CHANGED');
       expect(change.message).toEqual(
-        `Default value for argument 'value' on field 'Query.field' changed from '"old"' to '"new"'`,
+        `Argument 'Query.field(value:)' default value changed from '"old"' to '"new"'`,
       );
     });
 
