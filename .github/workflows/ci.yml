@@ -82,6 +82,21 @@ jobs:
           echo 2088
           node ./packages/cli/dist/cjs/index.js diff ./integration_tests/2088/old.graphql ./integration_tests/2088/new.graphql --rule suppressRemovalOfDeprecatedField
 
+  docker:
+    name: Docker image
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Build image
+        run: docker build -t graphql-inspector:ci .
+
+      - name: Integration tests
+        run: |
+          echo 2961
+          docker run --rm -v "$PWD/integration_tests/2961:/t" graphql-inspector:ci graphql-inspector diff /t/old.graphql /t/new.graphql
+
   graphql-compatibility:
     name: Test GraphQL ${{ matrix.graphql_version }}
     runs-on: ubuntu-latest
