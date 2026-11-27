@@ -149,7 +149,7 @@ export default createCommand<
         const apolloFederationV2 = args.federationV2 || false;
         const aws = args.aws || false;
         const method = args.method?.toUpperCase() || 'POST';
-        const { headers, leftHeaders, rightHeaders, token } = parseGlobalArgs(args);
+        const { headers, leftHeaders, rightHeaders, token, introspection } = parseGlobalArgs(args);
 
         const oldSchemaHeaders = {
           ...headers,
@@ -166,6 +166,7 @@ export default createCommand<
             headers: oldSchemaHeaders,
             token,
             method,
+            ...introspection,
           },
           apolloFederation,
           apolloFederationV2,
@@ -177,6 +178,7 @@ export default createCommand<
             headers: newSchemaHeaders,
             token,
             method,
+            ...introspection,
           },
           apolloFederation,
           apolloFederationV2,

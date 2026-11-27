@@ -85,7 +85,7 @@ export default createCommand<
         .default('w', 'graphql.schema.json');
     },
     async handler(args) {
-      const { headers, token } = parseGlobalArgs(args);
+      const { headers, token, introspection } = parseGlobalArgs(args);
       const output = args.write!;
       const comments = args.comments || false;
       const apolloFederation = args.federation || false;
@@ -99,6 +99,7 @@ export default createCommand<
           token,
           headers,
           method,
+          ...introspection,
         },
         apolloFederation,
         apolloFederationV2,

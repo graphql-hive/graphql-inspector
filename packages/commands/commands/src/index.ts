@@ -41,6 +41,8 @@ export interface GlobalArgs {
   federationV2?: boolean;
   aws?: boolean;
   method?: string;
+  includeDeprecatedInputValues?: boolean;
+  includeRepeatableDirectives?: boolean;
 }
 
 export function parseGlobalArgs(args: GlobalArgs) {
@@ -76,7 +78,17 @@ export function parseGlobalArgs(args: GlobalArgs) {
     for (const mod of args.require) require(mod);
   }
 
-  return { headers, leftHeaders, rightHeaders, token: args.token };
+  return {
+    headers,
+    leftHeaders,
+    rightHeaders,
+    token: args.token,
+    // graphql-js `IntrospectionOptions`, forwarded to the introspection query
+    introspection: {
+      inputValueDeprecation: args.includeDeprecatedInputValues ?? false,
+      directiveIsRepeatable: args.includeRepeatableDirectives ?? false,
+    },
+  };
 }
 
 export function mockCommand<U>(mod: Command<{}, U>, cmd: string) {
