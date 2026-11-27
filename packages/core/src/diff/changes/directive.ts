@@ -117,7 +117,9 @@ export function directiveDescriptionChanged(
   });
 }
 
-function buildDirectiveRepeatableAddedMessage(args: DirectiveRepeatableAddedChange['meta']) {
+function buildDirectiveRepeatableAddedMessage(
+  args: DirectiveRepeatableAddedChange['meta'],
+): string {
   return `Directive '@${args.directiveName}' added repeatable.`;
 }
 
@@ -144,7 +146,9 @@ export function directiveRepeatableAdded(directive: GraphQLDirective) {
   });
 }
 
-function buildDirectiveRepeatableRemovedMessage(args: DirectiveRepeatableAddedChange['meta']) {
+function buildDirectiveRepeatableRemovedMessage(
+  args: DirectiveRepeatableAddedChange['meta'],
+): string {
   return `Directive '@${args.directiveName}' removed repeatable.`;
 }
 

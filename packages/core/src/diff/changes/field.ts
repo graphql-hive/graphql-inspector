@@ -28,7 +28,7 @@ import {
   FieldTypeChangedChange,
 } from './change.js';
 
-function buildFieldRemovedMessage(args: FieldRemovedChange['meta']) {
+function buildFieldRemovedMessage(args: FieldRemovedChange['meta']): string {
   return `${args.typeType === 'interface' ? 'Interface field' : 'Object field'} '${args.typeName}.${args.removedFieldName}' ${
     args.isRemovedFieldDeprecated ? '(deprecated) ' : ''
   }was removed`;
@@ -65,7 +65,7 @@ export function fieldRemoved(
   });
 }
 
-function buildFieldAddedMessage(args: FieldAddedChange['meta']) {
+function buildFieldAddedMessage(args: FieldAddedChange['meta']): string {
   return `${args.typeType === 'interface' ? 'Interface field' : 'Object field'} '${args.typeName}.${args.addedFieldName}' was added`;
 }
 
@@ -385,7 +385,7 @@ export function fieldTypeChanged(
   });
 }
 
-function buildFieldArgumentAddedMessage(args: FieldArgumentAddedChange['meta']) {
+function buildFieldArgumentAddedMessage(args: FieldArgumentAddedChange['meta']): string {
   return `Argument '${args.typeName}.${args.fieldName}(${args.addedArgumentName}:)' of type '${args.addedArgumentType}'${
     args.hasDefaultValue ? ' (with default value) ' : ' '
   }was added`;
@@ -446,7 +446,7 @@ export function fieldArgumentAdded(
   });
 }
 
-function buildFieldArgumentRemovedMessage(args: FieldArgumentRemovedChange) {
+function buildFieldArgumentRemovedMessage(args: FieldArgumentRemovedChange): string {
   return `Argument '${args.meta.typeName}.${args.meta.fieldName}(${args.meta.removedFieldArgumentName}:)' of type '${args.meta.removedFieldType}' was removed`;
 }
 

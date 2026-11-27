@@ -13,7 +13,7 @@ import {
   EnumValueRemovedChange,
 } from './change.js';
 
-function buildEnumValueRemovedMessage(args: EnumValueRemovedChange['meta']) {
+function buildEnumValueRemovedMessage(args: EnumValueRemovedChange['meta']): string {
   return `Enum value '${args.enumName}.${args.removedEnumValueName}' ${
     args.isEnumValueDeprecated ? '(deprecated) ' : ''
   }was removed`;
@@ -48,7 +48,7 @@ export function enumValueRemoved(
   });
 }
 
-function buildEnumValueAddedMessage(args: EnumValueAddedChange) {
+function buildEnumValueAddedMessage(args: EnumValueAddedChange): string {
   return `Enum value '${args.meta.enumName}.${args.meta.addedEnumValueName}' was added`;
 }
 
