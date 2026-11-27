@@ -1,5 +1,17 @@
 # @graphql-inspector/core
 
+## 8.2.0
+
+### Minor Changes
+
+- [#3016](https://github.com/graphql-hive/graphql-inspector/pull/3016)
+  [`7f2f4d7`](https://github.com/graphql-hive/graphql-inspector/commit/7f2f4d7c8700e411e7fe6b460762ca9e635c75c0)
+  Thanks [@eddeee888](https://github.com/eddeee888)! - Change messages now name schema elements with
+  GraphQL schema coordinates, for example `Object field 'Product.name' was added` or
+  `Directive '@feature' was added`. Directive usage argument messages also name where the directive
+  is applied, for example `Argument 'name' was added to '@tag' on field 'Query.a'`. The wording of
+  most messages changed, so anyone matching on message text should update their patterns.
+
 ## 8.1.5
 
 ### Patch Changes
