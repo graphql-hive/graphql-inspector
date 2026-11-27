@@ -583,6 +583,7 @@ describe('directive-usage', () => {
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_UNION_MEMBER_ADDED');
       expect(change.message).toEqual("Directive '@external' was added to union 'Foo'");
+      expect(change.criticality.reason).toEqual("Directive '@external' was added to union 'Foo'");
     });
 
     test('remove directive', async () => {
@@ -619,6 +620,9 @@ describe('directive-usage', () => {
       expect(change.criticality.level).toEqual(CriticalityLevel.Dangerous);
       expect(change.type).toEqual('DIRECTIVE_USAGE_UNION_MEMBER_REMOVED');
       expect(change.message).toEqual("Directive '@external' was removed from union 'Foo'");
+      expect(change.criticality.reason).toEqual(
+        "Directive '@external' was removed from union 'Foo'",
+      );
     });
 
     test('added oneOf directive', async () => {

@@ -632,7 +632,7 @@ export function directiveUsageUnionMemberAddedFromMeta(args: DirectiveUsageUnion
       level: args.meta.addedToNewType
         ? CriticalityLevel.NonBreaking
         : addedSpecialDirective(args.meta.addedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '@${args.meta.addedDirectiveName}' was added to union '${args.meta.unionName}' (member '${args.meta.addedUnionMemberTypeName}')`,
+      reason: `Directive '@${args.meta.addedDirectiveName}' was added to union '${args.meta.unionName}'`,
     },
     type: ChangeType.DirectiveUsageUnionMemberAdded,
     message: buildDirectiveUsageUnionMemberAddedMessage(args.meta),
@@ -653,7 +653,7 @@ export function directiveUsageUnionMemberRemovedFromMeta(
   return {
     criticality: {
       level: removedSpecialDirective(args.meta.removedDirectiveName, CriticalityLevel.Dangerous),
-      reason: `Directive '@${args.meta.removedDirectiveName}' was removed from union '${args.meta.unionName}' (member '${args.meta.removedUnionMemberTypeName}')`,
+      reason: `Directive '@${args.meta.removedDirectiveName}' was removed from union '${args.meta.unionName}'`,
     },
     type: ChangeType.DirectiveUsageUnionMemberRemoved,
     message: buildDirectiveUsageUnionMemberRemovedMessage(args.meta),
